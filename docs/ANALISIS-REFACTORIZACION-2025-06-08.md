@@ -530,3 +530,163 @@ cd dev-tools && npm run dev
 
 *Análisis realizado el 8 de junio de 2025 en rama `refactor/nueva-arquitectura`*  
 *Estado: Sistema funcional pero con áreas críticas que requieren refactorización*
+
+---
+
+## 🧪 **TESTING FRAMEWORK AVANZADO - ARQUITECTURA 3.0**
+
+### **🧪 ESTADO ACTUAL TESTING FASE 1**
+- ✅ **Base Architecture**: DevToolsTestCase base class creada
+- ✅ **Structure**: Directorios organizados y limpios
+- ✅ **Configuration**: phpunit.xml + wp-tests-config.php preparados  
+- 🔄 **Implementación Fase 2**: Tests reales pendientes de implementar
+
+### **Arquitectura de Testing Avanzado (5 Niveles)**
+
+#### 1. **Unit Tests** - Tests unitarios puros (Fast)
+```php
+// tests/unit/ConfigTest.php
+class ConfigTest extends DevToolsTestCase {
+    public function testConfigurationLoading(): void {
+        $config = dev_tools_config();
+        $this->assertInstanceOf(DevToolsConfig::class, $config);
+        $this->assertNotEmpty($config->get('dev_tools.menu_slug'));
+    }
+}
+
+// tests/unit/ModuleManagerTest.php  
+class ModuleManagerTest extends DevToolsTestCase {
+    public function testModuleRegistration(): void {
+        $manager = new DevToolsModuleManager();
+        $this->assertTrue($manager->has_module('dashboard'));
+        $this->assertTrue($manager->has_module('system_info'));
+    }
+}
+```
+
+#### 2. **Integration Tests** - WordPress environment (Medium)
+```php
+// tests/integration/SystemInfoIntegrationTest.php
+class SystemInfoIntegrationTest extends DevToolsTestCase {
+    public function testAjaxSystemInfoRequest(): void {
+        $_POST['action'] = 'tarokina-2025_dev_tools_get_system_info';
+        $_POST['nonce'] = wp_create_nonce('dev_tools_ajax');
+        
+        try {
+            $this->_handleAjax('tarokina-2025_dev_tools_get_system_info');
+        } catch (WPAjaxDieContinueException $e) {
+            // Expected for successful AJAX
+        }
+        
+        $response = $this->_last_response;
+        $data = json_decode($response, true);
+        
+        $this->assertTrue($data['success']);
+        $this->assertArrayHasKey('wordpress', $data['data']);
+    }
+}
+```
+
+#### 3. **E2E Tests** - End-to-end automatizados (Slow)
+```javascript
+// tests/e2e/specs/dashboard.e2e.js
+const { test, expect } = require('@playwright/test');
+
+test('Dev-Tools Dashboard loads correctly', async ({ page }) => {
+    await page.goto('/wp-admin/tools.php?page=tarokina-2025-dev-tools');
+    
+    // Check main dashboard elements
+    await expect(page.locator('.dev-tools-dashboard')).toBeVisible();
+    await expect(page.locator('[data-module="dashboard"]')).toBeVisible();
+    
+    // Test module navigation
+    await page.click('[data-module="system_info"]');
+    await expect(page.locator('.system-info-panel')).toBeVisible();
+});
+```
+
+#### 4. **Coverage Tests** - Code coverage analysis
+```bash
+# Generar coverage reports
+./run-tests.sh --coverage
+
+# Coverage goals Arquitectura 3.0:
+# - Core System: 95%+ coverage
+# - Modules: 85%+ coverage  
+# - AJAX Handlers: 90%+ coverage
+# - JavaScript: 80%+ coverage
+```
+
+#### 5. **CI/CD Tests** - Continuous integration
+```yaml
+# tests/ci/scripts/test-pipeline.yml
+name: Dev-Tools Testing Pipeline
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup WordPress Test Environment
+        run: ./tests/ci/scripts/setup-wp-tests.sh
+      - name: Run Unit Tests
+        run: ./run-tests.sh --unit --coverage
+      - name: Run Integration Tests  
+        run: ./run-tests.sh --integration
+      - name: Run E2E Tests
+        run: npm run test:e2e
+```
+
+### **Test Categories y Estructura**
+
+#### **Unit Tests** (`tests/unit/`)
+- **ConfigTest.php**: Tests configuración sistema dinámico
+- **ModuleManagerTest.php**: Tests gestor módulos y registry
+- **AjaxHandlerTest.php**: Tests handler AJAX centralizado
+- **ModuleBaseTest.php**: Tests clase base módulos
+
+#### **Integration Tests** (`tests/integration/`)
+- **DashboardIntegrationTest.php**: Tests integración dashboard
+- **SystemInfoIntegrationTest.php**: Tests módulo system info
+- **AjaxEndpointsIntegrationTest.php**: Tests endpoints AJAX reales
+- **WordPressHooksIntegrationTest.php**: Tests hooks y filters
+
+#### **E2E Tests** (`tests/e2e/`)
+- **dashboard.e2e.js**: Tests navegación y UI dashboard
+- **system-info.e2e.js**: Tests funcionalidad system info  
+- **ajax-interactions.e2e.js**: Tests interacciones AJAX
+- **module-switching.e2e.js**: Tests cambio entre módulos
+
+#### **Test Fixtures** (`tests/fixtures/`)
+- **fixture_system_info.json**: Datos mock para system info
+- **fixture_wordpress_config.json**: Configuración WordPress mock
+- **fixture_module_config.json**: Configuraciones módulos mock
+
+#### **Test Helpers** (`tests/helpers/`)
+- **AjaxTestHelper.php**: Utilidades testing AJAX
+- **ModuleTestHelper.php**: Utilidades testing módulos
+- **WordPressTestHelper.php**: Utilidades entorno WordPress
+
+### **Running Tests Arquitectura 3.0**
+```bash
+# SETUP: Always deploy dev-tools first
+cd dev-tools && npm run dev
+
+# FASE 1 - Tests básicos (implementados)
+./run-tests.sh --structure  # Verificar estructura
+
+# FASE 2 - Tests completos (por implementar)
+./run-tests.sh --unit       # Unit tests (fast)
+./run-tests.sh --integration # Integration tests  
+./run-tests.sh --e2e        # E2E tests (slow)
+./run-tests.sh --coverage   # Coverage analysis
+./run-tests.sh --all        # All tests + reports
+
+# Development testing
+./run-tests.sh --watch      # Watch mode for development
+./run-tests.sh --verbose    # Verbose output
+./run-tests.sh --module=system_info  # Test specific module
+```
+
+---

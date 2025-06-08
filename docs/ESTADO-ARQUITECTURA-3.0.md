@@ -208,6 +208,243 @@ cd dev-tools
 
 ---
 
+## 🔧 GUÍA DE DESARROLLO ARQUITECTURA 3.0
+
+### **Crear Nuevo Módulo**
+```php
+// 1. Crear clase módulo extendiendo DevToolsModuleBase
+class NuevoModuloModule extends DevToolsModuleBase {
+    protected function get_module_config(): array {
+        return [
+            'id' => 'nuevo_modulo',
+            'name' => 'Nuevo Módulo',
+            'description' => 'Descripción del módulo',
+            'version' => '3.0.0',
+            'icon' => 'fas fa-icon',
+            'priority' => 30,
+            'ajax_actions' => ['action1', 'action2']
+        ];
+    }
+    
+    public function render_panel(): string {
+        // Retornar HTML Bootstrap 5
+    }
+    
+    public function handle_action1(): array {
+        // Manejar acción AJAX
+    }
+}
+
+// 2. Auto-discovery: El sistema detecta automáticamente el módulo
+// 3. Crear JavaScript: src/js/nuevo-modulo.js
+// 4. Agregar a webpack.config.js
+// 5. Compilar: npm run dev
+```
+
+### **Patrón AJAX Handler Centralizado**
+```php
+// En módulo PHP - registrar comandos AJAX
+$this->register_ajax_command('mi_comando', [$this, 'handle_mi_comando']);
+
+public function handle_mi_comando(): array {
+    $this->log_internal('Processing mi_comando');
+    
+    try {
+        // Lógica del comando
+        $result = $this->process_data();
+        
+        $this->log_external('Command completed successfully');
+        
+        return [
+            'success' => true,
+            'data' => $result,
+            'message' => 'Comando ejecutado exitosamente'
+        ];
+    } catch (Exception $e) {
+        $this->log_external('Command failed: ' . $e->getMessage(), 'error');
+        
+        return [
+            'success' => false,
+            'message' => 'Error: ' . $e->getMessage()
+        ];
+    }
+}
+```
+
+### **JavaScript ES6+ para Módulos**
+```javascript
+// src/js/mi-modulo.js
+class DevToolsMiModulo {
+    constructor() {
+        this.config = window.devToolsConfig;
+        this.logger = new DevToolsLogger();
+        this.init();
+    }
+
+    async ejecutarComando(datos) {
+        this.logger.logInternal('Executing command', datos);
+        
+        try {
+            const response = await this.makeAjaxRequest('mi_comando', datos);
+            
+            if (response.success) {
+                this.logger.logExternal('Command successful', 'success');
+                this.showAlert('success', response.message);
+                return response.data;
+            } else {
+                throw new Error(response.message);
+            }
+        } catch (error) {
+            this.logger.logExternal(`Command failed: ${error.message}`, 'error');
+            this.showAlert('error', `Error: ${error.message}`);
+            throw error;
+        }
+    }
+
+    async makeAjaxRequest(action, data = {}) {
+        const formData = new FormData();
+        formData.append('action', `${this.config.ajax_prefix}_dev_tools_${action}`);
+        formData.append('nonce', this.config.nonce);
+        
+        Object.keys(data).forEach(key => {
+            formData.append(key, data[key]);
+        });
+
+        const response = await fetch(this.config.ajaxUrl, {
+            method: 'POST',
+            body: formData
+        });
+
+        return await response.json();
+    }
+
+    showAlert(type, message) {
+        // Mostrar alerta Bootstrap 5
+        const alert = `<div class="alert alert-${type} alert-dismissible fade show">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>`;
+        
+        document.querySelector('#alerts-container').innerHTML = alert;
+    }
+
+    init() {
+        document.addEventListener('DOMContentLoaded', () => {
+            this.bindEvents();
+        });
+    }
+
+    bindEvents() {
+        // Vincular eventos específicos del módulo
+    }
+}
+
+// Auto-inicialización
+window.DevToolsMiModulo = new DevToolsMiModulo();
+```
+
+### **Sistema de Logging Dual**
+```javascript
+// Sistema de logging dual integrado en módulos
+class DevToolsLogger {
+    constructor() {
+        this.isVerbose = this.detectVerboseMode();
+        this.isDebug = this.detectDebugMode();
+        this.modulePrefix = '';
+    }
+
+    setModulePrefix(prefix) {
+        this.modulePrefix = prefix ? `[${prefix.toUpperCase()}]` : '';
+    }
+
+    // ✅ CORRECT - Internal logging (always silent)
+    logInternal(message, data = null) {
+        // Internal tracking only, never visible to user
+        console.debug(`[DEV-TOOLS-INTERNAL]${this.modulePrefix}`, message, data);
+    }
+
+    // ✅ CORRECT - External logging (conditional output)
+    logExternal(message, type = 'info') {
+        if (this.isVerbose || this.isDebug) {
+            console.log(`[DEV-TOOLS-${type.toUpperCase()}]${this.modulePrefix}`, message);
+        }
+    }
+
+    detectVerboseMode() {
+        return window.devToolsConfig?.verbose || 
+               localStorage.getItem('devtools_verbose') === 'true';
+    }
+}
+```
+
+### **Mejores Prácticas Desarrollo**
+
+#### **Desarrollo Modular**
+- **Interfaces First**: Siempre implementar `DevToolsModuleInterface` para nuevos módulos
+- **Herencia**: Extender `DevToolsModuleBase` para funcionalidad común
+- **Auto-discovery**: Los módulos se detectan automáticamente, terminar clase en `Module.php`
+- **Configuración**: Definir config en `get_module_config()` con id, nombre, versión, etc.
+- **AJAX Actions**: Declarar acciones en `ajax_actions` y registrar con `register_ajax_command()`
+
+#### **Sistema AJAX Centralizado**
+- **Command Pattern**: Usar `register_ajax_command()` para registrar comandos
+- **Seguridad**: Automática verificación de nonce y permisos por módulo  
+- **Response Format**: Siempre retornar array con `success`, `data`, `message`
+- **Error Handling**: Capturar excepciones y retornar errores estructurados
+- **Logging**: Usar `log_internal()` y `log_external()` según necesidad
+
+#### **JavaScript Modular ES6+**
+- **Clases**: Una clase por módulo siguiendo patrón `DevTools[ModuleName]`
+- **Constructor**: Inicializar logger con prefijo del módulo
+- **AJAX Helper**: Usar `makeAjaxRequest()` centralizado con configuración dinámica
+- **Error Handling**: Try-catch con logging dual y alertas user-friendly
+- **Auto-init**: Registrar en `window` para acceso global automático
+
+#### **Assets y Build System**
+- **Webpack**: Agregar entry points en `webpack.config.js` para nuevos módulos
+- **Compilation**: Siempre ejecutar `npm run dev` después de cambios
+- **File Naming**: JavaScript en lowercase con guiones: `system-info.js`
+- **Dependencies**: Declarar dependencias en `get_module_scripts()`
+- **Optimization**: Assets se minimizan automáticamente en producción
+
+### **Browser Console Testing (JavaScript)**
+```javascript
+// Test SystemInfoModule (copy-paste ready)
+// 1. Test module availability
+console.log('SystemInfo Module:', window.DevToolsSystemInfo ? 'AVAILABLE' : 'MISSING');
+
+// 2. Test AJAX configuration
+const config = window.devToolsConfig;
+console.log('AJAX Config:', {
+    prefix: config?.ajax_prefix,
+    url: config?.ajaxUrl,
+    nonce: config?.nonce ? 'SET' : 'MISSING'
+});
+
+// 3. Test system info request
+if (window.DevToolsSystemInfo) {
+    window.DevToolsSystemInfo.refreshSystemInfo()
+        .then(() => console.log('✅ System info refresh successful'))
+        .catch(err => console.error('❌ System info refresh failed:', err));
+}
+
+// 4. Test AJAX endpoint manually
+fetch(config.ajaxUrl, {
+    method: 'POST',
+    body: new FormData(Object.assign(document.createElement('form'), {
+        innerHTML: `
+            <input name="action" value="${config.ajax_prefix}_dev_tools_get_system_info">
+            <input name="nonce" value="${config.nonce}">
+            <input name="module" value="system_info">
+        `
+    }))
+}).then(r => r.json()).then(data => {
+    console.log('AJAX Response:', data.success ? '✅ SUCCESS' : '❌ FAILED', data);
+});
+```
+
+---
+
 ## 🎉 CONCLUSIÓN
 
 La **Arquitectura 3.0** está completamente funcional y lista para uso. El sistema proporciona:
@@ -220,3 +457,346 @@ La **Arquitectura 3.0** está completamente funcional y lista para uso. El siste
 
 **Estado actual**: ✅ **PRODUCTION READY**  
 **Próxima fase**: Expansión modular y testing avanzado
+
+---
+
+## 🔧 DESARROLLO DE MÓDULOS - ARQUITECTURA 3.0
+
+### 📋 Patrón de Desarrollo Modular
+
+#### Creación de Nuevo Módulo
+```php
+// 1. Crear clase módulo extendiendo DevToolsModuleBase
+class NuevoModuloModule extends DevToolsModuleBase {
+    protected function get_module_config(): array {
+        return [
+            'id' => 'nuevo_modulo',
+            'name' => 'Nuevo Módulo',
+            'description' => 'Descripción del módulo',
+            'version' => '3.0.0',
+            'icon' => 'fas fa-icon',
+            'priority' => 30,
+            'ajax_actions' => ['action1', 'action2']
+        ];
+    }
+    
+    public function render_panel(): string {
+        // Retornar HTML Bootstrap 5
+    }
+    
+    public function handle_action1(): array {
+        // Manejar acción AJAX
+    }
+}
+
+// 2. Auto-discovery: El sistema detecta automáticamente el módulo
+// 3. Crear JavaScript: src/js/nuevo-modulo.js
+// 4. Agregar a webpack.config.js
+// 5. Compilar: npm run dev
+```
+
+#### Patrón AJAX Handler Centralizado
+```php
+// En módulo PHP - registrar comandos AJAX
+$this->register_ajax_command('mi_comando', [$this, 'handle_mi_comando']);
+
+public function handle_mi_comando(): array {
+    $this->log_internal('Processing mi_comando');
+    
+    try {
+        // Lógica del comando
+        $result = $this->process_data();
+        
+        $this->log_external('Command completed successfully');
+        
+        return [
+            'success' => true,
+            'data' => $result,
+            'message' => 'Comando ejecutado exitosamente'
+        ];
+    } catch (Exception $e) {
+        $this->log_external('Command failed: ' . $e->getMessage(), 'error');
+        
+        return [
+            'success' => false,
+            'message' => 'Error: ' . $e->getMessage()
+        ];
+    }
+}
+```
+
+#### JavaScript ES6+ para Módulos
+```javascript
+// src/js/mi-modulo.js
+class DevToolsMiModulo {
+    constructor() {
+        this.config = window.devToolsConfig;
+        this.logger = new DevToolsLogger();
+        this.init();
+    }
+
+    async ejecutarComando(datos) {
+        this.logger.logInternal('Executing command', datos);
+        
+        try {
+            const response = await this.makeAjaxRequest('mi_comando', datos);
+            
+            if (response.success) {
+                this.logger.logExternal('Command successful', 'success');
+                this.showAlert('success', response.message);
+                return response.data;
+            } else {
+                throw new Error(response.message);
+            }
+        } catch (error) {
+            this.logger.logExternal(`Command failed: ${error.message}`, 'error');
+            this.showAlert('error', `Error: ${error.message}`);
+            throw error;
+        }
+    }
+
+    async makeAjaxRequest(action, data = {}) {
+        const formData = new FormData();
+        formData.append('action', `${this.config.ajax_prefix}_dev_tools_${action}`);
+        formData.append('nonce', this.config.nonce);
+        
+        Object.keys(data).forEach(key => {
+            formData.append(key, data[key]);
+        });
+
+        const response = await fetch(this.config.ajaxUrl, {
+            method: 'POST',
+            body: formData
+        });
+
+        return await response.json();
+    }
+
+    init() {
+        document.addEventListener('DOMContentLoaded', () => {
+            this.bindEvents();
+        });
+    }
+}
+
+// Auto-inicialización
+window.DevToolsMiModulo = new DevToolsMiModulo();
+```
+
+### 🔍 Sistema de Logging Dual
+```javascript
+// Sistema de logging dual integrado en módulos
+class DevToolsLogger {
+    constructor() {
+        this.isVerbose = this.detectVerboseMode();
+        this.isDebug = this.detectDebugMode();
+        this.modulePrefix = '';
+    }
+
+    setModulePrefix(prefix) {
+        this.modulePrefix = prefix ? `[${prefix.toUpperCase()}]` : '';
+    }
+
+    // ✅ CORRECT - Internal logging (always silent)
+    logInternal(message, data = null) {
+        // Internal tracking only, never visible to user
+        console.debug(`[DEV-TOOLS-INTERNAL]${this.modulePrefix}`, message, data);
+    }
+
+    // ✅ CORRECT - External logging (conditional output)
+    logExternal(message, type = 'info') {
+        if (this.isVerbose || this.isDebug) {
+            console.log(`[DEV-TOOLS-${type.toUpperCase()}]${this.modulePrefix}`, message);
+        }
+    }
+
+    detectVerboseMode() {
+        return window.devToolsConfig?.verbose || 
+               localStorage.getItem('devtools_verbose') === 'true';
+    }
+}
+```
+
+### 🌐 WordPress AJAX Integration
+```php
+// PHP AJAX Handler con sistema modular y logging dual
+class SystemInfoModule extends DevToolsModuleBase {
+    
+    public function handle_get_system_info(): array {
+        // ✅ CORRECT - Logging interno siempre silencioso
+        $this->log_internal('Processing get_system_info request');
+        
+        // ✅ CORRECT - Logging externo condicional
+        if (defined('DEV_TOOLS_VERBOSE') && DEV_TOOLS_VERBOSE) {
+            $this->log_external('Getting system information');
+        }
+
+        try {
+            $system_info = $this->collect_system_info();
+            
+            $this->log_external('System info collected successfully');
+            
+            return [
+                'success' => true,
+                'data' => $system_info,
+                'message' => 'Información del sistema recopilada',
+                'timestamp' => current_time('c')
+            ];
+            
+        } catch (Exception $e) {
+            $this->log_external('Error collecting system info: ' . $e->getMessage(), 'error');
+            
+            return [
+                'success' => false,
+                'message' => 'Error al recopilar información: ' . $e->getMessage()
+            ];
+        }
+    }
+
+    // Método de logging interno (heredado de DevToolsModuleBase)
+    protected function log_internal(string $message, array $context = []): void {
+        // Logging interno siempre activo, nunca visible al usuario
+        error_log("[DEV-TOOLS-INTERNAL][SYSTEM-INFO] {$message}");
+    }
+
+    // Método de logging externo (heredado de DevToolsModuleBase)  
+    protected function log_external(string $message, string $level = 'info'): void {
+        // Logging externo solo en modo verbose/debug
+        if (defined('DEV_TOOLS_VERBOSE') && DEV_TOOLS_VERBOSE) {
+            error_log("[DEV-TOOLS-{$level}][SYSTEM-INFO] {$message}");
+        }
+    }
+}
+```
+
+## 📋 MEJORES PRÁCTICAS ARQUITECTURA 3.0
+
+### Desarrollo Modular
+- **Interfaces First**: Siempre implementar `DevToolsModuleInterface` para nuevos módulos
+- **Herencia**: Extender `DevToolsModuleBase` para funcionalidad común
+- **Auto-discovery**: Los módulos se detectan automáticamente, terminar clase en `Module.php`
+- **Configuración**: Definir config en `get_module_config()` con id, nombre, versión, etc.
+- **AJAX Actions**: Declarar acciones en `ajax_actions` y registrar con `register_ajax_command()`
+
+### Sistema AJAX Centralizado
+- **Command Pattern**: Usar `register_ajax_command()` para registrar comandos
+- **Seguridad**: Automática verificación de nonce y permisos por módulo  
+- **Response Format**: Siempre retornar array con `success`, `data`, `message`
+- **Error Handling**: Capturar excepciones y retornar errores estructurados
+- **Logging**: Usar `log_internal()` y `log_external()` según necesidad
+
+### JavaScript Modular ES6+
+- **Clases**: Una clase por módulo siguiendo patrón `DevTools[ModuleName]`
+- **Constructor**: Inicializar logger con prefijo del módulo
+- **AJAX Helper**: Usar `makeAjaxRequest()` centralizado con configuración dinámica
+- **Error Handling**: Try-catch con logging dual y alertas user-friendly
+- **Auto-init**: Registrar en `window` para acceso global automático
+
+### Assets y Build System
+- **Webpack**: Agregar entry points en `webpack.config.js` para nuevos módulos
+- **Compilation**: Siempre ejecutar `npm run dev` después de cambios
+- **File Naming**: JavaScript en lowercase con guiones: `system-info.js`
+- **Dependencies**: Declarar dependencias en `get_module_scripts()`
+- **Optimization**: Assets se minimizan automáticamente en producción
+
+### Security y Performance
+- **Nonce Verification**: Automática en AJAX handler centralizado
+- **Data Sanitization**: Sanitizar inputs en métodos handle_*
+- **Capability Checks**: Verificar permisos de usuario según módulo
+- **Caching**: Usar transients para datos que no cambian frecuentemente
+- **Logging Level**: Diferenciar interno (siempre) vs externo (condicional)
+
+### Testing y Quality Assurance
+- **PHPUnit**: Tests unitarios para lógica de módulos
+- **Integration Tests**: Tests con entorno WordPress para AJAX
+- **Browser Console**: Usar scripts de test para verificación rápida
+- **Error Reporting**: Logging estructurado para debugging
+- **Documentation**: Documentar APIs y métodos públicos de módulos
+
+### Compatibilidad y Migración
+- **Legacy Support**: Mantener compatibilidad con código existente
+- **Gradual Migration**: Migrar funcionalidades paso a paso
+- **Plugin Agnostic**: Sistema funciona en cualquier plugin WordPress
+- **Version Control**: Usar versionado semántico para módulos
+- **Configuration**: Sistema dinámico adapta configuración automáticamente
+
+## 📊 EJEMPLOS DE CÓDIGO
+
+### Bootstrap Admin Panel
+```php
+// Admin form with Bootstrap classes
+echo '<div class="container-fluid">';
+echo '<form class="row g-3">';
+echo '<div class="col-md-6">';
+echo '<label class="form-label">Setting Name</label>';
+echo '<input type="text" class="form-control" name="setting_name">';
+echo '</div>';
+echo '<button type="submit" class="btn btn-primary">Save Changes</button>';
+echo '</form>';
+echo '</div>';
+```
+
+### Modern JavaScript (ES6+)
+```javascript
+// ✅ CORRECT - Modern ES6+ without jQuery
+class DevToolsController {
+    constructor() {
+        this.apiUrl = window.devToolsAjax?.ajaxUrl;
+        this.init();
+    }
+
+    async fetchData(endpoint) {
+        try {
+            const response = await fetch(`${this.apiUrl}?action=${endpoint}`);
+            return await response.json();
+        } catch (error) {
+            console.error('API Error:', error);
+        }
+    }
+
+    init() {
+        document.addEventListener('DOMContentLoaded', () => {
+            this.bindEvents();
+        });
+    }
+}
+
+// ❌ AVOID - jQuery usage
+// $(document).ready(function() { ... }); // DON'T USE
+```
+
+### Browser Console Testing (JavaScript)
+```javascript
+// Test SystemInfoModule (copy-paste ready)
+// 1. Test module availability
+console.log('SystemInfo Module:', window.DevToolsSystemInfo ? 'AVAILABLE' : 'MISSING');
+
+// 2. Test AJAX configuration
+const config = window.devToolsConfig;
+console.log('AJAX Config:', {
+    prefix: config?.ajax_prefix,
+    url: config?.ajaxUrl,
+    nonce: config?.nonce ? 'SET' : 'MISSING'
+});
+
+// 3. Test system info request
+if (window.DevToolsSystemInfo) {
+    window.DevToolsSystemInfo.refreshSystemInfo()
+        .then(() => console.log('✅ System info refresh successful'))
+        .catch(err => console.error('❌ System info refresh failed:', err));
+}
+
+// 4. Test AJAX endpoint manually
+fetch(config.ajaxUrl, {
+    method: 'POST',
+    body: new FormData(Object.assign(document.createElement('form'), {
+        innerHTML: `
+            <input name="action" value="${config.ajax_prefix}_dev_tools_get_system_info">
+            <input name="nonce" value="${config.nonce}">
+            <input name="module" value="system_info">
+        `
+    }))
+}).then(r => r.json()).then(data => {
+    console.log('AJAX Response:', data.success ? '✅ SUCCESS' : '❌ FAILED', data);
+});
+```
