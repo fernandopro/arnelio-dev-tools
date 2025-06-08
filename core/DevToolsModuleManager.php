@@ -427,6 +427,13 @@ class DevToolsModuleManager {
         
         return false;
     }
+    
+    /**
+     * Verificar si el manager está inicializado
+     */
+    public function isInitialized(): bool {
+        return $this->is_initialized;
+    }
 }
 
 // Inicializar el gestor de módulos

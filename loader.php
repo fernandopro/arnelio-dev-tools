@@ -68,7 +68,18 @@ function dev_tools_admin_menu() {
         return;
     }
     
-    // Crear menú legacy si el DashboardModule no está disponible
+    // Verificar si el DashboardModule está disponible
+    if (class_exists('DevToolsModuleManager')) {
+        $manager = DevToolsModuleManager::getInstance();
+        $dashboard_module = $manager->getModule('dashboard');
+        
+        if ($dashboard_module && $manager->isInitialized()) {
+            // El sistema modular está operativo, no usar legacy
+            return;
+        }
+    }
+    
+    // Crear menú legacy solo si el sistema modular no está disponible
     add_management_page(
         $config->get('dev_tools.page_title'),    // Título dinámico
         $config->get('dev_tools.menu_title'),    // Texto del menú
@@ -191,8 +202,20 @@ function dev_tools_legacy_page() {
     <?php
 }
 
-// Registrar menú con prioridad baja para permitir que DashboardModule lo sobrescriba
-add_action('admin_menu', 'dev_tools_admin_menu', 999);
+// Registrar menú con prioridad alta para permitir que DashboardModule lo sobrescriba
+add_action('admin_menu', 'dev_tools_admin_menu', 30); // Prioridad 30 - después del sistema modular
+
+/**
+ * Obtiene la instancia del Module Manager (Arquitectura 3.0)
+ * 
+ * @return DevToolsModuleManager|null
+ */
+function dev_tools_get_module_manager() {
+    if (class_exists('DevToolsModuleManager')) {
+        return DevToolsModuleManager::getInstance();
+    }
+    return null;
+}
 
 /**
  * Encola los estilos y scripts para dev-tools (dinámico)

@@ -229,6 +229,39 @@ class DevToolsConfig {
     }
     
     /**
+     * Obtener URL de la página actual del admin
+     */
+    public function get_current_page_url() {
+        global $pagenow;
+        
+        // Construir URL base
+        $base_url = admin_url($pagenow);
+        
+        // Agregar parámetros de consulta si existen
+        $query_params = [];
+        
+        // Parámetro 'page' para páginas de administración personalizadas
+        if (isset($_GET['page'])) {
+            $query_params['page'] = sanitize_text_field($_GET['page']);
+        }
+        
+        // Otros parámetros relevantes
+        $relevant_params = ['tab', 'section', 'module'];
+        foreach ($relevant_params as $param) {
+            if (isset($_GET[$param])) {
+                $query_params[$param] = sanitize_text_field($_GET[$param]);
+            }
+        }
+        
+        // Construir URL final
+        if (!empty($query_params)) {
+            $base_url = add_query_arg($query_params, $base_url);
+        }
+        
+        return $base_url;
+    }
+    
+    /**
      * Obtener configuración para JavaScript
      */
     public function get_js_config() {
@@ -236,11 +269,16 @@ class DevToolsConfig {
             'ajaxUrl' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce($this->get('dev_tools.nonce_key')),
             'ajaxAction' => $this->get('dev_tools.ajax_action'),
+            'actionPrefix' => $this->get('host.slug'), // Prefijo del plugin host
+            'menuSlug' => $this->get('dev_tools.menu_slug'), // Slug dinámico del menú
             'pluginName' => $this->get('host.name'),
             'pluginSlug' => $this->get('host.slug'),
             'devToolsUrl' => $this->get('paths.dev_tools_url'),
             'debugMode' => $this->is_debug_mode(),
-            'verboseMode' => $this->is_verbose_mode()
+            'verboseMode' => $this->is_verbose_mode(),
+            // URLs dinámicas para JavaScript
+            'baseAdminUrl' => get_admin_url(),
+            'currentPageUrl' => $this->get_current_page_url()
         ];
     }
     
