@@ -23,12 +23,7 @@ $current_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'dashbo
 
 // Definir las pestañas disponibles
 $tabs = [
-    'dashboard' => ['title' => '🏠 Dashboard', 'icon' => 'dashboard'],
-    'tests' => ['title' => '🧪 Tests', 'icon' => 'admin-tools'],
-    'simulators' => ['title' => '⚡ Simuladores', 'icon' => 'performance'],
-    'docs' => ['title' => '📚 Documentación', 'icon' => 'media-document'],
-    'maintenance' => ['title' => '🔧 Mantenimiento', 'icon' => 'admin-settings'],
-    'settings' => ['title' => '⚙️ Configuración', 'icon' => 'admin-generic']
+    'dashboard' => ['title' => '🏠 Dashboard', 'icon' => 'dashboard']
 ];
 ?>
 
@@ -86,21 +81,6 @@ $tabs = [
                     switch ($current_tab) {
                         case 'dashboard':
                             include __DIR__ . '/tabs/dashboard.php';
-                            break;
-                        case 'tests':
-                            include __DIR__ . '/tabs/tests.php';
-                            break;
-                        case 'simulators':
-                            include __DIR__ . '/tabs/simulators.php';
-                            break;
-                        case 'docs':
-                            include __DIR__ . '/tabs/docs.php';
-                            break;
-                        case 'maintenance':
-                            include __DIR__ . '/tabs/maintenance.php';
-                            break;
-                        case 'settings':
-                            include __DIR__ . '/tabs/settings.php';
                             break;
                         default:
                             echo '<div class="alert alert-danger">Pestaña no encontrada.</div>';
