@@ -87,10 +87,12 @@ logs/
 debug.log
 error.log
 
-# Archivos de debug
+# Archivos de debug temporales (NO incluir debug-ajax.php del core)
 debug/
 .debug/
-debug-*.php
+debug-temp-*.php
+debug-local-*.php
+wp-debug-temp.php
 
 # ==========================================
 # ARCHIVOS TEMPORALES
