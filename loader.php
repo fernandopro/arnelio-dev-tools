@@ -11,16 +11,7 @@
 // Cargar configuración global
 require_once __DIR__ . '/config.php';
 
-// Cargar el sistema de WordPress de forma segura
-require_once __DIR__ . '/wp-load.php';
-
-$wp_error = dev_tools_get_wp_error_safe();
-if ($wp_error) {
-    dev_tools_render_error_page($wp_error);
-    exit;
-}
-
-// Solo cargar en el admin (ahora disponible en producción también)
+// Solo cargar en el admin
 if (!is_admin()) {
     return;
 }
