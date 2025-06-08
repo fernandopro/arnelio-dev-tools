@@ -442,7 +442,10 @@ class DevToolsLogger {
      * Log condicional (solo si verbose)
      */
     public function logExternal($message, $type = 'info') {
-        if (defined('DEV_TOOLS_VERBOSE') && DEV_TOOLS_VERBOSE) {
+        $verbose = (defined('DEV_TOOLS_VERBOSE') && constant('DEV_TOOLS_VERBOSE')) || 
+                   (defined('WP_DEBUG') && WP_DEBUG);
+        
+        if ($verbose) {
             error_log('[DEV-TOOLS-' . strtoupper($type) . '] ' . $message);
         }
     }

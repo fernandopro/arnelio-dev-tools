@@ -71,7 +71,7 @@ class ConfigTest extends DevToolsTestCase {
     public function testAssetsConfiguration(): void {
         $assets_url = $this->config->get('assets.url');
         $this->assertNotEmpty($assets_url);
-        $this->assertStringContains('dev-tools/dist', $assets_url);
+        $this->assertContains('dev-tools/dist', $assets_url);
         
         $version = $this->config->get('assets.version');
         $this->assertNotEmpty($version);
@@ -96,7 +96,7 @@ class ConfigTest extends DevToolsTestCase {
         $this->assertEquals('manage_options', $required_capability);
         
         $nonce_action = $this->config->get('security.nonce_action');
-        $this->assertStringContains('dev_tools', $nonce_action);
+        $this->assertContains('dev_tools', $nonce_action);
     }
 
     /**
@@ -141,7 +141,7 @@ class ConfigTest extends DevToolsTestCase {
      */
     public function testAjaxConfiguration(): void {
         $ajax_url = $this->config->get('ajax.url');
-        $this->assertStringContains('admin-ajax.php', $ajax_url);
+        $this->assertContains('admin-ajax.php', $ajax_url);
         
         $timeout = $this->config->get('ajax.timeout');
         $this->assertIsInt($timeout);
@@ -203,11 +203,11 @@ class ConfigTest extends DevToolsTestCase {
     public function testConfigurationHelpers(): void {
         // Test get_admin_url
         $admin_url = $this->config->get_admin_url();
-        $this->assertStringContains('wp-admin', $admin_url);
+        $this->assertContains('wp-admin', $admin_url);
         
         // Test get_admin_url con parámetros
         $tools_url = $this->config->get_admin_url('tools.php');
-        $this->assertStringContains('tools.php', $tools_url);
+        $this->assertContains('tools.php', $tools_url);
         
         // Test is_ajax_request (en contexto de test será false)
         $is_ajax = $this->config->is_ajax_request();

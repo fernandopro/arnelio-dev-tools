@@ -15,7 +15,86 @@ if (!defined('ABSPATH')) {
 class SystemInfoModule extends DevToolsModuleBase {
     
     /**
-     * Configuración del módulo
+     * Obtener información del módulo
+     */
+    public function getModuleInfo(): array {
+        return [
+            'name' => 'SystemInfo',
+            'version' => '3.0.0',
+            'description' => 'Información detallada del sistema WordPress, PHP y servidor',
+            'dependencies' => [],
+            'capabilities' => ['manage_options']
+        ];
+    }
+
+    /**
+     * Inicialización específica del módulo
+     */
+    protected function initializeModule(): bool {
+        // Registrar comandos AJAX específicos
+        $this->register_ajax_command('get_system_info', [$this, 'handle_get_system_info']);
+        $this->register_ajax_command('export_system_info', [$this, 'handle_export_system_info']);
+        $this->register_ajax_command('run_diagnostic', [$this, 'handle_run_diagnostic']);
+        
+        $this->log_internal('SystemInfoModule initialized');
+        return true;
+    }
+    
+    /**
+     * Registrar hooks de WordPress
+     */
+    public function registerHooks(): void {
+        // No se requieren hooks específicos para este módulo
+    }
+    
+    /**
+     * Registrar comandos AJAX
+     */
+    public function registerAjaxCommands(DevToolsAjaxHandler $ajaxHandler): void {
+        $ajaxHandler->registerCommand('get_system_info', [$this, 'handle_get_system_info']);
+        $ajaxHandler->registerCommand('export_system_info', [$this, 'handle_export_system_info']);
+        $ajaxHandler->registerCommand('run_diagnostic', [$this, 'handle_run_diagnostic']);
+    }
+    
+    /**
+     * Activación específica del módulo
+     */
+    protected function activateModule(): bool {
+        $this->log_external('SystemInfoModule activated');
+        return true;
+    }
+    
+    /**
+     * Desactivación específica del módulo
+     */
+    protected function deactivateModule(): bool {
+        $this->log_external('SystemInfoModule deactivated');
+        return true;
+    }
+    
+    /**
+     * Limpieza específica del módulo
+     */
+    protected function cleanupModule(): void {
+        $this->log_external('SystemInfoModule cleaned up');
+    }
+    
+    /**
+     * Validación específica de configuración
+     */
+    protected function validateModuleConfig(array $config): bool {
+        return true; // No hay validaciones específicas
+    }
+    
+    /**
+     * Campos de configuración requeridos
+     */
+    protected function getRequiredConfigFields(): array {
+        return []; // No hay campos requeridos
+    }
+
+    /**
+     * Configuración del módulo (para compatibilidad)
      */
     protected function get_module_config(): array {
         return [
@@ -36,17 +115,10 @@ class SystemInfoModule extends DevToolsModuleBase {
     }
 
     /**
-     * Inicialización del módulo
+     * Inicialización del módulo (mantenido para compatibilidad)
      */
     public function init(): void {
-        parent::init();
-        
-        // Registrar comandos AJAX específicos
-        $this->register_ajax_command('get_system_info', [$this, 'handle_get_system_info']);
-        $this->register_ajax_command('export_system_info', [$this, 'handle_export_system_info']);
-        $this->register_ajax_command('run_diagnostic', [$this, 'handle_run_diagnostic']);
-        
-        $this->log_internal('SystemInfoModule initialized');
+        // Delegado a initializeModule() via parent
     }
 
     /**
@@ -449,8 +521,32 @@ class SystemInfoModule extends DevToolsModuleBase {
             'stylesheet' => $current_theme->get_stylesheet(),
             'parent_theme' => $current_theme->parent() ? $current_theme->parent()->get('Name') : null,
             'screenshot' => $current_theme->get_screenshot(),
-            'supports' => get_theme_support()
+            'supports' => $this->get_theme_supports()
         ];
+    }
+
+    /**
+     * Obtiene las características soportadas por el tema actual
+     */
+    private function get_theme_supports(): array {
+        $features = [
+            'post-thumbnails',
+            'custom-logo',
+            'custom-background',
+            'custom-header',
+            'menus',
+            'widgets',
+            'title-tag',
+            'html5',
+            'post-formats'
+        ];
+        
+        $supports = [];
+        foreach ($features as $feature) {
+            $supports[$feature] = current_theme_supports($feature);
+        }
+        
+        return $supports;
     }
 
     /**

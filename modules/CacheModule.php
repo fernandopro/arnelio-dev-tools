@@ -15,7 +15,94 @@ if (!defined('ABSPATH')) {
 class CacheModule extends DevToolsModuleBase {
     
     /**
-     * Configuración del módulo
+     * Obtener información del módulo
+     */
+    public function getModuleInfo(): array {
+        return [
+            'name' => 'Cache',
+            'version' => '3.0.0',
+            'description' => 'Gestión avanzada de caché WordPress: transients, object cache, opciones',
+            'dependencies' => [],
+            'capabilities' => ['manage_options']
+        ];
+    }
+
+    /**
+     * Inicialización específica del módulo
+     */
+    protected function initializeModule(): bool {
+        // Registrar comandos AJAX específicos
+        $this->register_ajax_command('get_cache_stats', [$this, 'handle_get_cache_stats']);
+        $this->register_ajax_command('clear_cache', [$this, 'handle_clear_cache']);
+        $this->register_ajax_command('clear_transients', [$this, 'handle_clear_transients']);
+        $this->register_ajax_command('clear_object_cache', [$this, 'handle_clear_object_cache']);
+        $this->register_ajax_command('get_transients', [$this, 'handle_get_transients']);
+        $this->register_ajax_command('delete_transient', [$this, 'handle_delete_transient']);
+        $this->register_ajax_command('set_transient', [$this, 'handle_set_transient']);
+        
+        $this->log_internal('CacheModule initialized');
+        return true;
+    }
+    
+    /**
+     * Registrar hooks de WordPress
+     */
+    public function registerHooks(): void {
+        // No se requieren hooks específicos para este módulo
+    }
+    
+    /**
+     * Registrar comandos AJAX
+     */
+    public function registerAjaxCommands(DevToolsAjaxHandler $ajaxHandler): void {
+        $ajaxHandler->registerCommand('get_cache_stats', [$this, 'handle_get_cache_stats']);
+        $ajaxHandler->registerCommand('clear_cache', [$this, 'handle_clear_cache']);
+        $ajaxHandler->registerCommand('clear_transients', [$this, 'handle_clear_transients']);
+        $ajaxHandler->registerCommand('clear_object_cache', [$this, 'handle_clear_object_cache']);
+        $ajaxHandler->registerCommand('get_transients', [$this, 'handle_get_transients']);
+        $ajaxHandler->registerCommand('delete_transient', [$this, 'handle_delete_transient']);
+        $ajaxHandler->registerCommand('set_transient', [$this, 'handle_set_transient']);
+    }
+    
+    /**
+     * Activación específica del módulo
+     */
+    protected function activateModule(): bool {
+        $this->log_external('CacheModule activated');
+        return true;
+    }
+    
+    /**
+     * Desactivación específica del módulo
+     */
+    protected function deactivateModule(): bool {
+        $this->log_external('CacheModule deactivated');
+        return true;
+    }
+    
+    /**
+     * Limpieza específica del módulo
+     */
+    protected function cleanupModule(): void {
+        $this->log_external('CacheModule cleaned up');
+    }
+    
+    /**
+     * Validación específica de configuración
+     */
+    protected function validateModuleConfig(array $config): bool {
+        return true; // No hay validaciones específicas
+    }
+    
+    /**
+     * Campos de configuración requeridos
+     */
+    protected function getRequiredConfigFields(): array {
+        return []; // No hay campos requeridos
+    }
+
+    /**
+     * Configuración del módulo (para compatibilidad)
      */
     protected function get_module_config(): array {
         return [
@@ -40,21 +127,10 @@ class CacheModule extends DevToolsModuleBase {
     }
 
     /**
-     * Inicialización del módulo
+     * Inicialización del módulo (mantenido para compatibilidad)
      */
     public function init(): void {
-        parent::init();
-        
-        // Registrar comandos AJAX específicos
-        $this->register_ajax_command('get_cache_stats', [$this, 'handle_get_cache_stats']);
-        $this->register_ajax_command('clear_cache', [$this, 'handle_clear_cache']);
-        $this->register_ajax_command('clear_transients', [$this, 'handle_clear_transients']);
-        $this->register_ajax_command('clear_object_cache', [$this, 'handle_clear_object_cache']);
-        $this->register_ajax_command('get_transients', [$this, 'handle_get_transients']);
-        $this->register_ajax_command('delete_transient', [$this, 'handle_delete_transient']);
-        $this->register_ajax_command('set_transient', [$this, 'handle_set_transient']);
-        
-        $this->log_internal('CacheModule initialized');
+        // Delegado a initializeModule() via parent
     }
 
     /**
@@ -564,13 +640,16 @@ class CacheModule extends DevToolsModuleBase {
         $status = 'Unknown';
         $info = [];
         
-        if (function_exists('wp_cache_get_group_names')) {
-            $status = 'Active';
-            $info['groups'] = wp_cache_get_group_names();
-        } elseif (is_object($wp_object_cache)) {
+        // Verificar si hay object cache activo
+        if (is_object($wp_object_cache)) {
             $status = 'Internal';
             $info['cache_hits'] = $wp_object_cache->cache_hits ?? 0;
             $info['cache_misses'] = $wp_object_cache->cache_misses ?? 0;
+            
+            // Detectar sistemas de cache externos
+            if (function_exists('wp_cache_flush') && wp_cache_flush() !== false) {
+                $status = 'External';
+            }
         }
 
         return [

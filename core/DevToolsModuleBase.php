@@ -311,6 +311,28 @@ abstract class DevToolsModuleBase implements DevToolsModuleInterface {
         $this->module_config[$key] = $value;
     }
     
+    /**
+     * Registrar comando AJAX para el módulo
+     */
+    protected function register_ajax_command(string $action, callable $callback): void {
+        $ajax_handler = DevToolsAjaxHandler::getInstance();
+        $ajax_handler->registerCommand($action, $callback);
+    }
+    
+    /**
+     * Log interno del módulo
+     */
+    protected function log_internal(string $message, $data = null): void {
+        $this->logger->logInternal($message, $data);
+    }
+    
+    /**
+     * Log externo del módulo
+     */
+    protected function log_external(string $message, string $type = 'info'): void {
+        $this->logger->logExternal($message, $type);
+    }
+    
     // ========================================
     // MÉTODOS ABSTRACTOS - DEBEN SER IMPLEMENTADOS POR MÓDULOS ESPECÍFICOS
     // ========================================
