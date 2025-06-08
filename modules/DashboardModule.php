@@ -175,160 +175,261 @@ class DashboardModule extends DevToolsModuleBase {
         $recent_activity = $this->getRecentActivity();
         
         ?>
-        <div class="wrap">
-            <h1 class="wp-heading-inline">
-                <i class="dashicons dashicons-admin-tools"></i>
-                Dev Tools Dashboard
-            </h1>
+        <!-- Dashboard Content with Dark Theme -->
+        <div class="dev-tools-dashboard">
+            <!-- Sistema Status Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-dark border-success text-light">
+                        <div class="card-body text-center">
+                            <h5 class="card-title text-success">
+                                <i class="bi bi-check-circle"></i> Sistema
+                            </h5>
+                            <p class="card-text display-6 text-success">✓</p>
+                            <small class="text-light-emphasis">Operativo</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="card bg-dark border-info text-light">
+                        <div class="card-body text-center">
+                            <h5 class="card-title text-info">
+                                <i class="bi bi-puzzle"></i> Módulos
+                            </h5>
+                            <p class="card-text display-6 text-info"><?php echo count($modules_status['active']); ?></p>
+                            <small class="text-light-emphasis">Activos</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="card bg-dark border-warning text-light">
+                        <div class="card-body text-center">
+                            <h5 class="card-title text-warning">
+                                <i class="bi bi-memory"></i> Memoria
+                            </h5>
+                            <p class="card-text display-6 text-warning"><?php echo $system_info['memory']['current']; ?></p>
+                            <small class="text-light-emphasis">Uso actual</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="card bg-dark border-primary text-light">
+                        <div class="card-body text-center">
+                            <h5 class="card-title text-primary">
+                                <i class="bi bi-wordpress"></i> WordPress
+                            </h5>
+                            <p class="card-text display-6 text-primary"><?php echo $system_info['wp_version']; ?></p>
+                            <small class="text-light-emphasis">Versión</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
-            <div class="container-fluid mt-4">
-                <!-- Sistema Status Cards -->
-                <div class="row mb-4">
-                    <div class="col-md-3">
-                        <div class="card border-success">
-                            <div class="card-body text-center">
-                                <h5 class="card-title text-success">Sistema</h5>
-                                <p class="card-text display-6">✓</p>
-                                <small class="text-muted">Operativo</small>
-                            </div>
+            <!-- Actions Panel -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card bg-dark text-light border-secondary">
+                        <div class="card-header bg-secondary border-secondary">
+                            <h5 class="mb-0 text-light">
+                                <i class="bi bi-lightning"></i> Acciones Rápidas
+                            </h5>
                         </div>
-                    </div>
-                    
-                    <div class="col-md-3">
-                        <div class="card border-info">
-                            <div class="card-body text-center">
-                                <h5 class="card-title text-info">Módulos</h5>
-                                <p class="card-text display-6"><?php echo count($modules_status['active']); ?></p>
-                                <small class="text-muted">Activos</small>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-3">
-                        <div class="card border-warning">
-                            <div class="card-body text-center">
-                                <h5 class="card-title text-warning">Memoria</h5>
-                                <p class="card-text display-6"><?php echo $system_info['memory']['current']; ?></p>
-                                <small class="text-muted">Uso actual</small>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-3">
-                        <div class="card border-primary">
-                            <div class="card-body text-center">
-                                <h5 class="card-title text-primary">WordPress</h5>
-                                <p class="card-text display-6"><?php echo $system_info['wp_version']; ?></p>
-                                <small class="text-muted">Versión</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Actions Panel -->
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5 class="mb-0">Acciones Rápidas</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="btn-group" role="group">
-                                    <button type="button" class="btn btn-outline-primary" id="btn-test-system">
-                                        <i class="dashicons dashicons-yes-alt"></i> Test Sistema
-                                    </button>
-                                    <button type="button" class="btn btn-outline-warning" id="btn-clear-cache">
-                                        <i class="dashicons dashicons-update"></i> Limpiar Cache
-                                    </button>
-                                    <button type="button" class="btn btn-outline-info" id="btn-refresh-data">
-                                        <i class="dashicons dashicons-update-alt"></i> Actualizar Datos
-                                    </button>
-                                    <button type="button" class="btn btn-outline-secondary" id="btn-export-logs">
-                                        <i class="dashicons dashicons-download"></i> Exportar Logs
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Main Content Row -->
-                <div class="row">
-                    <!-- Modules Status -->
-                    <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5 class="mb-0">Estado de Módulos</h5>
-                            </div>
-                            <div class="card-body">
-                                <div id="modules-status">
-                                    <?php $this->renderModulesStatus($modules_status); ?>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- System Information -->
-                    <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5 class="mb-0">Información del Sistema</h5>
-                            </div>
-                            <div class="card-body">
-                                <dl class="row">
-                                    <dt class="col-sm-4">Plugin Host:</dt>
-                                    <dd class="col-sm-8"><?php echo esc_html($system_info['plugin_host']); ?></dd>
-                                    
-                                    <dt class="col-sm-4">Dev-Tools:</dt>
-                                    <dd class="col-sm-8">v<?php echo esc_html($system_info['dev_tools_version']); ?></dd>
-                                    
-                                    <dt class="col-sm-4">WordPress:</dt>
-                                    <dd class="col-sm-8">v<?php echo esc_html($system_info['wp_version']); ?></dd>
-                                    
-                                    <dt class="col-sm-4">PHP:</dt>
-                                    <dd class="col-sm-8">v<?php echo esc_html($system_info['php_version']); ?></dd>
-                                    
-                                    <dt class="col-sm-4">Memoria Pico:</dt>
-                                    <dd class="col-sm-8"><?php echo esc_html($system_info['memory']['peak']); ?></dd>
-                                    
-                                    <dt class="col-sm-4">Debug:</dt>
-                                    <dd class="col-sm-8">
-                                        <span class="badge bg-<?php echo $system_info['debug'] ? 'warning' : 'success'; ?>">
-                                            <?php echo $system_info['debug'] ? 'Activado' : 'Desactivado'; ?>
-                                        </span>
-                                    </dd>
-                                </dl>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Recent Activity -->
-                <div class="row mt-4">
-                    <div class="col-12">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5 class="mb-0">Actividad Reciente</h5>
-                            </div>
-                            <div class="card-body">
-                                <div id="recent-activity">
-                                    <?php $this->renderRecentActivity($recent_activity); ?>
-                                </div>
+                        <div class="card-body">
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-outline-primary" id="btn-test-system">
+                                    <i class="bi bi-check-all"></i> Test Sistema
+                                </button>
+                                <button type="button" class="btn btn-outline-warning" id="btn-clear-cache">
+                                    <i class="bi bi-arrow-clockwise"></i> Limpiar Cache
+                                </button>
+                                <button type="button" class="btn btn-outline-info" id="btn-refresh-data">
+                                    <i class="bi bi-arrow-repeat"></i> Actualizar Datos
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" id="btn-export-logs">
+                                    <i class="bi bi-download"></i> Exportar Logs
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
             
-            <!-- Alert Container -->
-            <div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1050;"></div>
+            <!-- Main Content Row -->
+            <div class="row">
+                <!-- Modules Status -->
+                <div class="col-md-6">
+                    <div class="card bg-dark text-light border-secondary">
+                        <div class="card-header bg-secondary border-secondary">
+                            <h5 class="mb-0 text-light">
+                                <i class="bi bi-puzzle"></i> Estado de Módulos
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="modules-status">
+                                <?php $this->renderModulesStatus($modules_status); ?>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- System Information -->
+                <div class="col-md-6">
+                    <div class="card bg-dark text-light border-secondary">
+                        <div class="card-header bg-secondary border-secondary">
+                            <h5 class="mb-0 text-light">
+                                <i class="bi bi-info-circle"></i> Información del Sistema
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <dl class="row">
+                                <dt class="col-sm-4 text-light-emphasis">Plugin Host:</dt>
+                                <dd class="col-sm-8 text-light"><?php echo esc_html($system_info['plugin_host']); ?></dd>
+                                
+                                <dt class="col-sm-4 text-light-emphasis">Dev-Tools:</dt>
+                                <dd class="col-sm-8 text-light">v<?php echo esc_html($system_info['dev_tools_version']); ?></dd>
+                                
+                                <dt class="col-sm-4 text-light-emphasis">WordPress:</dt>
+                                <dd class="col-sm-8 text-light">v<?php echo esc_html($system_info['wp_version']); ?></dd>
+                                
+                                <dt class="col-sm-4 text-light-emphasis">PHP:</dt>
+                                <dd class="col-sm-8 text-light">v<?php echo esc_html($system_info['php_version']); ?></dd>
+                                
+                                <dt class="col-sm-4 text-light-emphasis">Memoria Pico:</dt>
+                                <dd class="col-sm-8 text-light"><?php echo esc_html($system_info['memory']['peak']); ?></dd>
+                                
+                                <dt class="col-sm-4 text-light-emphasis">Debug:</dt>
+                                <dd class="col-sm-8">
+                                    <span class="badge bg-<?php echo $system_info['debug'] ? 'warning' : 'success'; ?>">
+                                        <?php echo $system_info['debug'] ? 'Desactivado' : 'Activado'; ?>
+                                    </span>
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Activity -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card bg-dark text-light border-secondary">
+                        <div class="card-header bg-secondary border-secondary">
+                            <h5 class="mb-0 text-light">
+                                <i class="bi bi-clock-history"></i> Actividad Reciente
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="recent-activity">
+                                <?php $this->renderRecentActivity($recent_activity); ?>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
+        
+        <!-- Alert Container -->
+        <div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1050;"></div>
+        
+        <style>
+        /* Dashboard Dark Theme Enhancements */
+        .dev-tools-dashboard .card {
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .dev-tools-dashboard .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        }
+        
+        .dev-tools-dashboard .card-header {
+            border-bottom: 1px solid var(--dev-tools-border);
+            border-radius: 12px 12px 0 0 !important;
+        }
+        
+        .dev-tools-dashboard .list-group-item-dark {
+            background-color: var(--dev-tools-bg-secondary);
+            color: var(--dev-tools-text-primary);
+        }
+        
+        .dev-tools-dashboard .list-group-item-dark:hover {
+            background-color: var(--dev-tools-bg-accent);
+        }
+        
+        .dev-tools-dashboard .btn-outline-primary:hover {
+            background-color: var(--dev-tools-primary);
+            border-color: var(--dev-tools-primary);
+        }
+        
+        .dev-tools-dashboard .timeline-item {
+            border-left: 3px solid var(--dev-tools-border);
+            padding-left: 1rem;
+            margin-left: 0.5rem;
+        }
+        
+        .dev-tools-dashboard .text-light-emphasis {
+            color: var(--dev-tools-text-secondary) !important;
+        }
+        
+        .dev-tools-dashboard .display-6 {
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        </style>
         
         <script>
         // JavaScript específico del dashboard
         document.addEventListener('DOMContentLoaded', function() {
-            const dashboard = new DevToolsDashboard();
-            dashboard.init();
+            console.log('🎨 Dev-Tools Dashboard Dark Theme cargado');
+            
+            // Inicializar funcionalidad del dashboard
+            if (typeof DevToolsDashboard !== 'undefined') {
+                const dashboard = new DevToolsDashboard();
+                dashboard.init();
+            }
+            
+            // Funcionalidad de botones de acción rápida
+            const initQuickActions = () => {
+                const testSystemBtn = document.getElementById('btn-test-system');
+                const clearCacheBtn = document.getElementById('btn-clear-cache');
+                const refreshDataBtn = document.getElementById('btn-refresh-data');
+                const exportLogsBtn = document.getElementById('btn-export-logs');
+                
+                if (testSystemBtn) {
+                    testSystemBtn.addEventListener('click', () => {
+                        console.log('🔧 Test Sistema ejecutándose...');
+                        // TODO: Implementar test del sistema
+                    });
+                }
+                
+                if (clearCacheBtn) {
+                    clearCacheBtn.addEventListener('click', () => {
+                        console.log('🗑️ Limpiando cache...');
+                        // TODO: Implementar limpieza de cache
+                    });
+                }
+                
+                if (refreshDataBtn) {
+                    refreshDataBtn.addEventListener('click', () => {
+                        console.log('🔄 Actualizando datos...');
+                        location.reload();
+                    });
+                }
+                
+                if (exportLogsBtn) {
+                    exportLogsBtn.addEventListener('click', () => {
+                        console.log('📥 Exportando logs...');
+                        // TODO: Implementar exportación de logs
+                    });
+                }
+            };
+            
+            initQuickActions();
         });
         </script>
         <?php
@@ -341,10 +442,10 @@ class DashboardModule extends DevToolsModuleBase {
         ?>
         <div class="list-group">
             <?php foreach ($modules_status['all'] as $name => $module): ?>
-            <div class="list-group-item d-flex justify-content-between align-items-center">
+            <div class="list-group-item list-group-item-dark d-flex justify-content-between align-items-center border-secondary">
                 <div>
-                    <h6 class="mb-1"><?php echo esc_html($module['info']['name'] ?? $name); ?></h6>
-                    <p class="mb-1 text-muted small"><?php echo esc_html($module['info']['description'] ?? ''); ?></p>
+                    <h6 class="mb-1 text-light"><?php echo esc_html($module['info']['name'] ?? $name); ?></h6>
+                    <p class="mb-1 text-light-emphasis small"><?php echo esc_html($module['info']['description'] ?? ''); ?></p>
                 </div>
                 <div>
                     <span class="badge bg-<?php echo $module['active'] ? 'success' : 'secondary'; ?> me-2">
@@ -366,7 +467,7 @@ class DashboardModule extends DevToolsModuleBase {
      */
     private function renderRecentActivity(array $activity): void {
         if (empty($activity)) {
-            echo '<p class="text-muted">No hay actividad reciente.</p>';
+            echo '<p class="text-light-emphasis">No hay actividad reciente.</p>';
             return;
         }
         
@@ -381,8 +482,8 @@ class DashboardModule extends DevToolsModuleBase {
                         </span>
                     </div>
                     <div class="flex-grow-1 ms-3">
-                        <p class="mb-1"><?php echo esc_html($item['message']); ?></p>
-                        <small class="text-muted"><?php echo esc_html($item['time']); ?></small>
+                        <p class="mb-1 text-light"><?php echo esc_html($item['message']); ?></p>
+                        <small class="text-light-emphasis"><?php echo esc_html($item['time']); ?></small>
                     </div>
                 </div>
             </div>

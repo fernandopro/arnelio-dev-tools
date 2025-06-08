@@ -100,14 +100,80 @@ if ($module_manager && $module_manager->isInitialized()) {
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="es" data-bs-theme="dark">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo esc_html($config->get('dev_tools.page_title')); ?></title>
-</head>
-<body class="dev-tools-body">
+<!-- CSS INMEDIATO PARA FORZAR TEMA OSCURO SOBRE WORDPRESS ADMIN -->
+<style>
+/* Forzar tema oscuro para Dev-Tools */
+html, body, #wpwrap, #wpcontent, #wpbody, #wpbody-content, .wrap {
+    background: #1a1d23 !important;
+    background-color: #1a1d23 !important;
+    color: #ffffff !important;
+}
+
+/* Indicador visual de tema activo */
+body.dev-tools-active::before {
+    content: "🌙 Dev-Tools Dark";
+    position: fixed;
+    top: 32px;
+    right: 20px;
+    z-index: 999999;
+    font-size: 12px;
+    color: #a0aec0;
+    opacity: 0.7;
+    pointer-events: none;
+}
+</style>
+
+<script>
+// FORZAR TEMA OSCURO INMEDIATAMENTE AL CARGAR
+(function() {
+    'use strict';
+    
+    function applyDevToolsDarkTheme() {
+        // Elementos principales a modificar
+        const selectors = [
+            'html', 'body', '#wpwrap', '#wpcontent', 
+            '#wpbody', '#wpbody-content', '.wrap'
+        ];
+        
+        selectors.forEach(selector => {
+            const elements = document.querySelectorAll(selector);
+            elements.forEach(el => {
+                if (el) {
+                    el.style.setProperty('background', '#1a1d23', 'important');
+                    el.style.setProperty('background-color', '#1a1d23', 'important');
+                    el.style.setProperty('color', '#ffffff', 'important');
+                }
+            });
+        });
+        
+        // Marcar como activo
+        document.documentElement.classList.add('dev-tools-dark-theme');
+        document.body.classList.add('dev-tools-active');
+        
+        console.log('🌙 Dev-Tools: Tema oscuro aplicado');
+    }
+    
+    // Aplicar inmediatamente
+    applyDevToolsDarkTheme();
+    
+    // Aplicar cuando el DOM esté listo
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', applyDevToolsDarkTheme);
+    }
+    
+    // Re-aplicar después de cambios dinámicos (AJAX de WordPress)
+    const observer = new MutationObserver(() => {
+        applyDevToolsDarkTheme();
+    });
+    
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['style', 'class']
+    });
+})();
+</script>
 
 <div class="wrap dev-tools-wrap">
     <div id="dev-tools-panel" class="dev-tools-panel-v3">
@@ -329,7 +395,7 @@ if ($module_manager && $module_manager->isInitialized()) {
     </div>
 </div>
 
-<!-- Estilos personalizados para tema oscuro -->
+<!-- Estilos personalizados para tema oscuro - FORZAR SOBRE WORDPRESS ADMIN -->
 <style>
 :root {
     --dev-tools-primary: #0d6efd;
@@ -349,23 +415,73 @@ if ($module_manager && $module_manager->isInitialized()) {
     --dev-tools-border: #495057;
 }
 
+/* FORZAR TEMA OSCURO SOBRE WORDPRESS ADMIN */
+html, body {
+    background: var(--dev-tools-bg-dark) !important;
+    color: var(--dev-tools-text-primary) !important;
+}
+
+#wpwrap, #wpcontent, #wpbody, #wpbody-content {
+    background: var(--dev-tools-bg-dark) !important;
+    color: var(--dev-tools-text-primary) !important;
+}
+
+.wrap {
+    background: var(--dev-tools-bg-dark) !important;
+    color: var(--dev-tools-text-primary) !important;
+}
+
 .dev-tools-body {
-    background: var(--dev-tools-bg-dark);
-    color: var(--dev-tools-text-primary);
+    background: var(--dev-tools-bg-dark) !important;
+    color: var(--dev-tools-text-primary) !important;
     min-height: 100vh;
 }
 
 .dev-tools-wrap {
-    margin: 0;
-    padding: 0;
-    max-width: none;
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: none !important;
+    background: var(--dev-tools-bg-dark) !important;
 }
 
 .dev-tools-panel-v3 {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    background: var(--dev-tools-bg-dark);
+    background: var(--dev-tools-bg-dark) !important;
+}
+
+/* ELIMINAR COMPLETAMENTE EL FONDO BLANCO DE WORDPRESS */
+#wpadminbar, #adminmenumain, #adminmenuback, #adminmenuwrap {
+    background: var(--dev-tools-bg-secondary) !important;
+}
+
+.wp-admin select, .wp-admin input[type="text"], .wp-admin input[type="email"], 
+.wp-admin input[type="number"], .wp-admin input[type="password"], 
+.wp-admin input[type="search"], .wp-admin input[type="tel"], 
+.wp-admin input[type="url"], .wp-admin textarea {
+    background-color: var(--dev-tools-bg-secondary) !important;
+    color: var(--dev-tools-text-primary) !important;
+    border-color: var(--dev-tools-border) !important;
+}
+
+/* Corregir WordPress Admin notices para tema oscuro */
+.notice, .error, .updated {
+    background: var(--dev-tools-bg-secondary) !important;
+    border-left-color: var(--dev-tools-primary) !important;
+    color: var(--dev-tools-text-primary) !important;
+}
+
+.notice-success {
+    border-left-color: var(--dev-tools-success) !important;
+}
+
+.notice-error {
+    border-left-color: var(--dev-tools-danger) !important;
+}
+
+.notice-warning {
+    border-left-color: var(--dev-tools-warning) !important;
 }
 
 /* Header */
@@ -567,13 +683,109 @@ if ($module_manager && $module_manager->isInitialized()) {
 
 /* Bootstrap dark theme adjustments */
 [data-bs-theme="dark"] {
-    --bs-body-bg: var(--dev-tools-bg-dark);
-    --bs-body-color: var(--dev-tools-text-primary);
+    --bs-body-bg: var(--dev-tools-bg-dark) !important;
+    --bs-body-color: var(--dev-tools-text-primary) !important;
+}
+
+/* FORZAR TEMA OSCURO EN TODOS LOS ELEMENTOS DE WORDPRESS */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--dev-tools-border) var(--dev-tools-bg-dark);
+}
+
+*::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+    background: var(--dev-tools-bg-dark);
+}
+
+*::-webkit-scrollbar-thumb {
+    background: var(--dev-tools-border);
+    border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background: var(--dev-tools-secondary);
+}
+
+/* Clase específica para asegurar tema oscuro */
+.dev-tools-active {
+    background: var(--dev-tools-bg-dark) !important;
+    color: var(--dev-tools-text-primary) !important;
+}
+
+.dev-tools-dark-theme body,
+.dev-tools-dark-theme #wpwrap,
+.dev-tools-dark-theme #wpcontent,
+.dev-tools-dark-theme #wpbody,
+.dev-tools-dark-theme #wpbody-content,
+.dev-tools-dark-theme .wrap {
+    background: var(--dev-tools-bg-dark) !important;
+    background-color: var(--dev-tools-bg-dark) !important;
+    color: var(--dev-tools-text-primary) !important;
+}
+
+/* Asegurar que ningún elemento padre tenga fondo blanco */
+.dev-tools-dark-theme * {
+    box-shadow: none !important;
+}
+
+.dev-tools-dark-theme .wrap::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: var(--dev-tools-bg-dark);
+    z-index: -1;
+    pointer-events: none;
 }
 </style>
 
-<!-- JavaScript para funcionalidad adicional -->
+<!-- JavaScript para funcionalidad adicional y forzar tema oscuro -->
 <script>
+// FORZAR TEMA OSCURO INMEDIATAMENTE
+(function() {
+    'use strict';
+    
+    // Aplicar tema oscuro a elementos de WordPress Admin inmediatamente
+    function forceDevToolsDarkTheme() {
+        const elementsToStyle = [
+            'html', 'body', '#wpwrap', '#wpcontent', '#wpbody', '#wpbody-content', '.wrap'
+        ];
+        
+        elementsToStyle.forEach(selector => {
+            const elements = document.querySelectorAll(selector);
+            elements.forEach(el => {
+                if (el) {
+                    el.style.setProperty('background', '#1a1d23', 'important');
+                    el.style.setProperty('background-color', '#1a1d23', 'important');
+                    el.style.setProperty('color', '#ffffff', 'important');
+                }
+            });
+        });
+        
+        // Añadir clase para identificar que Dev-Tools está activo
+        document.documentElement.classList.add('dev-tools-dark-theme');
+        document.body.classList.add('dev-tools-active');
+    }
+    
+    // Ejecutar inmediatamente
+    forceDevToolsDarkTheme();
+    
+    // Ejecutar cuando el DOM esté listo
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', forceDevToolsDarkTheme);
+    }
+    
+    // Ejecutar cuando todo esté cargado
+    window.addEventListener('load', forceDevToolsDarkTheme);
+})();
+
 document.addEventListener('DOMContentLoaded', function() {
     // Inicializar tooltips si Bootstrap está disponible
     if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
@@ -596,7 +808,4 @@ document.addEventListener('DOMContentLoaded', function() {
     <?php endif; ?>
 });
 </script>
-
-</body>
-</html>
 

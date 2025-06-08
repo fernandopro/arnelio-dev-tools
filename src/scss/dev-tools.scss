@@ -8,6 +8,102 @@
 // Importar componentes específicos
 @import "components/debug";
 
+// ========================================
+// WORDPRESS ADMIN DARK THEME OVERRIDES
+// ========================================
+// Forzar tema oscuro en todos los elementos del admin de WordPress
+// cuando estamos en páginas de Dev-Tools
+
+// Elementos principales del admin
+html, body, #wpwrap, #wpcontent, #wpbody, #wpbody-content, .wrap {
+  background: #1a1d23 !important;
+  background-color: #1a1d23 !important;
+  color: #ffffff !important;
+}
+
+// Contenido específico
+#wpcontent {
+  background-color: #1a1d23 !important;
+}
+
+// Admin footer
+#wpfooter {
+  background-color: #1a1d23 !important;
+  color: #a0aec0 !important;
+}
+
+// Títulos y textos del admin
+.wrap h1, .wrap h2, .wrap h3, .wrap h4, .wrap h5, .wrap h6 {
+  color: #ffffff !important;
+}
+
+// Tablas del admin
+.wp-list-table, .widefat {
+  background-color: #2d3748 !important;
+  color: #ffffff !important;
+  
+  th, td {
+    background-color: #2d3748 !important;
+    color: #ffffff !important;
+    border-color: #4a5568 !important;
+  }
+  
+  .striped > tbody > :nth-child(odd) {
+    background-color: #1a202c !important;
+  }
+}
+
+// Formularios del admin
+.form-table th, .form-table td {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+// Notificaciones del admin
+.notice, .update-nag {
+  background-color: #2d3748 !important;
+  border-left-color: #4a5568 !important;
+  color: #ffffff !important;
+  
+  &.notice-success {
+    border-left-color: #198754 !important;
+  }
+  
+  &.notice-warning {
+    border-left-color: #ffc107 !important;
+  }
+  
+  &.notice-error {
+    border-left-color: #dc3545 !important;
+  }
+}
+
+// Metaboxes
+.postbox, .meta-box-sortables .postbox {
+  background-color: #2d3748 !important;
+  border-color: #4a5568 !important;
+  color: #ffffff !important;
+  
+  .postbox-header h2, .hndle {
+    background-color: #1a202c !important;
+    color: #ffffff !important;
+  }
+}
+
+// Clase específica para marcar páginas de Dev-Tools
+.dev-tools-active {
+  // Indicador visual de que el tema oscuro está activo
+  &::before {
+    content: "🌙";
+    position: fixed;
+    top: 32px;
+    right: 20px;
+    z-index: 999999;
+    font-size: 16px;
+    opacity: 0.5;
+  }
+}
+
 // Variables personalizadas para dev-tools - Dark Theme
 :root {
   // Colores primarios dark
