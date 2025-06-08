@@ -273,8 +273,3 @@ $available_simulators = get_available_simulators($simulators_dir);
     </div>
 </div>
 
-<?php
-// El JavaScript específico para simuladores se carga automáticamente 
-// mediante wp_enqueue_script en loader.php como 'tarokina-dev-tools-simulators-js'
-// Esto sigue las mejores prácticas de WordPress
-?>

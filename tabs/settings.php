@@ -377,9 +377,3 @@ $current_settings = get_option('tarokina_dev_tools_settings', [
         </div>
     </div>
 </div>
-
-<?php
-// El JavaScript específico para settings se carga automáticamente 
-// mediante wp_enqueue_script en loader.php como 'tarokina-dev-tools-settings-js'
-// Esto sigue las mejores prácticas de WordPress
-?>

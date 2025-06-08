@@ -285,8 +285,4 @@
     </div>
 </div>
 
-<?php
-// El JavaScript específico para maintenance se carga automáticamente 
-// mediante wp_enqueue_script en loader.php como 'tarokina-dev-tools-maintenance-js'
-// Esto sigue las mejores prácticas de WordPress
-?>
+

@@ -192,22 +192,22 @@ $stats = [
             </div>
             <div class="card-body">
                 <div class="list-group list-group-flush">
-                    <a href="<?php echo dev_tools_get_admin_url('tools.php?page=tarokina-dev-tools&tab=tests'); ?>" 
+                    <a href="<?php echo dev_tools_get_admin_url('tools.php?page=' . $config->get('dev_tools.menu_slug') . '&tab=tests'); ?>" 
                        class="list-group-item list-group-item-action">
                         <i class="bi bi-flask text-primary"></i>
                         Gestión de Tests
                     </a>
-                    <a href="<?php echo dev_tools_get_admin_url('tools.php?page=tarokina-dev-tools&tab=simulators'); ?>" 
+                    <a href="<?php echo dev_tools_get_admin_url('tools.php?page=' . $config->get('dev_tools.menu_slug') . '&tab=simulators'); ?>" 
                        class="list-group-item list-group-item-action">
                         <i class="bi bi-cpu text-warning"></i>
                         Simuladores
                     </a>
-                    <a href="<?php echo dev_tools_get_admin_url('tools.php?page=tarokina-dev-tools&tab=docs'); ?>" 
+                    <a href="<?php echo dev_tools_get_admin_url('tools.php?page=' . $config->get('dev_tools.menu_slug') . '&tab=docs'); ?>" 
                        class="list-group-item list-group-item-action">
                         <i class="bi bi-book text-success"></i>
                         Documentación
                     </a>
-                    <a href="<?php echo dev_tools_get_admin_url('tools.php?page=tarokina-dev-tools&tab=maintenance'); ?>" 
+                    <a href="<?php echo dev_tools_get_admin_url('tools.php?page=' . $config->get('dev_tools.menu_slug') . '&tab=maintenance'); ?>" 
                        class="list-group-item list-group-item-action">
                         <i class="bi bi-tools text-info"></i>
                         Mantenimiento
