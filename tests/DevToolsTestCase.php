@@ -1,47 +1,21 @@
 <?php
-
 /**
- * Clase base de test HÍBRIDA con protección anti-deadlock INTELIGENTE
+ * Clase Base de Testing - Dev-Tools Arquitectura 3.0
  * 
- * FILOSOFÍA HÍBRIDA:
- * ✅ Mantiene 100% compatibilidad con WP_UnitTestCase oficial de WordPress
- * ✅ Añade protecciones anti-deadlock SOLO cuando es necesario  
- * ✅ Detecta automáticamente contextos problemáticos vs. seguros
- * ✅ Permite override manual del comportamiento en tests específicos
- * ✅ No afecta futuras actualizaciones de WordPress PHPUnit
- * ✅ Fácil migración de vuelta a WP_UnitTestCase estándar
+ * Clase base PLUGIN-AGNÓSTICA para tests de Dev-Tools.
+ * Extiende WP_UnitTestCase con funcionalidades específicas para la Arquitectura 3.0.
  * 
- * CONTROL GRANULAR:
- * - Variables de entorno: DEV_TOOLS_FORCE_ANTI_DEADLOCK=1/0
- * - Constantes PHP: DEV_TOOLS_DISABLE_ANTI_DEADLOCK=true/false (definida en bootstrap.php)
- * - Constantes PHP: DEV_TOOLS_FORCE_ANTI_DEADLOCK=true/false (definida en bootstrap.php)
- * - Métodos de instancia: useStandardWordPressBehavior() / useAntiDeadlockBehavior()
+ * Características:
+ * - 100% independiente del plugin host
+ * - Helpers para testing de módulos
+ * - Gestión automática de estado de dev-tools
+ * - Limpieza automática entre tests
+ * - Utilities para AJAX testing
+ * - Mock factories para módulos
  * 
- * EJEMPLOS DE USO:
- * 
- * // Test estándar (automático)
- * class MyTest extends DevToolsTestCase {
- *     public function testSomething() { ... }
- * }
- * 
- * // Forzar comportamiento WordPress estándar
- * class MyStandardTest extends DevToolsTestCase {
- *     protected function setUp(): void {
- *         $this->useStandardWordPressBehavior();
- *         parent::setUp();
- *     }
- * }
- * 
- * // Forzar protecciones anti-deadlock
- * class MyProblematicTest extends DevToolsTestCase {
- *     protected function setUp(): void {
- *         $this->useAntiDeadlockBehavior();
- *         parent::setUp();
- *     }
- * }
- * 
- * @package TarokinaPro\DevTools\Tests
- * @extends WP_UnitTestCase (framework oficial de WordPress)
+ * @package DevTools\Tests
+ * @since Arquitectura 3.0
+ * @author Dev-Tools Team
  */
 
 if (!class_exists('DevToolsTestCase')) {
@@ -49,592 +23,314 @@ if (!class_exists('DevToolsTestCase')) {
     class DevToolsTestCase extends WP_UnitTestCase 
     {
         // =====================================================================
-        // PROPIEDADES DE CONFIGURACIÓN
+        // PROPIEDADES DE TESTING
         // =====================================================================
         
-        /** @var bool|null Cache de decisión para protecciones anti-deadlock */
-        private static $use_anti_deadlock = null;
+        /** @var DevToolsModuleManager|null Cache del module manager */
+        protected static $module_manager = null;
         
-        /** @var bool|null Override temporal para tests específicos */
-        private $instance_override = null;
+        /** @var array Estado original de módulos antes del test */
+        protected $original_modules_state = [];
         
-        /** @var array Cache de configuración de base de datos */
-        private static $db_config_cache = [];
+        /** @var bool Si dev-tools está disponible en este test */
+        protected $dev_tools_available = false;
         
         // =====================================================================
-        // MÉTODOS PRINCIPALES DE INTERCEPTACIÓN
+        // MÉTODOS DE SETUP Y TEARDOWN
         // =====================================================================
         
         /**
-         * Override CONDICIONAL de tearDownAfterClass
-         * Decide dinámicamente entre comportamiento estándar vs. anti-deadlock
-         */
-        public static function tearDownAfterClass(): void 
-        {
-            if (self::shouldUseAntiDeadlock()) {
-                // MODO SEGURO: Usar protecciones anti-deadlock
-                self::safeDeleteAllData();
-                
-                // Ejecutar resto de limpieza estándar (sin _delete_all_data)
-                self::flush_cache();
-                
-                // Limpiar transients específicos
-                if (function_exists('delete_transient')) {
-                    delete_transient('doing_cron');
-                }
-                
-                // Restaurar configuración de BD original
-                self::restoreDbConfiguration();
-                
-            } else {
-                // MODO ESTÁNDAR: Comportamiento 100% oficial de WordPress
-                parent::tearDownAfterClass();
-            }
-        }
-        
-        /**
-         * Setup con protecciones CONDICIONALES
-         * Solo aplica configuraciones anti-deadlock cuando es necesario
+         * Setup que se ejecuta antes de cada test
          */
         protected function setUp(): void 
         {
             parent::setUp();
             
-            // Aplicar configuraciones anti-deadlock solo si es necesario
-            if ($this->shouldUseAntiDeadlockForInstance()) {
-                $this->configureAntiDeadlockDatabase();
+            // Verificar disponibilidad de dev-tools
+            $this->dev_tools_available = $this->checkDevToolsAvailability();
+            
+            if ($this->dev_tools_available) {
+                // Guardar estado original de módulos
+                $this->original_modules_state = $this->getModulesState();
+                
+                // Limpiar logs de dev-tools
+                $this->clearDevToolsLogs();
             }
         }
         
         /**
-         * TearDown con limpieza CONDICIONAL
+         * Teardown que se ejecuta después de cada test
          */
         protected function tearDown(): void 
         {
-            if ($this->shouldUseAntiDeadlockForInstance()) {
-                // Limpieza suave sin operaciones que causen deadlock
-                $this->cleanupTestDataSafely();
+            if ($this->dev_tools_available) {
+                // Restaurar estado original de módulos
+                $this->restoreModulesState();
+                
+                // Limpiar datos temporales de dev-tools
+                $this->cleanupDevToolsData();
             }
             
             parent::tearDown();
         }
         
         // =====================================================================
-        // MÉTODOS DE CONTROL MANUAL
+        // HELPERS PARA DEV-TOOLS
         // =====================================================================
         
         /**
-         * Forzar uso de comportamiento estándar de WordPress
-         * Para tests que sabemos que son seguros
+         * Verificar si dev-tools está disponible
          */
-        public function useStandardWordPressBehavior(): void
+        protected function checkDevToolsAvailability(): bool
         {
-            $this->instance_override = false;
+            return class_exists('DevToolsModuleManager') && 
+                   class_exists('DevToolsModuleBase') && 
+                   interface_exists('DevToolsModuleInterface');
         }
         
         /**
-         * Forzar uso de protecciones anti-deadlock
-         * Para tests problemáticos o entornos de masa
+         * Obtener instancia del module manager
          */
-        public function useAntiDeadlockBehavior(): void
+        protected function getModuleManager(): ?DevToolsModuleManager
         {
-            $this->instance_override = true;
+            if (!$this->dev_tools_available) {
+                return null;
+            }
+            
+            if (self::$module_manager === null) {
+                self::$module_manager = DevToolsModuleManager::getInstance();
+            }
+            
+            return self::$module_manager;
         }
         
         /**
-         * Resetear a comportamiento automático (detección inteligente)
+         * Obtener estado actual de módulos
          */
-        public function useAutomaticBehavior(): void
+        protected function getModulesState(): array
         {
-            $this->instance_override = null;
-        }
-        
-        // =====================================================================
-        // LÓGICA DE DETECCIÓN INTELIGENTE
-        // =====================================================================
-        
-        /**
-         * Detecta si se deben usar protecciones anti-deadlock (nivel clase)
-         * 
-         * @return bool
-         */
-        private static function shouldUseAntiDeadlock(): bool
-        {
-            // Cache la decisión para evitar múltiples evaluaciones
-            if (self::$use_anti_deadlock !== null) {
-                return self::$use_anti_deadlock;
+            $manager = $this->getModuleManager();
+            if (!$manager) {
+                return [];
             }
             
-            // 1. Override por constante PHP (prioridad alta)
-            // Esta constante se define en bootstrap.php
-            if (defined('DEV_TOOLS_DISABLE_ANTI_DEADLOCK') && DEV_TOOLS_DISABLE_ANTI_DEADLOCK === true) {
-                return self::$use_anti_deadlock = false;
-            }
-            
-            // 2. Override forzado por constante PHP (prioridad alta)
-            if (defined('DEV_TOOLS_FORCE_ANTI_DEADLOCK') && DEV_TOOLS_FORCE_ANTI_DEADLOCK === true) {
-                return self::$use_anti_deadlock = true;
-            }
-            
-            // 3. Override por variable de entorno (prioridad alta)
-            $env_force = getenv('DEV_TOOLS_FORCE_ANTI_DEADLOCK');
-            if ($env_force !== false) {
-                return self::$use_anti_deadlock = ($env_force === '1' || $env_force === 'true');
-            }
-            
-            // 4. Detección automática de contextos problemáticos
-            $risky_context = self::detectRiskyExecutionContext();
-            
-            return self::$use_anti_deadlock = $risky_context;
+            return $manager->getModulesStatus();
         }
         
         /**
-         * Detecta si se deben usar protecciones anti-deadlock (nivel instancia)
-         * 
-         * @return bool
+         * Restaurar estado de módulos
          */
-        private function shouldUseAntiDeadlockForInstance(): bool
+        protected function restoreModulesState(): void
         {
-            // 1. Override manual de instancia tiene prioridad máxima
-            if ($this->instance_override !== null) {
-                return $this->instance_override;
-            }
-            
-            // 2. Usar decisión de clase
-            return self::shouldUseAntiDeadlock();
-        }
-        
-        /**
-         * Detecta contextos de ejecución que pueden causar deadlocks
-         * 
-         * @return bool
-         */
-        private static function detectRiskyExecutionContext(): bool
-        {
-            // Ejecución via AJAX (panel dev-tools)
-            if (defined('DOING_AJAX') && DOING_AJAX) {
-                return true;
-            }
-            
-            // Múltiples archivos de test (mass execution)
-            if (self::isRunningMultipleTestFiles()) {
-                return true;
-            }
-            
-            // Ejecución con paralelización
-            if (self::isParallelExecution()) {
-                return true;
-            }
-            
-            // Entorno con alta concurrencia de BD
-            if (self::isHighConcurrencyEnvironment()) {
-                return true;
-            }
-            
-            // Por defecto, usar modo seguro en desarrollo
-            return true;
-        }
-        
-        /**
-         * Detecta si se están ejecutando múltiples archivos de test
-         * 
-         * @return bool
-         */
-        private static function isRunningMultipleTestFiles(): bool
-        {
-            global $argv;
-            
-            if (!is_array($argv)) {
-                return false;
-            }
-            
-            // Buscar patrones que indiquen ejecución masiva
-            $argv_string = implode(' ', $argv);
-            
-            // PHPUnit ejecutando todos los tests
-            if (strpos($argv_string, '--testsuite') !== false) {
-                return true;
-            }
-            
-            // Múltiples archivos de test especificados
-            $test_file_count = 0;
-            foreach ($argv as $arg) {
-                if (strpos($arg, 'Test.php') !== false) {
-                    $test_file_count++;
-                }
-            }
-            
-            return $test_file_count > 1;
-        }
-        
-        /**
-         * Detecta ejecución en paralelo
-         * 
-         * @return bool
-         */
-        private static function isParallelExecution(): bool
-        {
-            return defined('PHPUNIT_PARALLEL') || 
-                   getenv('PHPUNIT_PARALLEL') !== false ||
-                   strpos(implode(' ', $GLOBALS['argv'] ?? []), '--parallel') !== false;
-        }
-        
-        /**
-         * Detecta entorno con alta concurrencia
-         * 
-         * @return bool
-         */
-        private static function isHighConcurrencyEnvironment(): bool
-        {
-            global $wpdb;
-            
-            if (!$wpdb) {
-                return false;
-            }
-            
-            // Verificar número de conexiones activas
-            $result = $wpdb->get_var("SHOW STATUS LIKE 'Threads_connected'");
-            if ($result && is_numeric($result) && $result > 10) {
-                return true;
-            }
-            
-            return false;
-        }
-        
-        // =====================================================================
-        // IMPLEMENTACIÓN ANTI-DEADLOCK
-        // =====================================================================
-        
-        /**
-         * Configurar base de datos para prevenir deadlocks
-         */
-        private function configureAntiDeadlockDatabase(): void
-        {
-            global $wpdb;
-            
-            if (!$wpdb) {
+            $manager = $this->getModuleManager();
+            if (!$manager) {
                 return;
             }
             
-            try {
-                // Guardar configuración original
-                if (empty(self::$db_config_cache)) {
-                    // Usar variable compatible con MySQL 8.0+
-                    $isolation = $wpdb->get_var("SELECT @@SESSION.transaction_isolation");
-                    if (!$isolation) {
-                        // Fallback para versiones anteriores
-                        $isolation = $wpdb->get_var("SELECT @@SESSION.tx_isolation");
-                    }
-                    
-                    $lock_timeout = $wpdb->get_var("SELECT @@SESSION.innodb_lock_wait_timeout");
-                    
-                    self::$db_config_cache = [
-                        'isolation' => $isolation ?: 'REPEATABLE READ',
-                        'lock_timeout' => $lock_timeout ?: 50
-                    ];
-                }
-                
-                // Configurar isolation level menos restrictivo
-                $wpdb->query("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED");
-                
-                // Reducir timeout de locks para fallar rápido
-                $wpdb->query("SET SESSION innodb_lock_wait_timeout = 3");
-                
-            } catch (Exception $e) {
-                // Silenciar errores de configuración de BD
-                error_log("DevToolsTestCase: Error configurando BD anti-deadlock: " . $e->getMessage());
-            }
+            // Limpiar y reinicializar módulos
+            $manager->cleanup();
+            $manager->initialize();
         }
         
         /**
-         * Restaurar configuración original de base de datos
+         * Limpiar logs de dev-tools
          */
-        private static function restoreDbConfiguration(): void
+        protected function clearDevToolsLogs(): void
         {
+            // No hay función global, implementar limpieza básica
+            delete_transient('dev_tools_logs');
+            delete_option('dev_tools_internal_logs');
+        }
+        
+        /**
+         * Limpiar datos temporales de dev-tools
+         */
+        protected function cleanupDevToolsData(): void
+        {
+            // Limpiar opciones temporales de dev-tools
+            delete_option('dev_tools_temp_data');
+            delete_transient('dev_tools_cache');
+            
+            // Limpiar meta temporales
             global $wpdb;
-            
-            if (!$wpdb || empty(self::$db_config_cache)) {
-                return;
-            }
-            
-            try {
-                // Restaurar isolation level original
-                if (isset(self::$db_config_cache['isolation'])) {
-                    $isolation = self::$db_config_cache['isolation'];
-                    if ($isolation) {
-                        // Normalizar formato para compatibilidad MySQL
-                        $isolation = str_replace('-', ' ', $isolation);
-                        $wpdb->query("SET SESSION TRANSACTION ISOLATION LEVEL $isolation");
-                    }
-                }
-                
-                // Restaurar lock timeout original
-                if (isset(self::$db_config_cache['lock_timeout'])) {
-                    $timeout = self::$db_config_cache['lock_timeout'];
-                    if ($timeout) {
-                        $wpdb->query("SET SESSION innodb_lock_wait_timeout = $timeout");
-                    }
-                }
-                
-            } catch (Exception $e) {
-                error_log("DevToolsTestCase: Error restaurando configuración BD: " . $e->getMessage());
-            }
-        }
-        
-        /**
-         * Limpieza de datos de test de forma segura (sin deadlocks)
-         */
-        private function cleanupTestDataSafely(): void
-        {
-            // Limpiar solo datos específicos del test actual
-            // Evitar operaciones masivas que puedan causar deadlock
-            
-            // Limpiar transients de test
-            if (function_exists('delete_transient')) {
-                $test_transients = [
-                    'dev_tools_test_data',
-                    'test_cache_data',
-                    'phpunit_test_data'
-                ];
-                
-                foreach ($test_transients as $transient) {
-                    delete_transient($transient);
-                }
-            }
-        }
-        
-        /**
-         * Implementación segura de _delete_all_data sin deadlocks
-         */
-        private static function safeDeleteAllData(): void
-        {
-            global $wpdb;
-            
-            if (!$wpdb) {
-                return;
-            }
-            
-            try {
-                // Usar estrategia de limpieza por lotes pequeños
-                self::safeDeleteTestUsers();
-                self::safeDeleteTestPosts();
-                self::safeDeleteTestOptions();
-                
-            } catch (Exception $e) {
-                error_log("DevToolsTestCase: Error en limpieza segura: " . $e->getMessage());
-                
-                // Fallback: intentar limpieza mínima
-                try {
-                    self::emergencyCleanup();
-                } catch (Exception $fallback_error) {
-                    error_log("DevToolsTestCase: Error en limpieza de emergencia: " . $fallback_error->getMessage());
-                }
-            }
-        }
-        
-        /**
-         * Eliminar usuarios de test de forma segura
-         */
-        private static function safeDeleteTestUsers(): void
-        {
-            global $wpdb;
-            
-            // Solo eliminar usuarios creados en las últimas 2 horas
-            $recent_time = date('Y-m-d H:i:s', time() - 2 * HOUR_IN_SECONDS);
-            
-            // Eliminar en lotes pequeños para evitar locks largos
-            $batch_size = 5;
-            $deleted_count = 0;
-            $max_deletions = 50; // Límite de seguridad
-            
-            do {
-                // Buscar usuarios de test recientes (con lock mínimo)
-                $user_ids = $wpdb->get_col($wpdb->prepare("
-                    SELECT ID FROM {$wpdb->users} 
-                    WHERE user_login LIKE %s 
-                    AND user_registered > %s
-                    AND ID != 1 
-                    ORDER BY ID 
-                    LIMIT %d
-                ", 'dev_tools_test_%', $recent_time, $batch_size));
-                
-                if (empty($user_ids)) {
-                    break;
-                }
-                
-                // Eliminar lote actual
-                foreach ($user_ids as $user_id) {
-                    wp_delete_user($user_id);
-                    $deleted_count++;
-                    
-                    // Pequeña pausa para reducir presión en BD
-                    usleep(10000); // 10ms
-                }
-                
-            } while (count($user_ids) === $batch_size && $deleted_count < $max_deletions);
-        }
-        
-        /**
-         * Eliminar posts de test de forma segura
-         */
-        private static function safeDeleteTestPosts(): void
-        {
-            global $wpdb;
-            
-            // Solo eliminar posts de test recientes
-            $recent_time = date('Y-m-d H:i:s', time() - 2 * HOUR_IN_SECONDS);
-            
-            $post_ids = $wpdb->get_col($wpdb->prepare("
-                SELECT ID FROM {$wpdb->posts} 
-                WHERE post_title LIKE %s 
-                AND post_date > %s
-                ORDER BY ID 
-                LIMIT 20
-            ", 'Test%', $recent_time));
-            
-            foreach ($post_ids as $post_id) {
-                wp_delete_post($post_id, true);
-                usleep(5000); // 5ms pausa
-            }
-        }
-        
-        /**
-         * Eliminar opciones de test de forma segura
-         */
-        private static function safeDeleteTestOptions(): void
-        {
-            global $wpdb;
-            
-            // Eliminar opciones de test específicas
-            $test_options = [
-                'dev_tools_test_%',
-                'phpunit_test_%',
-                '_test_%'
-            ];
-            
-            foreach ($test_options as $pattern) {
-                $wpdb->query($wpdb->prepare("
-                    DELETE FROM {$wpdb->options} 
-                    WHERE option_name LIKE %s 
-                    LIMIT 50
-                ", $pattern));
-                
-                usleep(5000); // 5ms pausa
-            }
-        }
-        
-        /**
-         * Limpieza mínima de emergencia
-         */
-        private static function emergencyCleanup(): void
-        {
-            // Solo limpiar transients críticos
-            if (function_exists('delete_transient')) {
-                delete_transient('doing_cron');
-                delete_transient('dev_tools_test_data');
-            }
-            
-            // Limpiar cache de objeto
-            if (function_exists('wp_cache_flush')) {
-                wp_cache_flush();
-            }
+            $wpdb->query("DELETE FROM {$wpdb->postmeta} WHERE meta_key LIKE 'dev_tools_test_%'");
         }
         
         // =====================================================================
-        // MÉTODOS DE UTILIDAD Y FACTORY
+        // HELPERS PARA TESTING DE MÓDULOS
         // =====================================================================
         
         /**
-         * Factory para crear tests con comportamiento estándar
+         * Crear un módulo mock para testing
          * 
-         * @param string $test_class_name
-         * @return DevToolsTestCase
+         * @param string $module_name
+         * @param array $methods
+         * @return DevToolsModuleBase&PHPUnit\Framework\MockObject\MockObject
          */
-        public static function createStandardTest($test_class_name = null): self
+        protected function createMockModule(string $module_name, array $methods = []): DevToolsModuleBase
         {
-            $instance = new static();
-            $instance->useStandardWordPressBehavior();
-            return $instance;
+            $mock = $this->getMockBuilder(DevToolsModuleBase::class)
+                         ->setMockClassName($module_name . 'Module')
+                         ->disableOriginalConstructor()
+                         ->getMock();
+            
+            // Configurar métodos básicos
+            $mock->method('getModuleInfo')->willReturn([
+                'name' => $module_name,
+                'version' => '1.0.0-test',
+                'description' => "Mock module for testing: {$module_name}"
+            ]);
+            
+            foreach ($methods as $method => $return_value) {
+                $mock->method($method)->willReturn($return_value);
+            }
+            
+            /** @var DevToolsModuleBase $mock */
+            return $mock;
         }
         
         /**
-         * Factory para crear tests con protecciones anti-deadlock
-         * 
-         * @param string $test_class_name
-         * @return DevToolsTestCase
+         * Registrar un módulo temporal para testing
          */
-        public static function createAntiDeadlockTest($test_class_name = null): self
+        protected function registerTestModule(string $module_name, DevToolsModuleBase $module): void
         {
-            $instance = new static();
-            $instance->useAntiDeadlockBehavior();
-            return $instance;
+            $manager = $this->getModuleManager();
+            if ($manager) {
+                $manager->registerModule($module_name, $module);
+            }
         }
         
         /**
-         * Obtiene información completa del contexto de ejecución del test
-         * 
-         * @return array
+         * Verificar que un módulo está cargado
          */
-        public function getTestContext(): array
+        protected function assertModuleLoaded(string $module_name): void
         {
-            return [
-                'anti_deadlock_active' => $this->shouldUseAntiDeadlockForInstance(),
-                'risky_context_detected' => self::detectRiskyExecutionContext(),
-                'execution_mode' => $this->shouldUseAntiDeadlockForInstance() ? 'anti-deadlock' : 'standard',
-                'ajax_context' => defined('DOING_AJAX') && DOING_AJAX,
-                'instance_override' => $this->instance_override,
-                'global_setting' => self::$use_anti_deadlock,
-                'environment_override' => getenv('DEV_TOOLS_FORCE_ANTI_DEADLOCK'),
-                'multiple_files' => self::isRunningMultipleTestFiles(),
-                'parallel_execution' => self::isParallelExecution(),
-                'high_concurrency' => self::isHighConcurrencyEnvironment()
-            ];
+            $manager = $this->getModuleManager();
+            $this->assertNotNull($manager, 'DevToolsModuleManager no está disponible');
+            
+            $modules = $manager->getModulesStatus();
+            $this->assertArrayHasKey($module_name, $modules, "Módulo '{$module_name}' no está cargado");
         }
         
         /**
-         * Verifica si el test actual está usando protecciones anti-deadlock
-         * 
-         * @return bool
+         * Verificar que un módulo NO está cargado
          */
-        public function isUsingAntiDeadlock(): bool
+        protected function assertModuleNotLoaded(string $module_name): void
         {
-            return $this->shouldUseAntiDeadlockForInstance();
+            $manager = $this->getModuleManager();
+            if (!$manager) {
+                return; // Si no hay manager, obviamente no está cargado
+            }
+            
+            $modules = $manager->getModulesStatus();
+            $this->assertArrayNotHasKey($module_name, $modules, "Módulo '{$module_name}' está cargado cuando no debería");
         }
-
+        
+        // =====================================================================
+        // HELPERS PARA AJAX TESTING
+        // =====================================================================
+        
         /**
-         * Método de diagnóstico para verificar configuración actual
-         * 
-         * @return array
+         * Simular una petición AJAX de dev-tools
          */
-        public function getDiagnosticInfo(): array
+        protected function simulateDevToolsAjax(string $action, array $data = []): array
         {
-            return [
-                'use_anti_deadlock_class' => self::shouldUseAntiDeadlock(),
-                'use_anti_deadlock_instance' => $this->shouldUseAntiDeadlockForInstance(),
-                'instance_override' => $this->instance_override,
-                'risky_context' => self::detectRiskyExecutionContext(),
-                'is_ajax' => defined('DOING_AJAX') && DOING_AJAX,
-                'multiple_files' => self::isRunningMultipleTestFiles(),
-                'parallel_execution' => self::isParallelExecution(),
-                'high_concurrency' => self::isHighConcurrencyEnvironment(),
-                'db_config_cached' => !empty(self::$db_config_cache),
-                'constants_defined' => [
-                    'DEV_TOOLS_DISABLE_ANTI_DEADLOCK' => defined('DEV_TOOLS_DISABLE_ANTI_DEADLOCK') ? DEV_TOOLS_DISABLE_ANTI_DEADLOCK : 'not_defined',
-                    'DEV_TOOLS_FORCE_ANTI_DEADLOCK' => defined('DEV_TOOLS_FORCE_ANTI_DEADLOCK') ? DEV_TOOLS_FORCE_ANTI_DEADLOCK : 'not_defined',
-                    'DEV_TOOLS_TESTS_VERBOSE' => defined('DEV_TOOLS_TESTS_VERBOSE') ? DEV_TOOLS_TESTS_VERBOSE : 'not_defined',
-                    'DEV_TOOLS_TESTS_DEBUG' => defined('DEV_TOOLS_TESTS_DEBUG') ? DEV_TOOLS_TESTS_DEBUG : 'not_defined'
-                ]
-            ];
+            if (!$this->dev_tools_available) {
+                $this->fail('Dev-Tools no está disponible para testing AJAX');
+            }
+            
+            // Simular contexto AJAX
+            $_POST['action'] = 'dev_tools_ajax';
+            $_POST['command'] = $action;
+            $_POST['data'] = wp_json_encode($data);
+            $_POST['nonce'] = wp_create_nonce('dev_tools_ajax');
+            
+            // Capturar output
+            ob_start();
+            
+            try {
+                // Simular el handler AJAX
+                do_action('wp_ajax_dev_tools_ajax');
+                $output = ob_get_clean();
+                
+                // Decodificar respuesta JSON
+                $response = json_decode($output, true);
+                
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    $this->fail("Respuesta AJAX no es JSON válido: {$output}");
+                }
+                
+                return $response;
+                
+            } catch (Exception $e) {
+                ob_end_clean();
+                $this->fail("Error en AJAX simulation: " . $e->getMessage());
+            }
+            
+            // Este return nunca debería ejecutarse, pero evita el warning de PHP
+            return [];
+        }
+        
+        // =====================================================================
+        // ASSERTIONS ESPECÍFICAS
+        // =====================================================================
+        
+        /**
+         * Verificar que dev-tools está funcionando
+         */
+        protected function assertDevToolsWorking(): void
+        {
+            $this->assertTrue($this->dev_tools_available, 'Dev-Tools no está disponible');
+            
+            $manager = $this->getModuleManager();
+            $this->assertInstanceOf(DevToolsModuleManager::class, $manager, 'ModuleManager no es accesible');
         }
         
         /**
-         * Log de información de diagnóstico (para debugging)
+         * Verificar respuesta AJAX exitosa
          */
-        protected function logDiagnosticInfo(): void
+        protected function assertAjaxSuccess(array $response): void
         {
-            if (defined('WP_DEBUG') && WP_DEBUG) {
-                $info = $this->getDiagnosticInfo();
-                error_log("DevToolsTestCase Diagnostic: " . json_encode($info, JSON_PRETTY_PRINT));
+            $this->assertArrayHasKey('success', $response, 'Respuesta AJAX no tiene campo success');
+            $this->assertTrue($response['success'], 'Respuesta AJAX indica error: ' . 
+                            (isset($response['message']) ? $response['message'] : 'Sin mensaje'));
+        }
+        
+        /**
+         * Verificar respuesta AJAX con error
+         */
+        protected function assertAjaxError(array $response): void
+        {
+            $this->assertArrayHasKey('success', $response, 'Respuesta AJAX no tiene campo success');
+            $this->assertFalse($response['success'], 'Respuesta AJAX indica éxito cuando se esperaba error');
+        }
+        
+        // =====================================================================
+        // SKIP METHODS
+        // =====================================================================
+        
+        /**
+         * Skip test si dev-tools no está disponible
+         */
+        protected function requireDevTools(): void
+        {
+            if (!$this->dev_tools_available) {
+                $this->markTestSkipped('Dev-Tools Arquitectura 3.0 no está disponible');
+            }
+        }
+        
+        /**
+         * Skip test si un módulo específico no está disponible
+         */
+        protected function requireModule(string $module_name): void
+        {
+            $this->requireDevTools();
+            
+            $manager = $this->getModuleManager();
+            $modules = $manager->getModulesStatus();
+            
+            if (!isset($modules[$module_name])) {
+                $this->markTestSkipped("Módulo '{$module_name}' no está disponible");
             }
         }
     }

@@ -7,7 +7,7 @@
  * @since 3.0
  */
 
-class ConfigTest extends DevToolsTestCase {
+class ConfigTest extends WP_UnitTestCase {
 
     private $config;
 
