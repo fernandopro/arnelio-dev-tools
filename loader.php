@@ -161,9 +161,6 @@ function dev_tools_setup_translations() {
         $js_files = [
             $config->get('assets.js_handle'),
             $config->get('assets.js_handle') . '-tests',
-            $config->get('assets.js_handle') . '-docs',
-            $config->get('assets.js_handle') . '-maintenance',
-            $config->get('assets.js_settings_handle')
         ];
         
         foreach ($js_files as $handle) {
