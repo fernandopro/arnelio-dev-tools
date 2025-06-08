@@ -202,74 +202,87 @@ if ($module_manager && $module_manager->isInitialized()) {
                     // Usar Arquitectura 3.0 - Sistema Modular
                     switch ($current_page) {
                         case 'dashboard':
+                            /** @var DashboardModule|null $dashboard_module */
                             $dashboard_module = $module_manager->getModule('dashboard');
-                            if ($dashboard_module) {
+                            if ($dashboard_module && method_exists($dashboard_module, 'renderDashboardPage')) {
                                 $dashboard_module->renderDashboardPage();
                             } else {
-                                echo '<div class="alert alert-warning">
-                                    <i class="bi bi-exclamation-triangle"></i>
-                                    Dashboard Module no encontrado. Verificando sistema...
+                                // Fallback: renderizar dashboard básico
+                                echo '<div class="alert alert-info">
+                                    <i class="bi bi-info-circle"></i>
+                                    <strong>Dashboard Dev-Tools - Arquitectura 3.0</strong>
                                 </div>';
-                                include __DIR__ . '/templates/system-check.php';
+                                include __DIR__ . '/templates/dashboard-fallback.php';
                             }
                             break;
                             
                         case 'system-info':
+                            /** @var SystemInfoModule|null $systeminfo_module */
                             $systeminfo_module = $module_manager->getModule('systeminfo');
-                            if ($systeminfo_module) {
+                            if ($systeminfo_module && method_exists($systeminfo_module, 'render_panel')) {
                                 echo $systeminfo_module->render_panel();
                             } else {
-                                echo '<div class="alert alert-warning">
-                                    <i class="bi bi-exclamation-triangle"></i>
-                                    System Info Module no encontrado.
-                                </div>';
+                                // Fallback: mostrar información básica del sistema
+                                include __DIR__ . '/templates/system-info-fallback.php';
                             }
                             break;
                             
                         case 'cache':
+                            /** @var CacheModule|null $cache_module */
                             $cache_module = $module_manager->getModule('cache');
-                            if ($cache_module) {
+                            if ($cache_module && method_exists($cache_module, 'render_panel')) {
                                 echo $cache_module->render_panel();
                             } else {
-                                echo '<div class="alert alert-warning">
-                                    <i class="bi bi-exclamation-triangle"></i>
-                                    Cache Module no encontrado.
+                                // Fallback: panel de cache básico
+                                echo '<div class="alert alert-info">
+                                    <i class="bi bi-lightning"></i>
+                                    <strong>Cache Management</strong><br>
+                                    Módulo en desarrollo. Próximamente disponible.
                                 </div>';
                             }
                             break;
                             
                         case 'ajax-tester':
+                            /** @var AjaxTesterModule|null $ajaxtester_module */
                             $ajaxtester_module = $module_manager->getModule('ajaxtester');
-                            if ($ajaxtester_module) {
+                            if ($ajaxtester_module && method_exists($ajaxtester_module, 'render_panel')) {
                                 echo $ajaxtester_module->render_panel();
                             } else {
-                                echo '<div class="alert alert-warning">
-                                    <i class="bi bi-exclamation-triangle"></i>
-                                    AJAX Tester Module no encontrado.
+                                // Fallback: tester AJAX básico
+                                echo '<div class="alert alert-info">
+                                    <i class="bi bi-code-slash"></i>
+                                    <strong>AJAX Tester</strong><br>
+                                    Herramienta de testing AJAX en desarrollo.
                                 </div>';
                             }
                             break;
                             
                         case 'logs':
+                            /** @var LogsModule|null $logs_module */
                             $logs_module = $module_manager->getModule('logs');
-                            if ($logs_module) {
+                            if ($logs_module && method_exists($logs_module, 'render_panel')) {
                                 echo $logs_module->render_panel();
                             } else {
-                                echo '<div class="alert alert-warning">
-                                    <i class="bi bi-exclamation-triangle"></i>
-                                    Logs Module no encontrado.
+                                // Fallback: visor de logs básico
+                                echo '<div class="alert alert-info">
+                                    <i class="bi bi-journal-text"></i>
+                                    <strong>Logs Viewer</strong><br>
+                                    Sistema de logs en desarrollo.
                                 </div>';
                             }
                             break;
                             
                         case 'performance':
+                            /** @var PerformanceModule|null $performance_module */
                             $performance_module = $module_manager->getModule('performance');
-                            if ($performance_module) {
+                            if ($performance_module && method_exists($performance_module, 'render')) {
                                 echo $performance_module->render();
                             } else {
-                                echo '<div class="alert alert-warning">
-                                    <i class="bi bi-exclamation-triangle"></i>
-                                    Performance Module no encontrado.
+                                // Fallback: métricas de performance básicas
+                                echo '<div class="alert alert-info">
+                                    <i class="bi bi-graph-up"></i>
+                                    <strong>Performance Metrics</strong><br>
+                                    Monitor de rendimiento en desarrollo.
                                 </div>';
                             }
                             break;
@@ -301,7 +314,7 @@ if ($module_manager && $module_manager->isInitialized()) {
                         <small class="text-muted">
                             Dev-Tools Arquitectura 3.0 | 
                             <?php echo $module_manager && $module_manager->isInitialized() ? 
-                                count($module_manager->getAvailableModules()) : '0'; ?> módulos disponibles
+                                count($module_manager->getModules()) : '0'; ?> módulos disponibles
                         </small>
                     </div>
                     <div class="col-md-6 text-end">
@@ -577,7 +590,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     <?php if ($module_manager && $module_manager->isInitialized()): ?>
     console.log('✅ Sistema Modular: Operativo');
-    console.log('📦 Módulos cargados:', <?php echo json_encode($module_manager->getAvailableModules()); ?>);
+    console.log('📦 Módulos cargados:', <?php echo json_encode(array_keys($module_manager->getModules())); ?>);
     <?php else: ?>
     console.log('⚠️ Sistema Modular: No disponible');
     <?php endif; ?>

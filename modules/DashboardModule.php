@@ -1,27 +1,9 @@
 <?php
 /**
  * Módulo Dashboard para Dev Tools - Arquitectura 3.0
- * Panel principal de administración y estado de    /**
-     * Agregar página de administración al menú de WordPress
-     */
-    public function addAdminPage(): void {
-        error_log('[DEV-TOOLS] DashboardModule addAdminPage ejecutándose...');
-        
-        $menu_slug = $this->config->get('dev_tools.menu_slug');
-        $capability = 'manage_options';
-        
-        error_log('[DEV-TOOLS] Registrando menú con slug: ' . $menu_slug);
-        
-        add_management_page(
-            'Dev Tools Dashboard',
-            'Dev Tools',
-            $capability,
-            $menu_slug,
-            [$this, 'renderDashboardPage']
-        );
-        
-        error_log('[DEV-TOOLS] Menú registrado correctamente');
-    }* @package DevTools\Modules
+ * Panel principal de administración y estado del sistema
+ * 
+ * @package DevTools\Modules
  * @version 3.0.0
  * @since 3.0.0
  */
