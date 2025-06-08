@@ -13,10 +13,18 @@ if (!current_user_can('manage_options')) {
     wp_die(__('No tienes permisos suficientes para acceder a esta página.'));
 }
 
+// Log de inicio del panel
+error_log('[DEV-TOOLS] Panel iniciando...');
+
 // Obtener configuración y module manager
 $config = dev_tools_config();
+error_log('[DEV-TOOLS] Config obtenido en panel: ' . ($config ? 'SÍ' : 'NO'));
+
 $module_manager = dev_tools_get_module_manager();
+error_log('[DEV-TOOLS] ModuleManager obtenido en panel: ' . ($module_manager ? 'SÍ' : 'NO'));
+
 $current_page = isset($_GET['page_section']) ? sanitize_text_field($_GET['page_section']) : 'dashboard';
+error_log('[DEV-TOOLS] Página actual: ' . $current_page);
 
 /**
  * Función helper para generar URLs de navegación dinámicas
@@ -183,7 +191,14 @@ if ($module_manager && $module_manager->isInitialized()) {
             <div class="container-fluid">
                 <?php
                 // Renderizar contenido según la página actual
+                error_log('[DEV-TOOLS] Verificando module_manager...');
+                error_log('[DEV-TOOLS] $module_manager existe: ' . ($module_manager ? 'SÍ' : 'NO'));
+                if ($module_manager) {
+                    error_log('[DEV-TOOLS] $module_manager->isInitialized(): ' . ($module_manager->isInitialized() ? 'SÍ' : 'NO'));
+                }
+                
                 if ($module_manager && $module_manager->isInitialized()) {
+                    error_log('[DEV-TOOLS] Usando Arquitectura 3.0 - Sistema Modular');
                     // Usar Arquitectura 3.0 - Sistema Modular
                     switch ($current_page) {
                         case 'dashboard':

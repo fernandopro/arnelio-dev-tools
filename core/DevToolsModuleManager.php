@@ -275,7 +275,7 @@ class DevToolsModuleManager {
      * Descubrir módulos disponibles
      */
     private function discoverModules() {
-        $modules_path = $this->config->get('paths.dev_tools') . '/modules';
+        $modules_path = $this->config->get('paths.dev_tools_root') . '/modules';
         
         if (!is_dir($modules_path)) {
             $this->logger->logInternal('Modules directory not found, creating it');

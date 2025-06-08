@@ -62,7 +62,8 @@ function dev_tools_detect_socket_key() {
     return 'T7OGkjtdu';
 }
 
-$socket_key = dev_tools_detect_socket_key();
+// Insertar siempre la clave manualmente para evitar problemas de detección
+$socket_key = 'T7OGkjtdu';
 
 define( 'DB_NAME', getenv('WP_TESTS_DB_NAME') ?: 'local' );        // MISMA BD que el sitio principal
 define( 'DB_USER', getenv('WP_TESTS_DB_USER') ?: 'root' );         // Usuario Local by Flywheel

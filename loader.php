@@ -13,8 +13,12 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+// Log temporal para diagnóstico
+error_log('[DEV-TOOLS] Loader iniciando...');
+
 // Solo cargar en el admin
 if (!is_admin()) {
+    error_log('[DEV-TOOLS] No es admin, saliendo...');
     return;
 }
 
@@ -24,22 +28,28 @@ if (!is_admin()) {
 
 // 1. Configuración global (base del sistema)
 require_once __DIR__ . '/config.php';
+error_log('[DEV-TOOLS] Config cargado');
 
 // 2. Sistema de logging y debug
 require_once __DIR__ . '/debug-ajax.php';
+error_log('[DEV-TOOLS] Debug-ajax cargado');
 
 // 3. Interfaces y clases base
 require_once __DIR__ . '/core/interfaces/DevToolsModuleInterface.php';
 require_once __DIR__ . '/core/DevToolsModuleBase.php';
+error_log('[DEV-TOOLS] Clases base cargadas');
 
 // 4. Manejador AJAX centralizado
 require_once __DIR__ . '/ajax-handler.php';
+error_log('[DEV-TOOLS] Ajax-handler cargado');
 
 // 5. Gestor de módulos
 require_once __DIR__ . '/core/DevToolsModuleManager.php';
+error_log('[DEV-TOOLS] ModuleManager cargado');
 
 // Obtener configuración dinámica
 $config = dev_tools_config();
+error_log('[DEV-TOOLS] Configuración obtenida');
 
 // Habilitar modo debug si está en desarrollo
 if (defined('WP_DEBUG') && WP_DEBUG) {
@@ -51,42 +61,16 @@ if (defined('WP_DEBUG') && WP_DEBUG) {
 // ========================================
 
 /**
- * Registra el menú de dev-tools en el admin de WordPress (LEGACY)
- * NOTA: En arquitectura 3.0 esto lo maneja el DashboardModule
- * Se mantiene por compatibilidad hasta migración completa
+ * DESACTIVADO: Sistema legacy de menú administrativo
+ * La Arquitectura 3.0 con DashboardModule maneja todo el menú
+ * 
+ * @deprecated 3.0.0 - Sustituido por DashboardModule
  */
 function dev_tools_admin_menu() {
-    $config = dev_tools_config();
-    
-    // Verificar si ya existe el menú (creado por DashboardModule)
-    global $_registered_pages;
-    $menu_slug = $config->get('dev_tools.menu_slug');
-    $page_hook = "tools_page_{$menu_slug}";
-    
-    if (isset($_registered_pages[$page_hook])) {
-        // El DashboardModule ya registró el menú
-        return;
-    }
-    
-    // Verificar si el DashboardModule está disponible
-    if (class_exists('DevToolsModuleManager')) {
-        $manager = DevToolsModuleManager::getInstance();
-        $dashboard_module = $manager->getModule('dashboard');
-        
-        if ($dashboard_module && $manager->isInitialized()) {
-            // El sistema modular está operativo, no usar legacy
-            return;
-        }
-    }
-    
-    // Crear menú legacy solo si el sistema modular no está disponible
-    add_management_page(
-        $config->get('dev_tools.page_title'),    // Título dinámico
-        $config->get('dev_tools.menu_title'),    // Texto del menú
-        $config->get('dev_tools.capability'),    // Capacidad requerida
-        $config->get('dev_tools.menu_slug'),     // Slug dinámico
-        'dev_tools_legacy_page'                  // Función callback legacy
-    );
+    // SISTEMA LEGACY DESACTIVADO
+    // El DashboardModule de Arquitectura 3.0 maneja todo
+    error_log('[DEV-TOOLS] Sistema legacy menu DESACTIVADO - Arquitectura 3.0 activa');
+    return;
 }
 
 /**
@@ -202,8 +186,8 @@ function dev_tools_legacy_page() {
     <?php
 }
 
-// Registrar menú con prioridad alta para permitir que DashboardModule lo sobrescriba
-add_action('admin_menu', 'dev_tools_admin_menu', 30); // Prioridad 30 - después del sistema modular
+// DESACTIVADO: Registro de menú legacy - Arquitectura 3.0 activa
+// add_action('admin_menu', 'dev_tools_admin_menu', 30); // DashboardModule maneja todo
 
 /**
  * Obtiene la instancia del Module Manager (Arquitectura 3.0)
@@ -306,16 +290,20 @@ function dev_tools_enqueue_assets($hook) {
 }
 add_action('admin_enqueue_scripts', 'dev_tools_enqueue_assets');
 /**
- * Función callback para renderizar la página de dev-tools (dinámico)
+ * DESACTIVADO: Función callback legacy para renderizar dev-tools
+ * La Arquitectura 3.0 con DashboardModule renderiza directamente
+ * 
+ * @deprecated 3.0.0 - Sustituido por DashboardModule::renderDashboardPage()
  */
 function dev_tools_page() {
-    $config = dev_tools_config();
+    // FUNCIÓN LEGACY DESACTIVADA
+    // El DashboardModule maneja el rendering con renderDashboardPage()
+    error_log('[DEV-TOOLS] Callback legacy dev_tools_page() DESACTIVADO - Arquitectura 3.0 activa');
     
-    // Log de acceso a la página
-    $config->log('Página dev-tools accedida por usuario: ' . wp_get_current_user()->user_login);
-    
-    // Cargar el panel
-    require_once __DIR__ . '/panel.php';
+    // Redirigir a mensaje de error si se ejecuta por accidente
+    echo '<div class="wrap"><h1>Error: Sistema Legacy Desactivado</h1>';
+    echo '<p>La función dev_tools_page() ha sido desactivada. El DashboardModule de Arquitectura 3.0 maneja el renderizado.</p></div>';
+    return;
 }
 
 /**
@@ -421,4 +409,7 @@ function dev_tools_admin_notice() {
     }
 }
 add_action('admin_notices', 'dev_tools_admin_notice');
+
+// Log final del loader
+error_log('[DEV-TOOLS] Loader completado exitosamente');
 
