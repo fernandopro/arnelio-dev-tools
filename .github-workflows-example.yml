@@ -1,0 +1,70 @@
+# GitHub Actions para Tarokina Pro Dev Tools
+# Configuración opcional para CI/CD
+
+name: Dev Tools CI
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths: [ 'dev-tools/**' ]
+  pull_request:
+    branches: [ main ]
+    paths: [ 'dev-tools/**' ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        php-version: [7.4, 8.0, 8.1]
+        node-version: [16, 18, 20]
+    
+    name: PHP ${{ matrix.php-version }} - Node ${{ matrix.node-version }}
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ matrix.php-version }}
+        extensions: mbstring, xml, zip
+        coverage: xdebug
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: dev-tools/package-lock.json
+    
+    - name: Install Composer dependencies
+      working-directory: dev-tools
+      run: |
+        curl -sS https://getcomposer.org/installer | php
+        php composer.phar install --no-interaction --prefer-dist --optimize-autoloader
+    
+    - name: Install npm dependencies
+      working-directory: dev-tools
+      run: npm ci
+    
+    - name: Build assets
+      working-directory: dev-tools
+      run: npm run build
+    
+    - name: Run PHP tests
+      working-directory: dev-tools
+      run: php composer.phar run test
+    
+    - name: Verify installation
+      working-directory: dev-tools
+      run: ./verify-install.sh
+    
+    - name: Upload coverage to Codecov
+      if: matrix.php-version == '8.1' && matrix.node-version == '18'
+      uses: codecov/codecov-action@v3
+      with:
+        file: dev-tools/coverage/clover.xml
+        flags: unittests
+        name: codecov-umbrella

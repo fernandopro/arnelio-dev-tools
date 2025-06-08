@@ -1,0 +1,1727 @@
+// Dev-Tools Principal SCSS
+// Importar Bootstrap completo (mantener compatibilidad)
+@import "~bootstrap/scss/bootstrap";
+
+// Importar Bootstrap Icons
+@import "~bootstrap-icons/font/bootstrap-icons.css";
+
+// Importar componentes específicos
+@import "components/debug";
+
+// Variables personalizadas para dev-tools - Dark Theme
+:root {
+  // Colores primarios dark
+  --dev-primary: #2271b1;
+  --dev-secondary: #6c757d;
+  --dev-success: #198754;
+  --dev-info: #0dcaf0;
+  --dev-warning: #ffc107;
+  --dev-danger: #dc3545;
+  --dev-dark: #1a1a1a;
+  --dev-light: #2d3748;
+
+  // Fondos y bordes dark
+  --dev-bg-primary: #1a1a1a;
+  --dev-bg-secondary: #2d3748;
+  --dev-bg-tertiary: #4a5568;
+  --dev-text-primary: #ffffff;
+  --dev-text-secondary: #a0aec0;
+  --dev-text-muted: #718096;
+
+  // Colores específicos para dev-tools dark
+  --dev-code-bg: #2d3748;
+  --dev-code-border: #4a5568;
+  --dev-terminal-bg: #1a202c;
+  --dev-terminal-text: #e2e8f0;
+  --dev-badge-bg: #4a5568;
+
+  // Header dark theme
+  --dev-header-gradient-start: #1a202c;
+  --dev-header-gradient-end: #2d3748;
+  --dev-header-shadow: rgba(0, 0, 0, 0.3);
+  --dev-production-warning-bg: #2d3748;
+  --dev-production-warning-border: #4a5568;
+  --dev-production-warning-text: #ffc107;
+
+  // Bordes y divisores
+  --dev-border-color: #4a5568;
+  --dev-border-light: #2d3748;
+
+  // Estados de hover y focus
+  --dev-hover-bg: #4a5568;
+  --dev-focus-ring: rgba(32, 201, 151, 0.25);
+}
+
+// Estilos específicos para dev-tools - Dark Theme
+.dev-tools-container {
+  background-color: var(--dev-bg-primary);
+  color: var(--dev-text-primary);
+  min-height: 100vh;
+
+  // Asegurar que todo el contenido tenga el tema dark
+  * {
+    border-color: var(--dev-border-color) !important;
+  }
+
+  .btn-dev {
+    @extend .btn;
+    background-color: var(--dev-primary);
+    border-color: var(--dev-primary);
+    color: var(--dev-text-primary);
+
+    &:hover {
+      background-color: #17a2b8;
+      border-color: #17a2b8;
+      color: var(--dev-text-primary);
+    }
+
+    &:focus {
+      box-shadow: 0 0 0 0.2rem var(--dev-focus-ring);
+    }
+  }
+
+  .alert-dev {
+    @extend .alert;
+    background-color: var(--dev-bg-secondary);
+    border-left: 4px solid var(--dev-info);
+    color: var(--dev-text-primary);
+    border-color: var(--dev-border-color);
+  }
+
+  .card {
+    max-width: 100% !important;
+    background-color: var(--dev-bg-secondary);
+    border-color: var(--dev-border-color);
+    color: var(--dev-text-primary);
+
+    .card-header {
+      background-color: var(--dev-bg-tertiary);
+      border-bottom-color: var(--dev-border-color);
+      color: var(--dev-text-primary);
+    }
+
+    .card-body {
+      background-color: var(--dev-bg-secondary);
+      color: var(--dev-text-primary);
+    }
+
+    .card-footer {
+      background-color: var(--dev-bg-tertiary);
+      border-top-color: var(--dev-border-color);
+      color: var(--dev-text-secondary);
+    }
+  }
+
+  input[type="checkbox"] {
+    background: var(--dev-bg-secondary) !important;
+    border-color: var(--dev-border-color) !important;
+  }
+
+  .card-dev {
+    @extend .card;
+    border-top: 3px solid var(--dev-primary);
+    background-color: var(--dev-bg-secondary);
+
+    .card-header {
+      background-color: var(--dev-bg-tertiary);
+      border-bottom: 1px solid var(--dev-border-color);
+      color: var(--dev-text-primary);
+    }
+  }
+
+  // Estilos para formularios dark
+  .form-control,
+  .form-select {
+    background-color: var(--dev-bg-secondary);
+    border-color: var(--dev-border-color);
+    color: var(--dev-text-primary);
+
+    &:focus {
+      background-color: var(--dev-bg-secondary);
+      border-color: var(--dev-primary);
+      color: var(--dev-text-primary);
+      box-shadow: 0 0 0 0.2rem var(--dev-focus-ring);
+    }
+
+    &::placeholder {
+      color: var(--dev-text-muted);
+    }
+  }
+
+  // ================================
+  // ESTILOS COMPLETOS PARA TABLAS HTML - DARK THEME
+  // ================================
+
+  // Tablas base dark
+  table,
+  .table {
+    --bs-table-bg: var(--dev-bg-secondary);
+    --bs-table-accent-bg: transparent;
+    --bs-table-striped-bg: rgba(74, 85, 104, 0.3);
+    --bs-table-active-bg: rgba(32, 201, 151, 0.1);
+    --bs-table-hover-bg: var(--dev-hover-bg);
+    --bs-table-border-color: var(--dev-border-color);
+    --bs-table-color: var(--dev-text-primary);
+
+    background-color: var(--bs-table-bg);
+    color: var(--bs-table-color);
+    border-color: var(--bs-table-border-color);
+    width: 100%;
+    margin-bottom: 1rem;
+    vertical-align: top;
+    border-collapse: collapse;
+
+    // ========== ELEMENTOS DE TABLA ==========
+
+    // Headers (thead, th)
+    thead,
+    tfoot {
+      th,
+      td {
+        background-color: var(--dev-bg-terciary);
+        border-color: var(--dev-border-color);
+        color: var(--dev-text-primary);
+        font-weight: 600;
+        vertical-align: bottom;
+        border-bottom: 2px solid var(--dev-primary);
+        padding: 0.75rem;
+      }
+    }
+
+    // Footer
+    tfoot {
+      th,
+      td {
+        border-top: 2px solid var(--dev-border-color);
+        border-bottom: none;
+      }
+    }
+
+    // Body de tabla
+    tbody {
+      background-color: var(--bs-table-bg);
+
+      th,
+      td {
+        border-color: var(--bs-table-border-color);
+        color: var(--bs-table-color);
+        vertical-align: middle;
+        padding: 0.75rem;
+        border-top: 1px solid var(--bs-table-border-color);
+      }
+
+      tr {
+        background-color: var(--bs-table-accent-bg);
+        transition: all 0.15s ease-in-out;
+
+        &:hover {
+          background-color: var(--bs-table-hover-bg);
+        }
+      }
+    }
+
+    // Celdas generales
+    th,
+    td {
+      border-color: var(--bs-table-border-color);
+      color: var(--bs-table-color);
+      vertical-align: middle;
+      padding: 0.75rem;
+
+      // Enlaces en tablas
+      a {
+        color: var(--dev-primary);
+        text-decoration: none;
+
+        &:hover {
+          color: #17a2b8;
+          text-decoration: underline;
+        }
+
+        &:focus {
+          color: var(--dev-primary);
+          text-decoration: underline;
+        }
+      }
+
+      // Botones en tablas
+      .btn {
+        font-size: 0.875rem;
+
+        &.btn-sm {
+          font-size: 0.75rem;
+          padding: 0.25rem 0.5rem;
+        }
+      }
+
+      // Badges en tablas
+      .badge {
+        font-size: 0.75em;
+
+        &.bg-light {
+          background-color: var(--dev-bg-terciary) !important;
+          color: var(--dev-text-primary) !important;
+        }
+
+        &.bg-secondary {
+          background-color: var(--dev-secondary) !important;
+        }
+      }
+
+      // Códigos en tablas
+      code {
+        background-color: var(--dev-code-bg);
+        color: var(--dev-terminal-text);
+        padding: 0.125rem 0.25rem;
+        border-radius: 0.25rem;
+        font-size: 0.875em;
+      }
+
+      // Indicadores de estado
+      .status-indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 0.5rem;
+
+        &.success {
+          background-color: #51cf66;
+        }
+
+        &.warning {
+          background-color: var(--dev-warning);
+        }
+
+        &.danger {
+          background-color: #ff6b6b;
+        }
+
+        &.info {
+          background-color: var(--dev-info);
+        }
+      }
+
+      // Progress bars en tablas
+      .progress {
+        height: 1rem;
+        background-color: var(--dev-bg-terciary);
+
+        .progress-bar {
+          background-color: var(--dev-primary);
+        }
+      }
+
+      // Checkboxes en tablas
+      .form-check-input {
+        background-color: var(--dev-bg-secondary);
+        border-color: var(--dev-border-color);
+
+        &:checked {
+          background-color: var(--dev-primary);
+          border-color: var(--dev-primary);
+        }
+
+        &:focus {
+          box-shadow: 0 0 0 0.2rem var(--dev-focus-ring);
+        }
+      }
+
+      // Selects en tablas
+      .form-select {
+        background-color: var(--dev-bg-secondary);
+        border-color: var(--dev-border-color);
+        color: var(--dev-text-primary);
+        font-size: 0.875rem;
+
+        &:focus {
+          border-color: var(--dev-primary);
+          box-shadow: 0 0 0 0.2rem var(--dev-focus-ring);
+        }
+      }
+    }
+
+    // ========== VARIANTES DE TABLA ==========
+
+    // Filas alternadas
+    &.table-striped {
+      > tbody > tr:nth-of-type(odd) > td,
+      > tbody > tr:nth-of-type(odd) > th {
+        background-color: var(--bs-table-striped-bg);
+      }
+    }
+
+    // Tabla hover
+    &.table-hover {
+      > tbody > tr:hover > td,
+      > tbody > tr:hover > th {
+        background-color: var(--bs-table-hover-bg);
+      }
+    }
+
+    // Tabla con bordes
+    &.table-bordered {
+      border: 1px solid var(--bs-table-border-color);
+
+      > :not(caption) > * {
+        border-width: 1px 0;
+      }
+
+      > :not(caption) > * > * {
+        border-width: 0 1px;
+      }
+    }
+
+    // Tabla sin bordes
+    &.table-borderless {
+      > :not(caption) > * > * {
+        border-bottom-width: 0;
+      }
+
+      > :not(:first-child) {
+        border-top-width: 0;
+      }
+    }
+
+    // Tabla dark variant
+    &.table-dark {
+      --bs-table-color: var(--dev-text-primary);
+      --bs-table-bg: var(--dev-bg-primary);
+      --bs-table-border-color: var(--dev-border-color);
+      --bs-table-striped-bg: rgba(255, 255, 255, 0.05);
+      --bs-table-active-bg: rgba(255, 255, 255, 0.1);
+      --bs-table-hover-bg: rgba(255, 255, 255, 0.075);
+    }
+
+    // Tabla compacta
+    &.table-sm {
+      > :not(caption) > * > * {
+        padding: 0.25rem;
+      }
+    }
+
+    // ========== ESTADOS DE FILAS ==========
+
+    .table-active {
+      --bs-table-accent-bg: var(--bs-table-active-bg);
+      color: var(--bs-table-color);
+    }
+
+    .table-primary {
+      --bs-table-bg: rgba(32, 201, 151, 0.1);
+      --bs-table-striped-bg: rgba(32, 201, 151, 0.15);
+      --bs-table-hover-bg: rgba(32, 201, 151, 0.2);
+      color: var(--dev-text-primary);
+    }
+
+    .table-secondary {
+      --bs-table-bg: rgba(108, 117, 125, 0.1);
+      --bs-table-striped-bg: rgba(108, 117, 125, 0.15);
+      --bs-table-hover-bg: rgba(108, 117, 125, 0.2);
+      color: var(--dev-text-primary);
+    }
+
+    .table-success {
+      --bs-table-bg: rgba(25, 135, 84, 0.1);
+      --bs-table-striped-bg: rgba(25, 135, 84, 0.15);
+      --bs-table-hover-bg: rgba(25, 135, 84, 0.2);
+      color: #51cf66;
+    }
+
+    .table-info {
+      --bs-table-bg: rgba(13, 202, 240, 0.1);
+      --bs-table-striped-bg: rgba(13, 202, 240, 0.15);
+      --bs-table-hover-bg: rgba(13, 202, 240, 0.2);
+      color: var(--dev-info);
+    }
+
+    .table-warning {
+      --bs-table-bg: rgba(255, 193, 7, 0.1);
+      --bs-table-striped-bg: rgba(255, 193, 7, 0.15);
+      --bs-table-hover-bg: rgba(255, 193, 7, 0.2);
+      color: var(--dev-warning);
+    }
+
+    .table-danger {
+      --bs-table-bg: rgba(220, 53, 69, 0.1);
+      --bs-table-striped-bg: rgba(220, 53, 69, 0.15);
+      --bs-table-hover-bg: rgba(220, 53, 69, 0.2);
+      color: #ff6b6b;
+    }
+
+    .table-light {
+      --bs-table-bg: var(--dev-bg-secondary);
+      --bs-table-striped-bg: var(--dev-bg-tertiary);
+      --bs-table-hover-bg: var(--dev-hover-bg);
+      color: var(--dev-text-primary);
+    }
+
+    .table-dark {
+      --bs-table-bg: var(--dev-bg-primary);
+      --bs-table-striped-bg: rgba(255, 255, 255, 0.05);
+      --bs-table-hover-bg: rgba(255, 255, 255, 0.075);
+      color: var(--dev-text-primary);
+    }
+
+    // Caption de tabla
+    caption {
+      color: var(--dev-text-secondary);
+      caption-side: bottom;
+      padding-top: 0.5rem;
+      padding-bottom: 0.5rem;
+      text-align: left;
+      font-size: 0.875rem;
+    }
+  }
+
+  // ========== WRAPPER RESPONSIVE PARA TABLAS ==========
+  .table-responsive {
+    background-color: var(--dev-bg-secondary);
+    border: 1px solid var(--dev-border-color);
+    border-radius: 0.375rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+
+    // Asegurar que la tabla dentro mantenga el estilo
+    > .table {
+      margin-bottom: 0;
+
+      > :not(caption) > * > * {
+        background-color: var(--bs-table-accent-bg);
+      }
+    }
+
+    // Scrollbar horizontal dark
+    &::-webkit-scrollbar {
+      height: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: var(--dev-bg-secondary);
+      border-radius: 4px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: var(--dev-bg-terciary);
+      border-radius: 4px;
+
+      &:hover {
+        background: var(--dev-hover-bg);
+      }
+    }
+
+    // Asegurar visibility en responsive
+    &:focus {
+      outline: 2px solid var(--dev-primary);
+      outline-offset: 2px;
+    }
+  }
+
+  // ========== ELEMENTOS ESPECIALES EN TABLAS ==========
+
+  // Botones en tablas con estilos dark
+  .table {
+    .btn-group {
+      .btn {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        border-color: var(--dev-border-color);
+
+        &:not(.btn-primary):not(.btn-danger):not(.btn-warning):not(
+            .btn-success
+          ):not(.btn-info) {
+          background-color: var(--dev-bg-secondary);
+          color: var(--dev-text-primary);
+
+          &:hover {
+            background-color: var(--dev-hover-bg);
+            color: var(--dev-text-primary);
+          }
+        }
+      }
+    }
+
+    // Dropdown en tablas
+    .dropdown {
+      .dropdown-toggle {
+        background-color: transparent;
+        border: 1px solid var(--dev-border-color);
+        color: var(--dev-text-primary);
+        font-size: 0.875rem;
+
+        &:hover {
+          background-color: var(--dev-hover-bg);
+        }
+
+        &:focus {
+          box-shadow: 0 0 0 0.2rem var(--dev-focus-ring);
+        }
+      }
+
+      .dropdown-menu {
+        background-color: var(--dev-bg-secondary);
+        border-color: var(--dev-border-color);
+
+        .dropdown-item {
+          color: var(--dev-text-primary);
+
+          &:hover,
+          &:focus {
+            background-color: var(--dev-hover-bg);
+            color: var(--dev-text-primary);
+          }
+        }
+      }
+    }
+
+    // Input groups en tablas
+    .input-group {
+      .form-control,
+      .form-select {
+        background-color: var(--dev-bg-secondary);
+        border-color: var(--dev-border-color);
+        color: var(--dev-text-primary);
+        font-size: 0.875rem;
+
+        &:focus {
+          background-color: var(--dev-bg-secondary);
+          border-color: var(--dev-primary);
+          color: var(--dev-text-primary);
+          box-shadow: 0 0 0 0.2rem var(--dev-focus-ring);
+        }
+      }
+
+      .input-group-text {
+        background-color: var(--dev-bg-tertiary);
+        border-color: var(--dev-border-color);
+        color: var(--dev-text-primary);
+      }
+    }
+
+    // Paginación dentro de tablas
+    .pagination {
+      margin: 0;
+
+      .page-item {
+        .page-link {
+          background-color: var(--dev-bg-secondary);
+          border-color: var(--dev-border-color);
+          color: var(--dev-text-primary);
+          font-size: 0.875rem;
+
+          &:hover {
+            background-color: var(--dev-hover-bg);
+            border-color: var(--dev-border-color);
+            color: var(--dev-text-primary);
+          }
+        }
+
+        &.active .page-link {
+          background-color: var(--dev-primary);
+          border-color: var(--dev-primary);
+          color: var(--dev-text-primary);
+        }
+
+        &.disabled .page-link {
+          background-color: var(--dev-bg-terciary);
+          border-color: var(--dev-border-color);
+          color: var(--dev-text-muted);
+        }
+      }
+    }
+
+    // Switch/Toggle en tablas
+    .form-switch {
+      .form-check-input {
+        background-color: var(--dev-bg-terciary);
+        border-color: var(--dev-border-color);
+
+        &:checked {
+          background-color: var(--dev-primary);
+          border-color: var(--dev-primary);
+        }
+
+        &:focus {
+          box-shadow: 0 0 0 0.2rem var(--dev-focus-ring);
+        }
+      }
+    }
+
+    // Labels y texto auxiliar en tablas
+    .text-muted {
+      color: var(--dev-text-muted) !important;
+    }
+
+    .text-secondary {
+      color: var(--dev-text-secondary) !important;
+    }
+
+    .small,
+    small {
+      color: var(--dev-text-secondary);
+      font-size: 0.75rem;
+    }
+
+    // Iconos en tablas
+    i,
+    .icon {
+      color: var(--dev-text-secondary);
+
+      &.text-primary {
+        color: var(--dev-primary) !important;
+      }
+
+      &.text-success {
+        color: #51cf66 !important;
+      }
+
+      &.text-warning {
+        color: var(--dev-warning) !important;
+      }
+
+      &.text-danger {
+        color: #ff6b6b !important;
+      }
+    }
+  }
+
+  // Badges dark
+  .badge {
+    &.bg-light,
+    &.badge-light {
+      background-color: var(--dev-bg-terciary) !important;
+      color: var(--dev-text-primary) !important;
+    }
+
+    &.bg-secondary {
+      background-color: var(--dev-secondary) !important;
+    }
+  }
+
+  // Buttons dark
+  .btn {
+    &.btn-light {
+      background-color: var(--dev-bg-terciary);
+      border-color: var(--dev-border-color);
+      color: var(--dev-text-primary);
+
+      &:hover {
+        background-color: var(--dev-hover-bg);
+        border-color: var(--dev-border-color);
+        color: var(--dev-text-primary);
+      }
+    }
+
+    &.btn-secondary {
+      background-color: var(--dev-secondary);
+      border-color: var(--dev-secondary);
+
+      &:hover {
+        background-color: #5a6268;
+        border-color: #545b62;
+      }
+    }
+  }
+}
+
+// Estilos para el área de resultados de tests - Dark Theme
+.test-results-area {
+  background-color: var(--dev-terminal-bg);
+  color: var(--dev-terminal-text);
+  font-family: "Courier New", monospace;
+  font-size: 13px;
+  line-height: 1.4;
+  padding: 1rem;
+  border-radius: 0.375rem;
+  border: 1px solid var(--dev-border-color);
+  max-height: 400px;
+  overflow-y: auto;
+
+  .welcome-message {
+    color: var(--dev-text-muted);
+    text-align: center;
+    font-style: italic;
+  }
+
+  .test-output {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    color: var(--dev-terminal-text);
+  }
+
+  .error-output {
+    color: #ff6b6b;
+  }
+
+  .success-output {
+    color: #51cf66;
+  }
+
+  .warning-output {
+    color: var(--dev-warning);
+  }
+
+  // Scrollbar dark
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--dev-bg-secondary);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--dev-bg-terciary);
+    border-radius: 4px;
+
+    &:hover {
+      background: var(--dev-hover-bg);
+    }
+  }
+}
+
+// Estilos para modales de test - Dark Theme
+.test-modal {
+  .modal-content {
+    background-color: var(--dev-bg-secondary);
+    border-color: var(--dev-border-color);
+    color: var(--dev-text-primary);
+  }
+
+  .modal-header {
+    background-color: var(--dev-bg-terciary);
+    color: var(--dev-text-primary);
+    border-bottom-color: var(--dev-border-color);
+
+    .modal-title {
+      font-weight: 600;
+      color: var(--dev-text-primary);
+    }
+
+    .btn-close {
+      filter: invert(1) brightness(0.8);
+    }
+  }
+
+  .modal-body {
+    background-color: var(--dev-bg-secondary);
+    color: var(--dev-text-primary);
+  }
+
+  .modal-footer {
+    background-color: var(--dev-bg-terciary);
+    border-top-color: var(--dev-border-color);
+  }
+
+  .test-status-badge {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .test-progress {
+    height: 6px;
+    background-color: var(--dev-bg-terciary);
+
+    .progress-bar {
+      background-color: var(--dev-primary);
+    }
+  }
+
+  .test-summary {
+    background-color: var(--dev-bg-terciary);
+    border-radius: 0.375rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border: 1px solid var(--dev-border-color);
+
+    .summary-stat {
+      text-align: center;
+
+      .stat-number {
+        font-size: 1.5rem;
+        font-weight: bold;
+        display: block;
+        color: var(--dev-text-primary);
+      }
+
+      .stat-label {
+        font-size: 0.85rem;
+        color: var(--dev-text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+    }
+  }
+}
+
+// Estilos específicos para elementos HTML en tablas dark
+tbody tr {
+  background-color: var(--dev-bg-secondary);
+  transition: background-color 0.15s ease-in-out;
+
+  &:hover {
+    background-color: var(--dev-hover-bg);
+  }
+}
+
+// Botones pequeños en tablas
+.table {
+  .btn-sm,
+  .btn-xs {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+
+    &.btn-outline-secondary {
+      color: var(--dev-primary);
+      border-color: var(--dev-primary);
+
+      &:hover {
+        background-color: var(--dev-primary);
+        color: var(--dev-text-primary);
+      }
+    }
+
+    &.btn-outline-danger {
+      color: var(--dev-danger);
+      border-color: var(--dev-danger);
+
+      &:hover {
+        background-color: var(--dev-danger);
+        color: var(--dev-text-primary);
+      }
+    }
+
+    &.btn-outline-warning {
+      color: var(--dev-warning);
+      border-color: var(--dev-warning);
+
+      &:hover {
+        background-color: var(--dev-warning);
+        color: var(--dev-dark);
+      }
+    }
+  }
+
+  // Badges en tablas
+  .badge {
+    font-size: 0.75rem;
+
+    &.badge-secondary {
+      background-color: var(--dev-secondary);
+      color: var(--dev-text-primary);
+    }
+
+    &.badge-light {
+      background-color: var(--dev-bg-terciary);
+      color: var(--dev-text-primary);
+    }
+  }
+
+  // Códigos en tablas
+  code {
+    background-color: var(--dev-code-bg);
+    color: var(--dev-terminal-text);
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.25rem;
+    font-size: 0.85em;
+  }
+
+  // Status indicators en tablas
+  .status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 0.5rem;
+
+    &.status-success {
+      background-color: var(--dev-success);
+    }
+
+    &.status-warning {
+      background-color: var(--dev-warning);
+    }
+
+    &.status-danger {
+      background-color: var(--dev-danger);
+    }
+
+    &.status-info {
+      background-color: var(--dev-info);
+    }
+  }
+
+  // Progress bars en tablas
+  .progress {
+    background-color: var(--dev-bg-terciary);
+    height: 0.5rem;
+
+    .progress-bar {
+      background-color: var(--dev-primary);
+    }
+  }
+
+  // Checkboxes en tablas
+  input[type="checkbox"] {
+    background-color: var(--dev-bg-secondary);
+    border-color: var(--dev-border-color);
+
+    &:checked {
+      background-color: var(--dev-primary);
+      border-color: var(--dev-primary);
+    }
+
+    &:focus {
+      box-shadow: 0 0 0 0.2rem var(--dev-focus-ring);
+    }
+  }
+
+  // Selects en tablas
+  select.form-select {
+    background-color: var(--dev-bg-secondary);
+    border-color: var(--dev-border-color);
+    color: var(--dev-text-primary);
+    font-size: 0.875rem;
+    padding: 0.25rem 0.5rem;
+
+    &:focus {
+      background-color: var(--dev-bg-secondary);
+      border-color: var(--dev-primary);
+      box-shadow: 0 0 0 0.2rem var(--dev-focus-ring);
+    }
+
+    option {
+      background-color: var(--dev-bg-secondary);
+      color: var(--dev-text-primary);
+    }
+  }
+}
+
+// Animación de carga
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Estilos para formularios - Dark Theme
+.dev-form {
+  .form-label {
+    font-weight: 600;
+    color: var(--dev-text-primary);
+    margin-bottom: 0.5rem;
+  }
+
+  .form-control,
+  .form-select {
+    background-color: var(--dev-bg-secondary);
+    border: 1px solid var(--dev-border-color);
+    color: var(--dev-text-primary);
+
+    &:focus {
+      background-color: var(--dev-bg-secondary);
+      border-color: var(--dev-primary);
+      color: var(--dev-text-primary);
+      box-shadow: 0 0 0 0.2rem var(--dev-focus-ring);
+    }
+
+    &::placeholder {
+      color: var(--dev-text-muted);
+    }
+
+    &:disabled {
+      background-color: var(--dev-bg-terciary);
+      opacity: 0.6;
+    }
+  }
+
+  .form-text {
+    color: var(--dev-text-secondary);
+    font-size: 0.85rem;
+  }
+
+  .form-check-input {
+    background-color: var(--dev-bg-secondary);
+    border-color: var(--dev-border-color);
+
+    &:checked {
+      background-color: var(--dev-primary);
+      border-color: var(--dev-primary);
+    }
+
+    &:focus {
+      box-shadow: 0 0 0 0.2rem var(--dev-focus-ring);
+    }
+  }
+
+  .form-check-label {
+    color: var(--dev-text-primary);
+  }
+}
+
+// Estilos para código - Dark Theme
+.code-block {
+  background-color: var(--dev-code-bg);
+  border: 1px solid var(--dev-border-color);
+  border-radius: 0.375rem;
+  padding: 1rem;
+  font-family: "Courier New", monospace;
+  font-size: 13px;
+  line-height: 1.4;
+  overflow-x: auto;
+  color: var(--dev-terminal-text);
+
+  pre {
+    margin: 0;
+    padding: 0;
+    background: none;
+    border: none;
+    color: var(--dev-terminal-text);
+  }
+
+  code {
+    background: none;
+    color: var(--dev-terminal-text);
+    font-size: inherit;
+  }
+
+  // Scrollbar dark para código
+  &::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--dev-bg-secondary);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--dev-bg-terciary);
+    border-radius: 4px;
+
+    &:hover {
+      background: var(--dev-hover-bg);
+    }
+  }
+}
+
+// Estilos para navegación de tabs - Dark Theme
+.nav-tabs-dev {
+  @extend .nav-tabs;
+  border-bottom: 2px solid var(--dev-primary);
+  background-color: var(--dev-bg-secondary);
+
+  .nav-link {
+    color: var(--dev-text-secondary);
+    border: none;
+    border-bottom: 2px solid transparent;
+    background-color: transparent;
+
+    &:hover {
+      border-color: transparent;
+      border-bottom-color: var(--dev-primary);
+      color: var(--dev-primary);
+      background-color: var(--dev-hover-bg);
+    }
+
+    &.active {
+      color: var(--dev-primary);
+      background-color: var(--dev-bg-secondary);
+      border-color: transparent;
+      border-bottom-color: var(--dev-primary);
+      font-weight: 600;
+    }
+  }
+}
+
+// Navegación de pills dark
+.nav-pills {
+  .nav-link {
+    color: var(--dev-text-secondary);
+
+    &:hover {
+      background-color: var(--dev-hover-bg);
+      color: var(--dev-text-primary);
+    }
+
+    &.active {
+      background-color: var(--dev-primary);
+      color: var(--dev-text-primary);
+    }
+  }
+}
+
+// Estilos para el header del panel dev-tools - Dark Theme
+.dev-tools-header {
+  background: linear-gradient(
+    135deg,
+    var(--dev-header-gradient-start) 0%,
+    var(--dev-header-gradient-end) 100%
+  );
+  color: var(--dev-text-primary);
+  padding: 2rem 0;
+  margin-bottom: 2rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 12px var(--dev-header-shadow);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--dev-border-color);
+
+  // Efecto de overlay sutil para dark theme
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      45deg,
+      rgba(32, 201, 151, 0.1) 0%,
+      transparent 50%
+    );
+    pointer-events: none;
+  }
+
+  .container-fluid {
+    position: relative;
+    z-index: 1;
+  }
+
+  .header-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    color: var(--dev-text-primary);
+
+    .bi-tools {
+      margin-right: 0.75rem;
+      font-size: 2.25rem;
+      vertical-align: text-top;
+      color: var(--dev-primary);
+    }
+
+    @include media-breakpoint-down(md) {
+      font-size: 2rem;
+
+      .bi-tools {
+        font-size: 1.75rem;
+      }
+    }
+
+    @include media-breakpoint-down(sm) {
+      font-size: 1.75rem;
+
+      .bi-tools {
+        font-size: 1.5rem;
+      }
+    }
+  }
+
+  .header-description {
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+    opacity: 0.9;
+    font-weight: 300;
+    line-height: 1.5;
+    color: var(--dev-text-secondary);
+
+    @include media-breakpoint-down(md) {
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+  }
+
+  .header-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+
+    @include media-breakpoint-down(sm) {
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .badge {
+      font-size: 0.85rem;
+      padding: 0.5rem 0.75rem;
+      border-radius: 1.5rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+
+      &.badge-light {
+        background-color: var(--dev-bg-terciary);
+        color: var(--dev-text-primary);
+        border: 1px solid var(--dev-border-color);
+      }
+
+      &.badge-warning {
+        background-color: var(--dev-warning);
+        color: var(--dev-dark);
+        border: 1px solid rgba(255, 193, 7, 0.5);
+      }
+
+      &.bg-success {
+        background-color: var(--dev-success);
+        color: var(--dev-text-primary);
+      }
+
+      &.bg-danger {
+        background-color: var(--dev-danger);
+        color: var(--dev-text-primary);
+      }
+
+      .bi {
+        font-size: 0.9rem;
+      }
+    }
+
+    .timestamp {
+      font-size: 0.8rem;
+      opacity: 0.8;
+      font-weight: 400;
+      color: var(--dev-text-secondary);
+
+      .bi-clock {
+        margin-right: 0.25rem;
+      }
+    }
+  }
+}
+
+// Warning específico para modo producción - Dark Theme
+.production-warning {
+  background-color: var(--dev-production-warning-bg);
+  border: 2px solid var(--dev-production-warning-border);
+  border-radius: 0.5rem;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  color: var(--dev-production-warning-text);
+  position: relative;
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background-color: var(--dev-warning);
+    border-radius: 2px 0 0 2px;
+  }
+
+  .warning-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+
+    .warning-icon {
+      flex-shrink: 0;
+      font-size: 1.25rem;
+      color: var(--dev-warning);
+      margin-top: 0.125rem;
+    }
+
+    .warning-text {
+      flex: 1;
+
+      .warning-title {
+        font-weight: 600;
+        font-size: 1rem;
+        margin-bottom: 0.25rem;
+        color: var(--dev-text-primary);
+      }
+
+      .warning-message {
+        font-size: 0.9rem;
+        line-height: 1.4;
+        margin: 0;
+        color: var(--dev-text-secondary);
+      }
+    }
+
+    .warning-actions {
+      flex-shrink: 0;
+
+      .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.8rem;
+        background-color: var(--dev-bg-terciary);
+        border-color: var(--dev-border-color);
+        color: var(--dev-text-primary);
+
+        &:hover {
+          background-color: var(--dev-hover-bg);
+          border-color: var(--dev-border-color);
+          color: var(--dev-text-primary);
+        }
+      }
+    }
+  }
+
+  @include media-breakpoint-down(md) {
+    .warning-content {
+      flex-direction: column;
+      gap: 0.5rem;
+
+      .warning-actions {
+        align-self: stretch;
+
+        .btn {
+          width: 100%;
+        }
+      }
+    }
+  }
+}
+
+// Responsive
+@include media-breakpoint-down(md) {
+  .test-modal {
+    .modal-dialog {
+      margin: 1rem;
+    }
+  }
+
+  .test-results-area {
+    max-height: 300px;
+    font-size: 12px;
+  }
+}
+
+body #alert-container {
+  margin-top: 21px !important;
+}
+
+// Estilos globales adicionales para Dark Theme
+.dev-tools-container {
+  padding: 30px 0;
+  // Asegurar que el admin de WordPress tenga fondo dark
+  #wpcontent {
+    background-color: var(--dev-bg-primary) !important;
+  }
+
+  #wpbody-content {
+    background-color: var(--dev-bg-primary) !important;
+  }
+
+  // Alertas dark
+  .alert {
+    background-color: var(--dev-bg-secondary);
+    border-color: var(--dev-border-color);
+    color: var(--dev-text-primary);
+
+    &.alert-success {
+      background-color: rgba(25, 135, 84, 0.1);
+      border-color: var(--dev-success);
+      color: #51cf66;
+    }
+
+    &.alert-warning {
+      background-color: rgba(255, 193, 7, 0.1);
+      border-color: var(--dev-warning);
+      color: var(--dev-warning);
+    }
+
+    &.alert-danger {
+      background-color: rgba(220, 53, 69, 0.1);
+      border-color: var(--dev-danger);
+      color: #ff6b6b;
+    }
+
+    &.alert-info {
+      background-color: rgba(13, 202, 240, 0.1);
+      border-color: var(--dev-info);
+      color: var(--dev-info);
+    }
+  }
+
+  // Listas dark
+  .list-group {
+    .list-group-item {
+      background-color: var(--dev-bg-secondary);
+      border-color: var(--dev-border-color);
+      color: var(--dev-text-primary);
+
+      &:hover {
+        background-color: var(--dev-hover-bg);
+      }
+
+      &.active {
+        background-color: var(--dev-primary);
+        border-color: var(--dev-primary);
+        color: var(--dev-text-primary);
+      }
+    }
+  }
+
+  // Dropdown dark
+  .dropdown-menu {
+    background-color: var(--dev-bg-secondary);
+    border-color: var(--dev-border-color);
+
+    .dropdown-item {
+      color: var(--dev-text-primary);
+
+      &:hover,
+      &:focus {
+        background-color: var(--dev-hover-bg);
+        color: var(--dev-text-primary);
+      }
+    }
+
+    .dropdown-divider {
+      border-color: var(--dev-border-color);
+    }
+  }
+
+  // Breadcrumb dark
+  .breadcrumb {
+    background-color: var(--dev-bg-secondary);
+
+    .breadcrumb-item {
+      color: var(--dev-text-secondary);
+
+      &.active {
+        color: var(--dev-text-primary);
+      }
+
+      a {
+        color: var(--dev-primary);
+        text-decoration: none;
+
+        &:hover {
+          color: #17a2b8;
+        }
+      }
+    }
+  }
+
+  // Pagination dark
+  .pagination {
+    .page-item {
+      .page-link {
+        background-color: var(--dev-bg-secondary);
+        border-color: var(--dev-border-color);
+        color: var(--dev-text-primary);
+
+        &:hover {
+          background-color: var(--dev-hover-bg);
+          border-color: var(--dev-border-color);
+          color: var(--dev-text-primary);
+        }
+
+        &:focus {
+          box-shadow: 0 0 0 0.2rem var(--dev-focus-ring);
+        }
+      }
+
+      &.active .page-link {
+        background-color: var(--dev-primary);
+        border-color: var(--dev-primary);
+        color: var(--dev-text-primary);
+      }
+
+      &.disabled .page-link {
+        background-color: var(--dev-bg-terciary);
+        border-color: var(--dev-border-color);
+        color: var(--dev-text-muted);
+      }
+    }
+  }
+
+  // Text colors
+  .text-muted {
+    color: var(--dev-text-muted) !important;
+  }
+
+  .text-secondary {
+    color: var(--dev-text-secondary) !important;
+  }
+
+  // Background utilities dark
+  .bg-light {
+    background-color: var(--dev-bg-secondary) !important;
+  }
+
+  .bg-dark {
+    background-color: var(--dev-bg-primary) !important;
+  }
+
+  // Border utilities dark
+  .border {
+    border-color: var(--dev-border-color) !important;
+  }
+
+  .border-top {
+    border-top-color: var(--dev-border-color) !important;
+  }
+
+  .border-bottom {
+    border-bottom-color: var(--dev-border-color) !important;
+  }
+
+  .border-left {
+    border-left-color: var(--dev-border-color) !important;
+  }
+
+  .border-right {
+    border-right-color: var(--dev-border-color) !important;
+  }
+
+  .table i {
+    color: #fff !important;
+  }
+}
+
+// Estilos específicos para tabs de tests - Dark Theme
+#testsTabsNav {
+  border-bottom: 2px solid var(--dev-border-color);
+
+  .nav-link {
+    color: var(--dev-text-secondary);
+    background-color: transparent;
+    border: 1px solid transparent;
+    border-bottom: 2px solid transparent;
+    padding: 0.75rem 1.25rem;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background-color: var(--dev-bg-terciary);
+      color: var(--dev-text-primary);
+      border-color: var(--dev-border-color);
+      border-bottom-color: transparent;
+    }
+
+    &.active {
+      color: #fff;
+      background-color: var(--dev-primary);
+      border-color: var(--dev-border-color);
+      border-bottom-color: var(--dev-primary);
+      font-weight: 600;
+
+      // .badge {
+      //   background-color: #fff !important;
+      //   color: #333 !important;
+      // }
+    }
+
+    // Iconos en tabs
+    i {
+      font-size: 1rem;
+    }
+
+    // Badges en tabs
+    .badge {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      transition: all 0.3s ease;
+    }
+  }
+}
+
+// Contenido de tabs de tests
+#testsTabsContent {
+  background-color: var(--dev-bg-primary);
+
+  .tab-pane {
+    min-height: 200px;
+
+    // Encabezados de cada tab
+    h6 {
+      color: var(--dev-text-primary);
+      font-weight: 600;
+    }
+
+    // Tablas dentro de tabs
+    .table {
+      background-color: var(--dev-bg-primary);
+
+      th {
+        background-color: var(--dev-bg-terciary) !important;
+        color: var(--dev-text-primary);
+        border-color: var(--dev-border-color);
+        font-weight: 600;
+        padding: 0.75rem;
+      }
+
+      td {
+        color: var(--dev-text-primary);
+        border-color: var(--dev-border-color);
+        padding: 0.75rem;
+        vertical-align: middle;
+      }
+
+      // Hover en filas
+      tbody tr:hover {
+        background-color: var(--dev-hover-bg);
+      }
+
+      // Estilos para botones en la tabla
+      .btn-group .btn {
+        font-size: 0.875rem;
+        padding: 0.25rem 0.5rem;
+      }
+    }
+
+    // Estados vacíos
+    .text-center {
+      color: var(--dev-text-secondary);
+
+      i {
+        opacity: 0.6;
+      }
+
+      h6 {
+        color: var(--dev-text-secondary);
+      }
+    }
+  }
+}
+
+// Responsive para tabs de tests
+@media (max-width: 768px) {
+  #testsTabsNav {
+    .nav-link {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.875rem;
+
+      .fw-semibold {
+        display: none;
+      }
+
+      i {
+        margin-right: 0 !important;
+      }
+
+      .badge {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.4rem;
+      }
+    }
+  }
+
+  #testsTabsContent {
+    .tab-pane {
+      .d-flex.justify-content-between {
+        flex-direction: column;
+        align-items: flex-start !important;
+
+        > div:last-child {
+          margin-top: 1rem;
+          width: 100%;
+
+          .btn {
+            width: 100%;
+          }
+        }
+      }
+    }
+  }
+}

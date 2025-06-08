@@ -1,0 +1,208 @@
+# =================================
+# Tarokina Pro Dev Tools - .gitignore
+# =================================
+# Este archivo evita que se suban archivos innecesarios a GitHub
+# Mantiene solo el código fuente y configuración esencial
+
+# ==========================================
+# COMPOSER - Dependencias y archivos locales
+# ==========================================
+# Composer local descargado
+composer.phar
+
+# Directorio de dependencias de Composer
+vendor/
+
+# Archivo de lock (incluir en proyectos serios, excluir en desarrollo personal)
+# composer.lock
+
+# Cache de Composer
+.composer-cache/
+
+# ==========================================
+# NODE.JS - Dependencias frontend
+# ==========================================
+# Dependencias de Node.js
+node_modules/
+
+# Archivos de log de npm/yarn
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm/
+
+# Cache de Node.js
+.node_repl_history
+
+# ==========================================
+# PHPUNIT - Archivos de testing
+# ==========================================
+# Reportes de cobertura
+coverage/
+.coverage/
+coverage.xml
+clover.xml
+
+# Cache de PHPUnit
+.phpunit.result.cache
+
+# ==========================================
+# CONFIGURACIÓN PERSONAL
+# ==========================================
+# Variables de entorno locales
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.phpunit.cache
+.phpunit.result.cache
+
+# Logs de PHPUnit
+phpunit.log
+
+# ==========================================
+# WORDPRESS TESTING - Entorno de pruebas
+# ==========================================
+# Entorno temporal de WordPress (se instala automáticamente)
+/tmp/
+wordpress-test/
+wp-test-config.php
+
+# Framework oficial de WordPress PHPUnit (se clona automáticamente)
+wordpress-develop/
+wordpress-core-phpunit/
+
+# Base de datos de pruebas
+*.sql
+*.db
+*.sqlite
+
+# ==========================================
+# LOGS Y DEBUGGING
+# ==========================================
+# Logs del sistema
+*.log
+logs/
+debug.log
+error.log
+
+# Archivos de debug
+debug/
+.debug/
+debug-*.php
+
+# ==========================================
+# ARCHIVOS TEMPORALES
+# ==========================================
+# Archivos temporales del sistema
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Archivos temporales de editores
+*~
+*.swp
+*.swo
+*.tmp
+.vscode/
+.idea/
+*.sublime-*
+
+# Archivos de backup
+*.bak
+*.backup
+*.old
+
+# ==========================================
+# ARCHIVOS DE CONFIGURACIÓN SENSIBLES
+# ==========================================
+# Configuraciones locales (pueden contener credenciales)
+config-local.php
+wp-config-local.php
+.env
+.env.local
+
+# Claves y certificados
+*.key
+*.pem
+*.crt
+
+# ==========================================
+# ARCHIVOS GENERADOS AUTOMÁTICAMENTE
+# ==========================================
+# Documentación generada
+docs-generated/
+api-docs/
+
+# Archivos compilados
+*.compiled
+*.min.js
+*.min.css
+
+# ==========================================
+# DIRECTORIOS DE CACHE
+# ==========================================
+# Cache general
+cache/
+.cache/
+tmp/
+.tmp/
+
+# ==========================================
+# ARCHIVOS ESPECÍFICOS DEL PROYECTO
+# ==========================================
+# Simulaciones que contienen datos sensibles
+simulators/local-*
+simulators/production-*
+simulators/sensitive-*
+
+# Tests con datos reales
+tests/data-real/
+tests/production-data/
+
+# ==========================================
+# COMENTARIOS Y NOTAS
+# ==========================================
+# Incluir estos archivos en el repositorio:
+# ✅ composer.json (configuración de dependencias)
+# ✅ phpunit.xml (configuración de testing)
+# ✅ README.md (documentación)
+# ✅ Archivos fuente .php en tests/
+# ✅ Scripts en bin/
+# ✅ Configuraciones base
+
+# Excluir estos archivos del repositorio:
+# ❌ vendor/ (se regenera con composer install)
+# ❌ composer.phar (se descarga cuando se necesita)
+# ❌ coverage/ (se genera con cada test)
+# ❌ logs/ (archivos temporales)
+# ❌ .DS_Store y similares (específicos del sistema)
+
+# ==========================================
+# WEBPACK & NODE.JS - Build y dependencias
+# ==========================================
+# Dependencias de Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Archivos compilados por Webpack
+dist/
+*.min.js
+*.min.css
+*.map
+
+# Archivos temporales de build
+.tmp/
+.cache/
+.webpack/
+
+# ==========================================
+# ARCHIVOS TEMPORALES Y CACHE
+# ==========================================
