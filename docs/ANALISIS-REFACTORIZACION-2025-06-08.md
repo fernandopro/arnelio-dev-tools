@@ -822,3 +822,129 @@ cd dev-tools && npm run dev
 ```
 
 ---
+
+## 🔄 **ARQUITECTURA HÍBRIDA - SEPARACIÓN PLUGIN-ESPECÍFICA**
+
+### ⚠️ **Problema Crítico Identificado y Solucionado**
+
+**Descripción**: Cuando dev-tools se usa como submodule Git compartido entre múltiples plugins WordPress, las configuraciones y datos específicos de cada plugin se mezclaban, causando contaminación entre proyectos.
+
+**Impacto**: Configuraciones de testing, datos específicos de plugin, y archivos de configuración local se compartían inadvertidamente entre diferentes proyectos que usan el mismo submodule.
+
+### ✅ **Solución Implementada: Arquitectura Híbrida**
+
+#### 🔧 **Core Shared (Submodule Git)**
+```
+dev-tools/ (tracked in git submodule)
+├── core/                    # ✅ Núcleo compartido
+├── modules/                 # ✅ Módulos base compartidos  
+├── src/                     # ✅ Assets compartidos
+├── wp-tests-config.php      # ✅ Configuración genérica (reemplazada)
+└── config.php               # ✅ Sistema plugin-agnóstico
+```
+
+#### 🏠 **Local Plugin-Specific (Excluded from Git)**
+```
+dev-tools/ (local files excluded via .gitignore)
+├── config-local.php              # ❌ Plugin-specific configuration
+├── wp-tests-config-local.php     # ❌ Local testing settings
+├── phpunit-local.xml             # ❌ Local PHPUnit configuration
+├── run-tests-local.sh            # ❌ Local test runner
+├── LOCAL-SETUP.md                # ❌ Local documentation
+├── tests/plugin-specific/         # ❌ Plugin-specific tests
+├── reports/plugin-specific/       # ❌ Plugin-specific reports  
+├── logs/plugin-specific/          # ❌ Plugin-specific logs
+├── fixtures/plugin-data/          # ❌ Plugin-specific fixtures
+└── mocks/plugin-specific/         # ❌ Plugin-specific mocks
+```
+
+### 🛠️ **Herramientas de Migración**
+
+#### **1. Configuración Inicial**
+```bash
+# Configurar archivos locales para nuevo plugin
+./setup-local.sh
+```
+
+#### **2. Migración desde Configuración Mezclada**
+```bash
+# Migrar configuraciones existentes a archivos locales
+./migrate-to-local.sh
+```
+
+### 📋 **Git Exclusions (.gitignore)**
+```gitignore
+# Archivos específicos del plugin (no compartir entre proyectos)
+config-local.php
+wp-tests-config-local.php  
+wp-tests-config-tarokina.php
+phpunit-local.xml
+run-tests-local.sh
+LOCAL-SETUP.md
+
+# Directorios específicos del plugin
+tests/plugin-specific/
+reports/plugin-specific/
+logs/plugin-specific/
+fixtures/plugin-data/
+mocks/plugin-specific/
+```
+
+### 🔍 **Sistema de Detección Automática**
+```php
+// config-local.php - Auto-generado por setup-local.sh
+<?php
+return [
+    'plugin_name' => 'tarokina-2025',            # Auto-detectado
+    'plugin_version' => '2025.1.0',              # Del plugin principal
+    'admin_email' => 'admin@tarokina.local',     # Configuración local
+    'debug_mode' => true,                        # Environment-specific
+    'test_prefix' => 'tarokina_test_',           # Tablas de testing
+    'log_level' => 'debug'                       # Plugin-specific logging
+];
+```
+
+### 📊 **Estado de Implementación**
+
+#### ✅ **Completado**
+- [x] Identificación del problema de contaminación
+- [x] Diseño de arquitectura híbrida
+- [x] Implementación de .gitignore exclusions
+- [x] Creación de plantillas de configuración local
+- [x] Scripts de migración y setup automatizados
+- [x] Configuración genérica para core compartido
+- [x] Sistema de detección automática de plugin
+- [x] Testing con configuraciones separadas
+- [x] Validación de exclusiones Git
+
+#### ⚠️ **Beneficios Obtenidos**
+- **Seguridad**: Eliminada contaminación entre proyectos
+- **Flexibilidad**: Cada plugin mantiene sus configuraciones específicas
+- **Mantenibilidad**: Core compartido se actualiza independientemente
+- **Escalabilidad**: Fácil integración en nuevos plugins
+- **Compatibilidad**: Sistema retrocompatible con implementaciones existentes
+
+### 🎯 **Uso en Producción**
+
+#### **Para Proyectos Existentes**
+```bash
+# Migrar proyecto existente a arquitectura híbrida
+cd dev-tools
+./migrate-to-local.sh
+```
+
+#### **Para Nuevos Proyectos**
+```bash
+# Setup inicial para nuevo plugin
+cd dev-tools  
+./setup-local.sh
+```
+
+#### **Verificación del Estado**
+```bash
+# Verificar que archivos locales están excluidos de Git
+git status
+# Should show no plugin-specific files in staging area
+```
+
+---

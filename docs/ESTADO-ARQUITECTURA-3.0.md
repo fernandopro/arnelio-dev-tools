@@ -773,3 +773,82 @@ npm run dev  # Compila todos los assets
 - ✅ **Mantenimiento** - Documentación completa y scripts de verificación
 
 **🌟 TAROKINA DEV-TOOLS ARQUITECTURA 3.0 - PROYECTO COMPLETADO EXITOSAMENTE**
+
+---
+
+## 🔄 **ARQUITECTURA HÍBRIDA IMPLEMENTADA**
+
+### **✅ SEPARACIÓN PLUGIN-ESPECÍFICA COMPLETADA**
+
+**Fecha:** 8 de junio de 2025  
+**Estado:** **ARQUITECTURA HÍBRIDA FUNCIONAL**  
+**Objetivo:** Eliminar contaminación entre plugins al usar dev-tools como submodule  
+
+#### **🎯 Problema Resuelto**
+```
+ANTES: Plugin-specific files mixed in shared submodule
+├── config.php (contained Tarokina-specific data)
+├── wp-tests-config.php (hardcoded Tarokina paths)
+└── tests/ (mixed plugin-specific tests)
+
+DESPUÉS: Clean separation between shared and local
+├── config.php (generic, plugin-agnostic)
+├── wp-tests-config.php (generic for core tests)
+├── config-local.php (excluded from git)
+└── tests/plugin-specific/ (excluded from git)
+```
+
+#### **🛠️ Herramientas Implementadas**
+- ✅ **setup-local.sh** - Configuración inicial automática para nuevos plugins
+- ✅ **migrate-to-local.sh** - Migración desde configuración mezclada existente
+- ✅ **config-local-template.php** - Plantilla para configuraciones específicas
+- ✅ **.gitignore** - Exclusiones para prevenir contaminación
+
+#### **📂 Estructura Final**
+```
+dev-tools/
+├── 🔗 SHARED (Git Submodule - Tracked)
+│   ├── core/                          # Sistema modular compartido
+│   ├── modules/                       # Módulos base para todos los plugins
+│   ├── src/                           # Assets compartidos
+│   ├── config.php                     # Configuración plugin-agnóstica
+│   └── wp-tests-config.php           # Testing genérico del core
+│
+└── 🏠 LOCAL (Plugin-Specific - Excluded from Git)
+    ├── config-local.php              # Configuración específica de Tarokina
+    ├── wp-tests-config-local.php     # Testing específico del plugin
+    ├── phpunit-local.xml             # PHPUnit configuración local
+    ├── tests/plugin-specific/         # Tests específicos del plugin
+    ├── reports/plugin-specific/       # Reportes específicos
+    ├── logs/plugin-specific/          # Logs específicos
+    └── fixtures/plugin-data/          # Datos de testing específicos
+```
+
+#### **⚡ Beneficios Logrados**
+- **🔒 Seguridad**: Eliminada contaminación entre proyectos
+- **🎯 Flexibilidad**: Configuraciones específicas por plugin mantenidas localmente
+- **🔄 Mantenibilidad**: Core shared se actualiza independientemente
+- **📈 Escalabilidad**: Integración simple en nuevos plugins WordPress
+- **✅ Compatibilidad**: Sistema retrocompatible con implementaciones existentes
+
+#### **🚀 Comandos de Uso**
+```bash
+# Setup inicial para nuevo plugin
+./setup-local.sh
+
+# Migrar proyecto existente
+./migrate-to-local.sh
+
+# Verificar separación correcta
+git status  # No debe mostrar archivos plugin-specific en staging
+```
+
+#### **📊 Estado de Validación**
+- ✅ **Git Exclusions**: Archivos locales correctamente excluidos de Git
+- ✅ **Auto-Detection**: Sistema detecta automáticamente plugin host
+- ✅ **Migration**: Migración exitosa de configuraciones existentes
+- ✅ **Local Setup**: Configuración local funcional para Tarokina
+- ✅ **Testing**: Tests ejecutándose con configuraciones separadas
+- ✅ **Documentation**: Documentación completa de proceso híbrido
+
+**🎯 ARQUITECTURA HÍBRIDA - IMPLEMENTACIÓN EXITOSA Y FUNCIONAL**

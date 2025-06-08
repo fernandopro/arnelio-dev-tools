@@ -156,6 +156,46 @@ tmp/
 .tmp/
 
 # ==========================================
+# SEPARACIÓN PLUGIN-SPECIFIC vs SHARED CORE
+# ==========================================
+# CRÍTICO: Estos archivos deben ser excluidos para evitar contaminación
+# entre diferentes plugins que usan dev-tools como submódulo
+
+# Configuraciones específicas del plugin (LOCAL ONLY)
+wp-tests-config-local.php
+config-local.php
+tests-config-local.php
+
+# Tests específicos del plugin (LOCAL ONLY)
+tests/plugin-specific/
+tests/custom-plugin/
+tests/local/
+tests/**/plugin-*.php
+tests/**/*-local-*.php
+
+# Reports y logs específicos del plugin (LOCAL ONLY)
+reports/plugin-specific/
+logs/plugin-specific/
+coverage/plugin-specific/
+
+# Configuraciones CI/CD específicas del plugin (LOCAL ONLY)
+.github/workflows/plugin-*.yml
+.gitlab-ci-local.yml
+phpunit-local.xml
+phpstan-local.neon
+
+# Datos de testing específicos del plugin (LOCAL ONLY)
+fixtures/plugin-data/
+mocks/plugin-specific/
+test-data/local/
+
+# Archivos de configuración con nombres de plugins específicos
+*tarokina*-config.php
+*superman*-config.php
+*egipcio*-config.php
+wp-tests-config.tarokina.php
+
+# ==========================================
 # ARCHIVOS ESPECÍFICOS DEL PROYECTO
 # ==========================================
 # Simulaciones que contienen datos sensibles
