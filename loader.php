@@ -1,20 +1,42 @@
 <?php
 /**
- * Dev Tools Loader
- * Sistema plugin-agnóstico que detecta automáticamente el plugin host
+ * Dev Tools Loader - Arquitectura 3.0
+ * Sistema plugin-agnóstico con arquitectura modular
  * 
  * @package DevTools
- * @version 2.0.0
+ * @version 3.0.0
  * @since 1.0.0
  */
 
-// Cargar configuración global
-require_once __DIR__ . '/config.php';
+// Prevenir acceso directo
+if (!defined('ABSPATH')) {
+    exit;
+}
 
 // Solo cargar en el admin
 if (!is_admin()) {
     return;
 }
+
+// ========================================
+// CARGA DE COMPONENTES CORE
+// ========================================
+
+// 1. Configuración global (base del sistema)
+require_once __DIR__ . '/config.php';
+
+// 2. Sistema de logging y debug
+require_once __DIR__ . '/debug-ajax.php';
+
+// 3. Interfaces y clases base
+require_once __DIR__ . '/core/interfaces/DevToolsModuleInterface.php';
+require_once __DIR__ . '/core/DevToolsModuleBase.php';
+
+// 4. Manejador AJAX centralizado
+require_once __DIR__ . '/ajax-handler.php';
+
+// 5. Gestor de módulos
+require_once __DIR__ . '/core/DevToolsModuleManager.php';
 
 // Obtener configuración dinámica
 $config = dev_tools_config();
@@ -24,27 +46,153 @@ if (defined('WP_DEBUG') && WP_DEBUG) {
     define('DEV_TOOLS_DEBUG', true);
 }
 
-// Cargar sistema de debug
-require_once __DIR__ . '/debug-ajax.php';
-
-// Cargar el manejador AJAX
-require_once __DIR__ . '/ajax-handler.php';
+// ========================================
+// FUNCIONES DEL SISTEMA LEGACY (COMPATIBILIDAD)
+// ========================================
 
 /**
- * Registra el menú de dev-tools en el admin de WordPress (dinámico)
+ * Registra el menú de dev-tools en el admin de WordPress (LEGACY)
+ * NOTA: En arquitectura 3.0 esto lo maneja el DashboardModule
+ * Se mantiene por compatibilidad hasta migración completa
  */
 function dev_tools_admin_menu() {
     $config = dev_tools_config();
     
+    // Verificar si ya existe el menú (creado por DashboardModule)
+    global $_registered_pages;
+    $menu_slug = $config->get('dev_tools.menu_slug');
+    $page_hook = "tools_page_{$menu_slug}";
+    
+    if (isset($_registered_pages[$page_hook])) {
+        // El DashboardModule ya registró el menú
+        return;
+    }
+    
+    // Crear menú legacy si el DashboardModule no está disponible
     add_management_page(
         $config->get('dev_tools.page_title'),    // Título dinámico
         $config->get('dev_tools.menu_title'),    // Texto del menú
         $config->get('dev_tools.capability'),    // Capacidad requerida
         $config->get('dev_tools.menu_slug'),     // Slug dinámico
-        'dev_tools_page'                         // Función callback
+        'dev_tools_legacy_page'                  // Función callback legacy
     );
 }
-add_action('admin_menu', 'dev_tools_admin_menu');
+
+/**
+ * Página legacy de dev-tools
+ * Se usa solo si el DashboardModule no está disponible
+ */
+function dev_tools_legacy_page() {
+    ?>
+    <div class="wrap">
+        <h1>Dev Tools - Modo Compatibilidad</h1>
+        <div class="notice notice-warning">
+            <p><strong>Arquitectura 3.0 en transición:</strong> El sistema está cargando en modo compatibilidad. 
+            Los módulos se están inicializando...</p>
+        </div>
+        
+        <div class="card">
+            <h2>Estado del Sistema</h2>
+            <table class="widefat">
+                <tr>
+                    <td><strong>Configuración:</strong></td>
+                    <td><?php echo class_exists('DevToolsConfig') ? '✓ Cargada' : '✗ Error'; ?></td>
+                </tr>
+                <tr>
+                    <td><strong>AJAX Handler:</strong></td>
+                    <td><?php echo class_exists('DevToolsAjaxHandler') ? '✓ Cargado' : '✗ Error'; ?></td>
+                </tr>
+                <tr>
+                    <td><strong>Module Manager:</strong></td>
+                    <td><?php echo class_exists('DevToolsModuleManager') ? '✓ Cargado' : '✗ Error'; ?></td>
+                </tr>
+                <tr>
+                    <td><strong>Dashboard Module:</strong></td>
+                    <td>
+                        <?php 
+                        if (class_exists('DevToolsModuleManager')) {
+                            $manager = DevToolsModuleManager::getInstance();
+                            $dashboard = $manager->getModule('dashboard');
+                            echo $dashboard ? '✓ Disponible' : '⚠ No encontrado';
+                        } else {
+                            echo '✗ Manager no disponible';
+                        }
+                        ?>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        
+        <div class="card mt-4">
+            <h2>Acciones de Diagnóstico</h2>
+            <p>
+                <button class="button button-primary" onclick="testDevToolsSystem()">
+                    Test Sistema
+                </button>
+                <button class="button" onclick="refreshPage()">
+                    Refrescar Página
+                </button>
+            </p>
+        </div>
+    </div>
+    
+    <script>
+    function testDevToolsSystem() {
+        console.log('Testing dev-tools system...');
+        
+        // Test configuración
+        if (typeof devToolsConfig !== 'undefined') {
+            console.log('✓ Config disponible:', devToolsConfig);
+        } else {
+            console.log('✗ Config no disponible');
+        }
+        
+        // Test AJAX
+        if (typeof devToolsConfig !== 'undefined' && devToolsConfig.ajaxUrl) {
+            fetch(devToolsConfig.ajaxUrl, {
+                method: 'POST',
+                body: new FormData(Object.assign(document.createElement('form'), {
+                    innerHTML: `<input name="action" value="${devToolsConfig.actionPrefix}_dev_tools">
+                               <input name="action_type" value="ping">
+                               <input name="nonce" value="${devToolsConfig.nonce}">`
+                }))
+            })
+            .then(r => r.json())
+            .then(data => {
+                console.log('✓ AJAX Response:', data);
+                alert('Test completado. Ver consola para detalles.');
+            })
+            .catch(e => {
+                console.log('✗ AJAX Error:', e);
+                alert('Error en test AJAX. Ver consola.');
+            });
+        } else {
+            alert('No se puede realizar test AJAX: configuración no disponible');
+        }
+    }
+    
+    function refreshPage() {
+        window.location.reload();
+    }
+    </script>
+    
+    <style>
+    .card {
+        background: #fff;
+        border: 1px solid #ccd0d4;
+        padding: 20px;
+        margin: 20px 0;
+        box-shadow: 0 1px 1px rgba(0,0,0,.04);
+    }
+    .mt-4 {
+        margin-top: 20px;
+    }
+    </style>
+    <?php
+}
+
+// Registrar menú con prioridad baja para permitir que DashboardModule lo sobrescriba
+add_action('admin_menu', 'dev_tools_admin_menu', 999);
 
 /**
  * Encola los estilos y scripts para dev-tools (dinámico)

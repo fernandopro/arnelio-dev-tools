@@ -21,16 +21,25 @@ module.exports = (env, argv) => {
         },
 
         entry: {
-            // JavaScript principal de dev-tools
+            // JavaScript principal de dev-tools (SOLO archivos existentes)
             'dev-tools': path.resolve(__dirname, 'src/js/dev-tools.js'),
-            'dev-tools-tests': path.resolve(__dirname, 'src/js/dev-tools-tests.js'),
-            'dev-tools-docs': path.resolve(__dirname, 'src/js/dev-tools-docs.js'),
-            'dev-tools-maintenance': path.resolve(__dirname, 'src/js/dev-tools-maintenance.js'),
-            'dev-tools-settings': path.resolve(__dirname, 'src/js/dev-tools-settings.js'),
             'dev-utils': path.resolve(__dirname, 'src/js/dev-utils.js'),
             
+            // Dashboard Module - Arquitectura 3.0
+            'dashboard': path.resolve(__dirname, 'src/js/dashboard.js'),
+            
+            // System Info Module - Arquitectura 3.0
+            'system-info': path.resolve(__dirname, 'src/js/system-info.js'),
+            
+            // Cache Module - Arquitectura 3.0
+            'cache': path.resolve(__dirname, 'src/js/cache.js'),
+            
             // CSS principal
-            'dev-tools-styles': path.resolve(__dirname, 'src/scss/dev-tools.scss')
+            'dev-tools-styles': path.resolve(__dirname, 'src/scss/dev-tools.scss'),
+            
+            // TODO: Agregar cuando se creen más módulos:
+            // 'ajax-tester': path.resolve(__dirname, 'src/js/ajax-tester.js'),
+            // 'logs': path.resolve(__dirname, 'src/js/logs.js'),
         },
 
         output: {
