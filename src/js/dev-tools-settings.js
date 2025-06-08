@@ -2,7 +2,7 @@
  * Dev Tools - Settings Tab JavaScript
  * Gestión específica de la pestaña de configuración
  * 
- * @package TarokinaPro
+ * @package DevTools
  * @subpackage DevTools
  * @since 1.0.0
  */

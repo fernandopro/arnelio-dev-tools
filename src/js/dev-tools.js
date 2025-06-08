@@ -1,5 +1,5 @@
 /**
- * Tarokina Pro - Dev Tools Main Controller
+ * Dev Tools Main Controller - Plugin Agnóstico
  * 
  * Sistema principal de desarrollo que coordina todos los módulos del dev-tools.
  * Implementa los protocolos establecidos en guia-uso-tests.md para:
@@ -8,7 +8,7 @@
  * - Integración con DevToolsTestCase y WordPress PHPUnit oficial
  * - Compatibilidad con WordPress y Bootstrap
  * 
- * @package TarokinaPro
+ * @package DevTools
  * @subpackage DevTools
  * @version 2.0.0
  * @since 1.0.0
@@ -135,7 +135,6 @@ class DevToolsController {
         this.debugMode = (
             // Variables de entorno específicas del sistema
             this.checkEnvironmentVariable('DEV_TOOLS_TESTS_DEBUG') ||
-            this.checkEnvironmentVariable('TAROKINA_DEBUG_TRANSIENTS') ||
             this.checkEnvironmentVariable('DEV_TOOLS_TESTS_VERBOSE') ||
             // Desde configuración WordPress
             (typeof tkn_dev_tools_config !== 'undefined' && tkn_dev_tools_config.debug_mode) ||
@@ -232,6 +231,16 @@ class DevToolsController {
             // Logging mínimo durante inicialización normal
             this.logInternal('Configuración cargada - URLs dinámicas configuradas');
         }
+    }
+
+    /**
+     * Generar acción AJAX dinámicamente
+     * Usa el prefijo configurado desde PHP o fallback por defecto
+     */
+    getAjaxAction(action) {
+        // Usar el prefijo desde configuración si está disponible
+        const prefix = (this.config.ajaxAction || 'dev_tools').replace('_action', '');
+        return `${prefix}_${action}`;
     }
 
     /**
@@ -642,7 +651,7 @@ class DevToolsController {
             
             this.logInternal('🔍 Verificando conectividad AJAX...', { 
                 url: this.config.ajaxUrl,
-                action: 'tarokina_dev_tools_ping' 
+                action: this.getAjaxAction('ping')
             }, 'minimal');
             
             const response = await fetch(this.config.ajaxUrl, {
@@ -651,7 +660,7 @@ class DevToolsController {
                     'Content-Type': 'application/x-www-form-urlencoded'
                 },
                 body: new URLSearchParams({
-                    action: 'tarokina_dev_tools_ping'
+                    action: this.getAjaxAction('ping')
                 }),
                 signal: controller.signal
             });
@@ -673,8 +682,7 @@ class DevToolsController {
         } catch (error) {
             this.logError('❌ Error en verificación de conectividad AJAX', {
                 error: error.message,
-                url: this.config.ajaxUrl,
-                action: 'tarokina_dev_tools_ping'
+                url: this.config.ajaxUrl,                    action: this.getAjaxAction('ping')
             });
             return false;
         }
@@ -687,10 +695,10 @@ class DevToolsController {
     async checkAntiDeadlockSystem() {
         try {
             this.logInternal('🔍 Verificando sistema anti-deadlock...', { 
-                action: 'tarokina_dev_tools_check_anti_deadlock' 
+                action: this.getAjaxAction('check_anti_deadlock')
             }, 'minimal');
             
-            const response = await this.makeAjaxRequest('tarokina_dev_tools_check_anti_deadlock', {}, { timeout: 5000 });
+            const response = await this.makeAjaxRequest(this.getAjaxAction('check_anti_deadlock'), {}, { timeout: 5000 });
             
             if (response.success && response.data?.processes_ok) {
                 this.logInternal('✅ Sistema anti-deadlock OK', response.data, 'minimal');
@@ -702,7 +710,7 @@ class DevToolsController {
         } catch (error) {
             this.logError('❌ Error verificando sistema anti-deadlock', {
                 error: error.message,
-                action: 'tarokina_dev_tools_check_anti_deadlock'
+                action: this.getAjaxAction('check_anti_deadlock')
             });
             return false;
         }
@@ -714,10 +722,10 @@ class DevToolsController {
     async checkTestFramework() {
         try {
             this.logInternal('🔍 Verificando framework de testing...', { 
-                action: 'tarokina_dev_tools_check_test_framework' 
+                action: this.getAjaxAction('check_test_framework')
             }, 'minimal');
             
-            const response = await this.makeAjaxRequest('tarokina_dev_tools_check_test_framework', {}, { timeout: 5000 });
+            const response = await this.makeAjaxRequest(this.getAjaxAction('check_test_framework'), {}, { timeout: 5000 });
             
             if (response.success && response.data?.all_files_ok) {
                 this.logInternal('✅ Framework de testing OK', response.data, 'minimal');
@@ -729,7 +737,7 @@ class DevToolsController {
         } catch (error) {
             this.logError('❌ Error verificando framework de testing', {
                 error: error.message,
-                action: 'tarokina_dev_tools_check_test_framework'
+                action: this.getAjaxAction('check_test_framework')
             });
             return false;
         }
@@ -918,7 +926,7 @@ class DevToolsController {
             }
             
             // Determinar acción AJAX según tipo de formulario
-            let ajaxAction = `tarokina_dev_tools_${formType}`;
+            let ajaxAction = this.getAjaxAction(formType);
             
             // Realizar petición
             const response = await this.makeAjaxRequest(ajaxAction, data);

@@ -1,18 +1,65 @@
 /**
- * Tarokina Dev Tools - Sistema de Tests Simplificado
+ * Dev Tools - Sistema de Tests Simplificado
  * 
  * Sistema refactorizado que ejecuta tests directamente en console.log()
  * sin dependencias externas. Versión completamente funcional.
  * 
  * @version 2.1.0 - Limpio y optimizado
- * @author Tarokina Dev Tools
+ * @author Dev Tools System
  */
 
 class DevToolsTestRunner {
     constructor() {
         this.isRunning = false;
         this.currentTestButton = null;
+        
+        // Configuración dinámica del plugin
+        this.config = this.loadConfiguration();
+        
         this.init();
+    }
+
+    /**
+     * Cargar configuración dinámica del plugin
+     */
+    loadConfiguration() {
+        // Configuración desde WordPress localizada
+        if (typeof tkn_dev_tools_config !== 'undefined') {
+            return tkn_dev_tools_config;
+        }
+        
+        // Fallback con configuración por defecto
+        return {
+            ajaxUrl: '/wp-admin/admin-ajax.php',
+            ajaxAction: 'dev_tools_action',
+            pluginSlug: 'dev-tools'
+        };
+    }
+
+    /**
+     * Generar acción AJAX dinámicamente
+     */
+    getAjaxAction(action) {
+        const prefix = (this.config.ajaxAction || 'dev_tools_action').replace('_action', '');
+        return `${prefix}_${action}`;
+    }
+
+    /**
+     * Obtener URL de AJAX dinámicamente
+     */
+    getAjaxUrl() {
+        // 1. Desde configuración localizada
+        if (this.config.ajaxUrl) {
+            return this.config.ajaxUrl;
+        }
+        
+        // 2. Desde variable global WordPress
+        if (typeof ajaxurl !== 'undefined') {
+            return ajaxurl;
+        }
+        
+        // 3. Construcción manual
+        return '/wp-admin/admin-ajax.php';
     }
 
     /**
@@ -394,23 +441,23 @@ class DevToolsTestRunner {
         // Obtener la URL de AJAX desde la configuración localizada
         const ajaxUrl = this.getAjaxUrl();
         
-        // Mapear acciones de JavaScript a acciones PHP correctas
+        // Mapear acciones de JavaScript a acciones PHP correctas con configuración dinámica
         const actionMap = {
-            'run_single_test': 'tarokina_run_single_test',
-            'run_wp_tests': 'tarokina_dev_tools_action',
-            'refresh_tests': 'tarokina_dev_tools_action',
-            'delete_test': 'tarokina_dev_tools_action'
+            'run_single_test': this.getAjaxAction('run_single_test'),
+            'run_wp_tests': this.getAjaxAction('action'),
+            'refresh_tests': this.getAjaxAction('action'),
+            'delete_test': this.getAjaxAction('action')
         };
         
-        const phpAction = actionMap[action] || `tarokina_${action}`;
+        const phpAction = actionMap[action] || this.getAjaxAction(action);
         
         const requestData = {
             action: phpAction,
             ...data
         };
         
-        // Para acciones que van a través de tarokina_dev_tools_action, agregar dev_action
-        if (phpAction === 'tarokina_dev_tools_action') {
+        // Para acciones que van a través del handler principal, agregar dev_action
+        if (phpAction === this.getAjaxAction('action')) {
             requestData.dev_action = action;
         }
         
@@ -653,16 +700,17 @@ class DevToolsTestRunner {
             /Not running ajax tests\. To execute these/,
             /Not running ms-files tests\. To execute these/,
             /Not running external-http tests\. To execute these/,
-            // Mensajes de carga del plugin Tarokina
-            /Tarokina PRO - Cargando el plugin\.\.\./,
-            /✅ TAROKINA TESTS: Plugin Tarokina Pro cargado exitosamente/,
+            // Mensajes dinámicos de carga del plugin (usar nombre configurado)
+            new RegExp(`${this.config.pluginName || 'Plugin'} - Cargando el plugin\\.\\.\\.`),
+            new RegExp(`✅ .+ TESTS: Plugin .+ cargado exitosamente`),
             /📁 Plugin Path:/,
             /🌐 Plugin URL:/,
-            /✅ TAROKINA TESTS: Custom Post Types registrados correctamente/,
-            /✅ TAROKINA TESTS: Taxonomías registradas correctamente/,
-            /✅ TAROKINA TESTS: Funciones principales del plugin disponibles/,
-            /TAROKINA: Baraja predeterminada ya existe/,
-            /TKINA: Verificando datos de la versión más reciente/,
+            new RegExp(`✅ .+ TESTS: Custom Post Types registrados correctamente`),
+            new RegExp(`✅ .+ TESTS: Taxonomías registradas correctamente`),
+            new RegExp(`✅ .+ TESTS: Funciones principales del plugin disponibles`),
+            // Mensajes genéricos del plugin
+            new RegExp(`.+: Baraja predeterminada ya existe`),
+            new RegExp(`.+: Verificando datos de la versión más reciente`),
             // Información de configuración de PHPUnit (solo en exitosos)
             /PHPUnit \d+\.\d+\.\d+ by Sebastian Bergmann and contributors\./,
             /Runtime:\s+PHP \d+\.\d+\.\d+/,
@@ -792,7 +840,10 @@ window.devTestsDebug = {
      */
     async testConnection() {
         try {
-            const ajaxUrl = this.getAjaxUrl();
+            // Usar configuración dinámica si está disponible
+            const config = window.DevToolsTestRunner?.config || { ajaxUrl: '/wp-admin/admin-ajax.php', ajaxAction: 'dev_tools_action' };
+            const ajaxUrl = config.ajaxUrl || '/wp-admin/admin-ajax.php';
+            const prefix = (config.ajaxAction || 'dev_tools_action').replace('_action', '');
             
             const response = await fetch(ajaxUrl, {
                 method: 'POST',
@@ -800,7 +851,7 @@ window.devTestsDebug = {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
                 body: new URLSearchParams({
-                    action: 'tarokina_dev_tools_action',
+                    action: `${prefix}_action`,
                     dev_action: 'test_connection'
                 })
             });

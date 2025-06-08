@@ -1,6 +1,6 @@
 <?php
 /**
- * Bootstrap para Tests de Tarokina Pro con Framework Oficial de WordPress PHPUnit
+ * Bootstrap para Tests Plugin-Agnóstico con Framework Oficial de WordPress PHPUnit
  * 
  * Este archivo inicializa el entorno de testing usando el framework oficial
  * de WordPress clonado desde: https://github.com/WordPress/wordpress-develop
@@ -10,7 +10,7 @@
  * - Prefijo tablas: 'wp_test_' (diferente al principal 'wp_')
  * - URL: http://localhost:10019 (detección dinámica)
  * 
- * @package TarokinaPro
+ * @package DevTools
  * @subpackage DevTools\Tests
  * @since 1.0.0
  */

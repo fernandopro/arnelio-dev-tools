@@ -1,8 +1,8 @@
 /**
- * Tarokina Pro - Dev Tools Utilities
- * Utilidades adicionales para el sistema de desarrollo
+ * Dev Tools - Utilities
+ * Funciones de utilidad para el sistema de desarrollo
  * 
- * @package TarokinaPro
+ * @package DevTools
  * @subpackage DevTools
  * @since 1.0.0
  */

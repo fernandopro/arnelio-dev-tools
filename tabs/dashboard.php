@@ -60,10 +60,10 @@ $stats = [
                             <tr>
                                 <td><strong>Modo:</strong></td>
                                 <td>
-                                    <?php if (TAROKINA_PRODUCTION_MODE): ?>
-                                        <span class="badge bg-danger">PRODUCCIÓN</span>
-                                    <?php else: ?>
+                                    <?php if ($config->is_debug_mode()): ?>
                                         <span class="badge text-bg-info">DESARROLLO</span>
+                                    <?php else: ?>
+                                        <span class="badge bg-danger">PRODUCCIÓN</span>
                                     <?php endif; ?>
                                 </td>
                             </tr>

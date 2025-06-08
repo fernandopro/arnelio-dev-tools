@@ -40,14 +40,17 @@ if (!defined('DEV_TOOLS_VERBOSE')) {
 
 // CRÍTICO: Solo definir constantes específicas para nuestros tests AJAX
 // Y solo cuando sea realmente necesario (durante ejecución de tests)
-function tarokina_define_test_constants_if_needed() {
+function dev_tools_define_test_constants_if_needed() {
+    // Obtener configuración dinámica
+    $config = dev_tools_config();
+    
     // Solo definir si estamos ejecutando un test específico de dev-tools
     $action = $_POST['action'] ?? $_GET['action'] ?? '';
     
     $dev_tools_actions = [
-        'tarokina_dev_tools_action',
-        'tarokina_run_single_test',
-        'tarokina_dev_tools_status'
+        $config->get('ajax.action_prefix') . '_dev_tools_action',
+        $config->get('ajax.action_prefix') . '_run_single_test',
+        $config->get('ajax.action_prefix') . '_dev_tools_status'
     ];
     
     if (in_array($action, $dev_tools_actions)) {
@@ -104,7 +107,7 @@ function generate_test_header($test_name, $test_number = 1, $test_type = null) {
 /**
  * Inicializar los handlers AJAX de forma segura
  */
-function tarokina_dev_tools_init_ajax() {
+function dev_tools_init_ajax() {
     // CRÍTICO: Solo inicializar si estamos en admin o AJAX
     if (!is_admin() && !wp_doing_ajax()) {
         return;
@@ -115,29 +118,33 @@ function tarokina_dev_tools_init_ajax() {
         return;
     }
     
+    // Obtener configuración dinámica
+    $config = dev_tools_config();
+    $action_prefix = $config->get('ajax.action_prefix');
+    
     // Acciones para usuarios con permisos de administrador
     $admin_actions = [
-        'tarokina_dev_tools_action',
-        'tarokina_dev_tools_status',
-        'tarokina_dev_tools_get_logs',
-        'tarokina_create_simulator',
-        'tarokina_create_doc',
-        'tarokina_save_settings',
-        'tarokina_update_phpunit_config',
-        'tarokina_run_single_test'
+        $action_prefix . '_dev_tools_action',
+        $action_prefix . '_dev_tools_status',
+        $action_prefix . '_dev_tools_get_logs',
+        $action_prefix . '_create_simulator',
+        $action_prefix . '_create_doc',
+        $action_prefix . '_save_settings',
+        $action_prefix . '_update_phpunit_config',
+        $action_prefix . '_run_single_test'
     ];
     
     foreach ($admin_actions as $action) {
-        add_action('wp_ajax_' . $action, 'tarokina_dev_tools_ajax_handler');
+        add_action('wp_ajax_' . $action, 'dev_tools_ajax_handler');
     }
 }
 
 /**
  * Handler principal para todas las peticiones AJAX
  */
-function tarokina_dev_tools_ajax_handler() {
+function dev_tools_ajax_handler() {
     // Definir constantes de test solo si es necesario
-    tarokina_define_test_constants_if_needed();
+    dev_tools_define_test_constants_if_needed();
     
     // Verificar permisos
     if (!current_user_can('manage_options')) {
@@ -145,19 +152,23 @@ function tarokina_dev_tools_ajax_handler() {
         return;
     }
     
+    // Obtener configuración dinámica
+    $config = dev_tools_config();
+    $action_prefix = $config->get('ajax.action_prefix');
+    
     // Obtener la acción
     $action = $_POST['action'] ?? '';
     
     // Verificar nonce según el tipo de acción
     $nonce_actions = [
-        'tarokina_dev_tools_action' => 'dev_tools_action',
-        'tarokina_dev_tools_status' => 'dev_tools_status',
-        'tarokina_dev_tools_get_logs' => 'dev_tools_logs',
-        'tarokina_create_simulator' => 'create_simulator',
-        'tarokina_create_doc' => 'create_doc',
-        'tarokina_save_settings' => 'save_settings',
-        'tarokina_update_phpunit_config' => 'update_phpunit_config',
-        'tarokina_run_single_test' => 'run_single_test'
+        $action_prefix . '_dev_tools_action' => 'dev_tools_action',
+        $action_prefix . '_dev_tools_status' => 'dev_tools_status',
+        $action_prefix . '_dev_tools_get_logs' => 'dev_tools_logs',
+        $action_prefix . '_create_simulator' => 'create_simulator',
+        $action_prefix . '_create_doc' => 'create_doc',
+        $action_prefix . '_save_settings' => 'save_settings',
+        $action_prefix . '_update_phpunit_config' => 'update_phpunit_config',
+        $action_prefix . '_run_single_test' => 'run_single_test'
     ];
     
     if (isset($nonce_actions[$action])) {
@@ -184,28 +195,28 @@ function tarokina_dev_tools_ajax_handler() {
     
     // Enrutar a la función correspondiente
     switch ($action) {
-        case 'tarokina_dev_tools_action':
+        case $action_prefix . '_dev_tools_action':
             handle_dev_tools_action();
             break;
-        case 'tarokina_dev_tools_status':
+        case $action_prefix . '_dev_tools_status':
             handle_system_status();
             break;
-        case 'tarokina_dev_tools_get_logs':
+        case $action_prefix . '_dev_tools_get_logs':
             handle_get_logs();
             break;
-        case 'tarokina_create_simulator':
+        case $action_prefix . '_create_simulator':
             handle_create_simulator();
             break;
-        case 'tarokina_create_doc':
+        case $action_prefix . '_create_doc':
             handle_create_doc();
             break;
-        case 'tarokina_save_settings':
+        case $action_prefix . '_save_settings':
             handle_save_settings();
             break;
-        case 'tarokina_update_phpunit_config':
+        case $action_prefix . '_update_phpunit_config':
             handle_update_phpunit_config();
             break;
-        case 'tarokina_run_single_test':
+        case $action_prefix . '_run_single_test':
             handle_run_single_test_direct();
             break;
         default:
@@ -927,7 +938,8 @@ function export_logs() {
     }
     
     $logs = file_get_contents($log_file);
-    $filename = 'tarokina-dev-tools-logs-' . date('Y-m-d-H-i-s') . '.txt';
+    $config = dev_tools_config();
+    $filename = $config->get('plugin.slug') . '-dev-tools-logs-' . date('Y-m-d-H-i-s') . '.txt';
     
     // En un entorno real, aquí se generaría la descarga
     wp_send_json_success([
@@ -1090,6 +1102,8 @@ if (basename(__FILE__) === basename(\$_SERVER['SCRIPT_NAME'])) {
  * Guarda la configuración del sistema
  */
 function handle_save_settings() {
+    $config = dev_tools_config();
+    
     $settings = [
         'debug_mode' => isset($_POST['debug_mode']),
         'auto_refresh' => isset($_POST['auto_refresh']),
@@ -1102,7 +1116,7 @@ function handle_save_settings() {
         'notification_email' => sanitize_email($_POST['notification_email'] ?? get_option('admin_email'))
     ];
     
-    $result = update_option('tarokina_dev_tools_settings', $settings);
+    $result = update_option($config->get('plugin.slug') . '_dev_tools_settings', $settings);
     
     if ($result) {
         wp_send_json_success([
@@ -1418,11 +1432,13 @@ function create_wp_unitcase_test() {
     }
     
     // Plantilla del test
+    $config = dev_tools_config();
+    $package_name = $config->get('plugin.name');
     $template = '<?php
 /**
  * Test: ' . $class_name . '
  * 
- * @package TarokinaPro
+ * @package ' . $package_name . '
  * @subpackage DevTools
  */
 
@@ -2470,8 +2486,8 @@ function reset_wp_test_database() {
 
 // CRÍTICO: Inicializar SOLO en contextos apropiados
 // Usar hook de WordPress para asegurar carga correcta
-add_action('admin_init', 'tarokina_dev_tools_init_ajax');
-add_action('wp_ajax_nopriv_tarokina_dev_tools_action', function() {
+add_action('admin_init', 'dev_tools_init_ajax');
+add_action('wp_ajax_nopriv_dev_tools_action', function() {
     wp_send_json_error('No autorizado.');
 });
 
@@ -2483,7 +2499,7 @@ add_action('wp_ajax_nopriv_tarokina_dev_tools_action', function() {
 /**
  * Endpoint para verificar conectividad básica
  */
-function tarokina_dev_tools_ping_handler() {
+function dev_tools_ping_handler() {
     // Verificar permisos
     if (!current_user_can('manage_options')) {
         wp_send_json_error(['message' => 'Permisos insuficientes']);
@@ -2507,7 +2523,7 @@ function tarokina_dev_tools_ping_handler() {
 /**
  * Endpoint para verificar el sistema anti-deadlock
  */
-function tarokina_dev_tools_check_anti_deadlock_handler() {
+function dev_tools_check_anti_deadlock_handler() {
     // Verificar permisos
     if (!current_user_can('manage_options')) {
         wp_send_json_error(['message' => 'Permisos insuficientes']);
@@ -2553,7 +2569,7 @@ function tarokina_dev_tools_check_anti_deadlock_handler() {
 /**
  * Endpoint para verificar el framework de testing
  */
-function tarokina_dev_tools_check_test_framework_handler() {
+function dev_tools_check_test_framework_handler() {
     // Verificar permisos
     if (!current_user_can('manage_options')) {
         wp_send_json_error(['message' => 'Permisos insuficientes']);
@@ -2853,18 +2869,21 @@ function generate_failed_tests_summary($failed_tests, $test_type = '') {
     return $summary;
 }
 
-// Registrar los nuevos endpoints AJAX
-add_action('wp_ajax_tarokina_dev_tools_ping', 'tarokina_dev_tools_ping_handler');
-add_action('wp_ajax_tarokina_dev_tools_check_anti_deadlock', 'tarokina_dev_tools_check_anti_deadlock_handler');
-add_action('wp_ajax_tarokina_dev_tools_check_test_framework', 'tarokina_dev_tools_check_test_framework_handler');
+// Registrar los nuevos endpoints AJAX con configuración dinámica
+$config = dev_tools_config();
+$action_prefix = $config->get('ajax.action_prefix');
+
+add_action('wp_ajax_' . $action_prefix . '_dev_tools_ping', 'dev_tools_ping_handler');
+add_action('wp_ajax_' . $action_prefix . '_dev_tools_check_anti_deadlock', 'dev_tools_check_anti_deadlock_handler');
+add_action('wp_ajax_' . $action_prefix . '_dev_tools_check_test_framework', 'dev_tools_check_test_framework_handler');
 
 // Bloquear acceso no autorizado a los nuevos endpoints
-add_action('wp_ajax_nopriv_tarokina_dev_tools_ping', function() {
+add_action('wp_ajax_nopriv_' . $action_prefix . '_dev_tools_ping', function() {
     wp_send_json_error('No autorizado.');
 });
-add_action('wp_ajax_nopriv_tarokina_dev_tools_check_anti_deadlock', function() {
+add_action('wp_ajax_nopriv_' . $action_prefix . '_dev_tools_check_anti_deadlock', function() {
     wp_send_json_error('No autorizado.');
 });
-add_action('wp_ajax_nopriv_tarokina_dev_tools_check_test_framework', function() {
+add_action('wp_ajax_nopriv_' . $action_prefix . '_dev_tools_check_test_framework', function() {
     wp_send_json_error('No autorizado.');
 });

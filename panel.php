@@ -1,8 +1,12 @@
 <?php
 /**
  * Dev Tools Panel Principal
- * Sistema de herramientas de desarrollo para Tarokina Pro
+ * Sistema de herramientas de desarrollo plugin-agnóstico
  * Utiliza Bootstrap para la interfaz y JavaScript moderno (ES6+)
+ * 
+ * @package DevTools
+ * @version 2.0.0
+ * @since 1.0.0
  */
 
 // Verificar permisos
@@ -10,6 +14,8 @@ if (!current_user_can('manage_options')) {
     wp_die(__('No tienes permisos suficientes para acceder a esta página.'));
 }
 
+// Obtener configuración dinámica
+$config = dev_tools_config();
 
 // Obtener la URL base del admin usando nuestra función consistente
 $admin_base_url = dev_tools_get_admin_url();
@@ -27,23 +33,23 @@ $tabs = [
 ?>
 
 <div class="wrap">
-    <div id="tarokina-dev-tools-panel" class="dev-tools-container">
+    <div id="dev-tools-panel" class="dev-tools-container">
         <div class="container">
-            <!-- Header -->
-            <div class="dev-tools-header <?php echo TAROKINA_PRODUCTION_MODE ? 'production-warning' : ''; ?>">
+            <!-- Header dinámico -->
+            <div class="dev-tools-header <?php echo $config->is_debug_mode() ? '' : 'production-warning'; ?>">
                 <div class="container">
                     <div class="row align-items-center">
                         <div class="col-md-8">
                             <div class="h2 mb-2">
                                 <i class="bi bi-tools"></i>
-                                Tarokina Pro - Dev Tools
+                                <?php echo esc_html($config->get('dev_tools.page_title')); ?>
                             </div>
                             <p class="mb-0 opacity-75">
                                 Sistema de herramientas de desarrollo y testing
-                                <?php if (TAROKINA_PRODUCTION_MODE): ?>
-                                    <span class="badge bg-danger ms-2">⚠️ MODO PRODUCCIÓN</span>
-                                <?php else: ?>
+                                <?php if ($config->is_debug_mode()): ?>
                                     <span class="badge bg-secondary ms-2">🛠️ MODO DESARROLLO</span>
+                                <?php else: ?>
+                                    <span class="badge bg-danger ms-2">⚠️ MODO PRODUCCIÓN</span>
                                 <?php endif; ?>
                             </p>
                         </div>
@@ -65,7 +71,7 @@ $tabs = [
                     <?php foreach ($tabs as $tab_key => $tab_info): ?>
                         <li style="margin-right: 5px" class="nav-item" role="presentation">
                             <a class="nav-link <?php echo $current_tab === $tab_key ? 'active' : ''; ?>"
-                               href="<?php echo dev_tools_get_admin_url('tools.php?page=tarokina-dev-tools&tab=' . $tab_key); ?>"
+                               href="<?php echo dev_tools_get_admin_url('tools.php?page=' . $config->get('dev_tools.menu_slug') . '&tab=' . $tab_key); ?>"
                                role="tab">
                                 <?php echo $tab_info['title']; ?>
                             </a>
