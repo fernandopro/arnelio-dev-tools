@@ -19,6 +19,14 @@ if (!is_admin()) {
 // Obtener configuración dinámica
 $config = dev_tools_config();
 
+// Habilitar modo debug si está en desarrollo
+if (defined('WP_DEBUG') && WP_DEBUG) {
+    define('DEV_TOOLS_DEBUG', true);
+}
+
+// Cargar sistema de debug
+require_once __DIR__ . '/debug-ajax.php';
+
 // Cargar el manejador AJAX
 require_once __DIR__ . '/ajax-handler.php';
 

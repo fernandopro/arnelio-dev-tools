@@ -33,7 +33,10 @@ class DevToolsController {
         // 🔧 CONTROL MANUAL DE VERBOSE LOGGING
         // Cambia esto a 'true' para activar logging detallado de debug
         // Cambia a 'false' para consola limpia (recomendado para testing normal)
-        this.VERBOSE_DEBUG_LOGGING = false;
+        this.VERBOSE_DEBUG_LOGGING = true; // Cambiado a true para debugging
+
+        // AJAX Debug Mode - activar para depurar errores 400
+        this.AJAX_DEBUG_MODE = true;
 
         // Estado interno del sistema
         this.isInitialized = false;
@@ -111,6 +114,64 @@ class DevToolsController {
         } catch (error) {
             this.logError('Error durante la inicialización del DevToolsController', error);
         }
+    }
+
+    /**
+     * Obtener información de debug AJAX
+     * Llamar esta función desde la consola para diagnosticar problemas AJAX
+     */
+    async getAjaxDebugInfo() {
+        if (!this.AJAX_DEBUG_MODE) {
+            console.warn('AJAX Debug Mode no está activado. Actívalo para obtener más información.');
+        }
+
+        const debugInfo = {
+            timestamp: new Date().toISOString(),
+            controller_state: {
+                isInitialized: this.isInitialized,
+                debugMode: this.debugMode,
+                verboseMode: this.verboseMode,
+                AJAX_DEBUG_MODE: this.AJAX_DEBUG_MODE
+            },
+            config: this.config,
+            test_actions: {}
+        };
+
+        // Probar algunas acciones básicas
+        const testActions = ['ping', 'check_anti_deadlock', 'check_test_framework'];
+        
+        for (const action of testActions) {
+            const fullAction = this.getAjaxAction(action);
+            debugInfo.test_actions[action] = {
+                generated_action: fullAction,
+                expected_endpoint: `wp_ajax_${fullAction}`
+            };
+            
+            // Intentar ping básico
+            if (action === 'ping') {
+                try {
+                    console.log(`🔍 Probando ${fullAction}...`);
+                    const response = await fetch(this.config.ajaxUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: new URLSearchParams({ action: fullAction })
+                    });
+                    
+                    debugInfo.test_actions[action].test_result = {
+                        status: response.status,
+                        ok: response.ok,
+                        response: response.ok ? await response.json() : await response.text()
+                    };
+                } catch (error) {
+                    debugInfo.test_actions[action].test_result = {
+                        error: error.message
+                    };
+                }
+            }
+        }
+
+        console.log('🔍 AJAX Debug Info:', debugInfo);
+        return debugInfo;
     }
 
     /**
@@ -203,15 +264,38 @@ class DevToolsController {
     }
 
     /**
+     * Encontrar la variable de configuración dinámica
+     * Busca variables que terminen en '_dev_tools_config'
+     */
+    findDevToolsConfig() {
+        // Buscar variables que terminen en '_dev_tools_config'
+        const configVars = Object.keys(window).filter(key => 
+            key.endsWith('_dev_tools_config')
+        );
+        
+        if (configVars.length > 0) {
+            return window[configVars[0]];
+        }
+        
+        // Fallback a la variable estática (compatibilidad)
+        if (typeof window.tkn_dev_tools_config !== 'undefined') {
+            return window.tkn_dev_tools_config;
+        }
+        
+        return null;
+    }
+
+    /**
      * Cargar configuración del sistema
      * Integra con configuración WordPress y Local by Flywheel
      */
     loadConfiguration() {
-        // Configuración desde WordPress localizada
-        if (typeof tkn_dev_tools_config !== 'undefined') {
+        // Configuración desde WordPress localizada (dinámica)
+        const devToolsConfig = this.findDevToolsConfig();
+        if (devToolsConfig) {
             this.config = {
                 ...this.config,
-                ...tkn_dev_tools_config
+                ...devToolsConfig
             };
         }
 
@@ -764,6 +848,17 @@ class DevToolsController {
             ...data
         });
 
+        // AJAX DEBUG: Log detallado cuando está habilitado
+        if (this.AJAX_DEBUG_MODE) {
+            console.group('🔍 AJAX DEBUG');
+            console.log('Action:', action);
+            console.log('URL:', this.config.ajaxUrl);
+            console.log('Nonce:', this.config.nonce);
+            console.log('Request Data:', Object.fromEntries(requestData));
+            console.log('Config Available:', !!this.config);
+            console.log('Full Config:', this.config);
+        }
+
         // Crear AbortController para timeout
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), requestOptions.timeout);
@@ -780,11 +875,29 @@ class DevToolsController {
 
             clearTimeout(timeoutId);
 
+            // AJAX DEBUG: Log response details
+            if (this.AJAX_DEBUG_MODE) {
+                console.log('Response Status:', response.status);
+                console.log('Response OK:', response.ok);
+                console.log('Response Headers:', Object.fromEntries(response.headers));
+            }
+
             if (!response.ok) {
+                if (this.AJAX_DEBUG_MODE) {
+                    const responseText = await response.clone().text();
+                    console.log('Error Response Text:', responseText.substring(0, 500));
+                    console.groupEnd();
+                }
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
 
             const result = await response.json();
+            
+            // AJAX DEBUG: Log successful response
+            if (this.AJAX_DEBUG_MODE) {
+                console.log('Response Data:', result);
+                console.groupEnd();
+            }
             
             this.logDebug(`📥 Respuesta AJAX: ${action}`, result);
             
@@ -792,6 +905,12 @@ class DevToolsController {
 
         } catch (error) {
             clearTimeout(timeoutId);
+            
+            // AJAX DEBUG: Log error details
+            if (this.AJAX_DEBUG_MODE) {
+                console.error('AJAX Request Failed:', error);
+                console.groupEnd();
+            }
             
             // Información detallada del error para debugging
             const errorInfo = {

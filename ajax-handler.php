@@ -122,6 +122,12 @@ function dev_tools_init_ajax() {
     $config = dev_tools_config();
     $action_prefix = $config->get('ajax.action_prefix');
     
+    // NUEVA SECCIÓN: Registrar acciones específicas que estaban faltando
+    // Estas son las acciones que aparecían en los logs de error
+    add_action('wp_ajax_' . $action_prefix . '_dev_tools_ping', 'dev_tools_ping_handler');
+    add_action('wp_ajax_' . $action_prefix . '_dev_tools_check_anti_deadlock', 'dev_tools_check_anti_deadlock_handler');
+    add_action('wp_ajax_' . $action_prefix . '_dev_tools_check_test_framework', 'dev_tools_check_test_framework_handler');
+    
     // Acciones para usuarios con permisos de administrador
     $admin_actions = [
         $action_prefix . '_dev_tools_action',

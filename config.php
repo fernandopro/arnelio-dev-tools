@@ -151,6 +151,12 @@ class DevToolsConfig {
                 'test_config_var' => $this->sanitize_js_var($slug) . '_test_config'
             ],
             
+            // Configuración AJAX (CRÍTICO: faltaba esta sección)
+            'ajax' => [
+                'action_prefix' => $slug,
+                'nonce_action' => $slug . '_dev_tools_nonce'
+            ],
+            
             // Assets dinámicos
             'assets' => [
                 'css_handle' => $slug . '-dev-tools-css',
