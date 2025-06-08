@@ -37,11 +37,16 @@ module.exports = (env, argv) => {
             // AJAX Tester Module - Arquitectura 3.0
             'ajax-tester': path.resolve(__dirname, 'src/js/ajax-tester.js'),
             
+            // Logs Module - Arquitectura 3.0
+            'logs': path.resolve(__dirname, 'src/js/logs.js'),
+            
+            // Performance Module - Arquitectura 3.0
+            'performance': path.resolve(__dirname, 'src/js/performance.js'),
+            
             // CSS principal
             'dev-tools-styles': path.resolve(__dirname, 'src/scss/dev-tools.scss'),
             
-            // TODO: Agregar cuando se creen más módulos:
-            // 'logs': path.resolve(__dirname, 'src/js/logs.js'),
+            // TODO: Agregar cuando se creen más módulos adicionales si es necesario
         },
 
         output: {

@@ -61,6 +61,18 @@ class AjaxTesterModule extends DevToolsModuleBase {
     }
     
     /**
+     * Registrar comandos AJAX del módulo
+     */
+    public function registerAjaxCommands(DevToolsAjaxHandler $ajaxHandler): void {
+        $ajaxHandler->registerCommand('test_ajax_endpoint', [$this, 'handle_test_ajax_endpoint']);
+        $ajaxHandler->registerCommand('get_test_history', [$this, 'handle_get_test_history']);
+        $ajaxHandler->registerCommand('clear_test_history', [$this, 'handle_clear_test_history']);
+        $ajaxHandler->registerCommand('save_test_preset', [$this, 'handle_save_test_preset']);
+        $ajaxHandler->registerCommand('load_test_presets', [$this, 'handle_load_test_presets']);
+        $ajaxHandler->registerCommand('get_wordpress_ajax_actions', [$this, 'handle_get_wordpress_ajax_actions']);
+    }
+    
+    /**
      * Configuración del módulo
      */
     protected function get_module_config(): array {

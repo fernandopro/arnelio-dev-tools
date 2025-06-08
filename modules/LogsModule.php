@@ -60,6 +60,18 @@ class LogsModule extends DevToolsModuleBase {
     }
     
     /**
+     * Registrar comandos AJAX del módulo
+     */
+    public function registerAjaxCommands(DevToolsAjaxHandler $ajaxHandler): void {
+        $ajaxHandler->registerCommand('get_logs', [$this, 'handle_get_logs']);
+        $ajaxHandler->registerCommand('clear_logs', [$this, 'handle_clear_logs']);
+        $ajaxHandler->registerCommand('export_logs', [$this, 'handle_export_logs']);
+        $ajaxHandler->registerCommand('get_log_sources', [$this, 'handle_get_log_sources']);
+        $ajaxHandler->registerCommand('tail_logs', [$this, 'handle_tail_logs']);
+        $ajaxHandler->registerCommand('search_logs', [$this, 'handle_search_logs']);
+    }
+    
+    /**
      * Configuración del módulo
      */
     protected function get_module_config(): array {
