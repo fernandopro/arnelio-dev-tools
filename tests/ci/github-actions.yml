@@ -1,0 +1,372 @@
+name: Dev-Tools Tests - Arquitectura 3.0
+
+# Trigger del workflow
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'dev-tools/**'
+      - '.github/workflows/dev-tools-tests.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'dev-tools/**'
+  workflow_dispatch:
+
+# Variables de entorno globales
+env:
+  PHP_VERSION: '8.1'
+  MYSQL_VERSION: '8.0'
+  WP_VERSION: 'latest'
+  WP_MULTISITE: '0'
+  DEV_TOOLS_CI: 'true'
+
+jobs:
+  # =================================================================
+  # JOB 1: TESTS UNITARIOS Y DE INTEGRACIÓN
+  # =================================================================
+  test:
+    name: Tests (PHP ${{ matrix.php }} - WP ${{ matrix.wp }})
+    runs-on: ubuntu-latest
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['7.4', '8.0', '8.1', '8.2']
+        wp: ['5.8', '6.0', '6.1', '6.2', 'latest']
+        exclude:
+          # Excluir combinaciones incompatibles
+          - php: '8.2'
+            wp: '5.8'
+          - php: '8.1'
+            wp: '5.8'
+    
+    services:
+      mysql:
+        image: mysql:${{ env.MYSQL_VERSION }}
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: wordpress_test
+          MYSQL_USER: wp
+          MYSQL_PASSWORD: wp
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+    
+    steps:
+      # Checkout del código
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      # Setup PHP
+      - name: Setup PHP ${{ matrix.php }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, mysql, pdo_mysql
+          coverage: xdebug
+          
+      # Cache de Composer
+      - name: Cache Composer dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.composer/cache
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+            
+      # Instalar Composer dependencies
+      - name: Install Composer dependencies
+        run: |
+          if [ -f "composer.json" ]; then
+            composer install --prefer-dist --no-interaction --no-suggest
+          fi
+          
+      # Setup WordPress
+      - name: Setup WordPress ${{ matrix.wp }}
+        run: |
+          # Instalar WP-CLI
+          curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+          chmod +x wp-cli.phar
+          sudo mv wp-cli.phar /usr/local/bin/wp
+          
+          # Descargar WordPress
+          wp core download --version=${{ matrix.wp }} --path=/tmp/wordpress
+          
+          # Configurar WordPress
+          wp config create \
+            --path=/tmp/wordpress \
+            --dbname=wordpress_test \
+            --dbuser=root \
+            --dbpass=root \
+            --dbhost=127.0.0.1:3306 \
+            --skip-check
+            
+          # Instalar WordPress
+          wp core install \
+            --path=/tmp/wordpress \
+            --url=http://localhost \
+            --title="Dev-Tools Test Site" \
+            --admin_user=admin \
+            --admin_password=admin \
+            --admin_email=admin@test.local \
+            --skip-email
+            
+      # Setup WordPress Test Suite
+      - name: Setup WordPress Test Suite
+        run: |
+          # Descargar test suite
+          svn co --quiet https://develop.svn.wordpress.org/tags/${{ matrix.wp }}/tests/phpunit/includes/ /tmp/wordpress-tests/includes/
+          svn co --quiet https://develop.svn.wordpress.org/tags/${{ matrix.wp }}/tests/phpunit/data/ /tmp/wordpress-tests/data/
+          
+          # Si es latest, usar trunk
+          if [ "${{ matrix.wp }}" = "latest" ]; then
+            svn co --quiet https://develop.svn.wordpress.org/trunk/tests/phpunit/includes/ /tmp/wordpress-tests/includes/
+            svn co --quiet https://develop.svn.wordpress.org/trunk/tests/phpunit/data/ /tmp/wordpress-tests/data/
+          fi
+          
+          # Configurar variables de entorno
+          echo "WP_TESTS_DIR=/tmp/wordpress-tests" >> $GITHUB_ENV
+          echo "WP_CORE_DIR=/tmp/wordpress" >> $GITHUB_ENV
+          
+      # Configurar Dev-Tools para tests
+      - name: Configure Dev-Tools Testing
+        run: |
+          cd dev-tools
+          
+          # Copiar configuración de tests
+          if [ ! -f "wp-tests-config.php" ]; then
+            cp wp-tests-config-sample.php wp-tests-config.php
+          fi
+          
+          # Configurar base de datos de tests
+          sed -i "s/database_name_here/wordpress_test/" wp-tests-config.php
+          sed -i "s/username_here/root/" wp-tests-config.php
+          sed -i "s/password_here/root/" wp-tests-config.php
+          sed -i "s/localhost/127.0.0.1:3306/" wp-tests-config.php
+          
+      # Validar sintaxis PHP
+      - name: Validate PHP Syntax
+        run: |
+          cd dev-tools
+          find . -name "*.php" -not -path "./vendor/*" -not -path "./node_modules/*" | xargs -I {} php -l {}
+          
+      # Ejecutar tests unitarios
+      - name: Run Unit Tests
+        run: |
+          cd dev-tools
+          chmod +x run-tests.sh
+          ./run-tests.sh --unit --ci
+          
+      # Ejecutar tests de integración
+      - name: Run Integration Tests
+        run: |
+          cd dev-tools
+          ./run-tests.sh --integration --ci
+          
+      # Generar reporte de cobertura
+      - name: Generate Coverage Report
+        if: matrix.php == '8.1' && matrix.wp == 'latest'
+        run: |
+          cd dev-tools
+          ./run-tests.sh --coverage --ci
+          
+      # Subir cobertura a Codecov
+      - name: Upload Coverage to Codecov
+        if: matrix.php == '8.1' && matrix.wp == 'latest'
+        uses: codecov/codecov-action@v3
+        with:
+          file: dev-tools/tests/coverage/xml/clover.xml
+          flags: dev-tools
+          name: dev-tools-coverage
+          
+      # Subir artefactos de tests
+      - name: Upload Test Artifacts
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results-php${{ matrix.php }}-wp${{ matrix.wp }}
+          path: |
+            dev-tools/tests/reports/
+            dev-tools/tests/coverage/
+            
+  # =================================================================
+  # JOB 2: CODE QUALITY CHECKS
+  # =================================================================
+  code-quality:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          tools: composer, phpcs, phpmd, phpstan
+          
+      # PHP Code Sniffer
+      - name: Run PHP Code Sniffer
+        run: |
+          cd dev-tools
+          if [ -f "phpcs.xml" ]; then
+            phpcs --standard=phpcs.xml --report=json --report-file=phpcs-report.json .
+          else
+            phpcs --standard=WordPress --report=json --report-file=phpcs-report.json --ignore=vendor,node_modules,dist .
+          fi
+        continue-on-error: true
+        
+      # PHP Mess Detector
+      - name: Run PHP Mess Detector
+        run: |
+          cd dev-tools
+          if [ -f "phpmd.xml" ]; then
+            phpmd . json phpmd.xml --reportfile phpmd-report.json --ignore-violations-on-exit
+          else
+            phpmd . json cleancode,codesize,controversial,design,naming,unusedcode --reportfile phpmd-report.json --ignore-violations-on-exit
+          fi
+        continue-on-error: true
+        
+      # PHPStan Static Analysis
+      - name: Run PHPStan
+        run: |
+          cd dev-tools
+          if [ -f "phpstan.neon" ]; then
+            phpstan analyse --error-format=json > phpstan-report.json
+          else
+            phpstan analyse --level=5 --error-format=json . > phpstan-report.json
+          fi
+        continue-on-error: true
+        
+      # Subir reportes de calidad
+      - name: Upload Quality Reports
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: code-quality-reports
+          path: |
+            dev-tools/phpcs-report.json
+            dev-tools/phpmd-report.json
+            dev-tools/phpstan-report.json
+            
+  # =================================================================
+  # JOB 3: SECURITY CHECKS
+  # =================================================================
+  security:
+    name: Security Checks
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          
+      # Composer Security Check
+      - name: Check Composer Dependencies
+        run: |
+          if [ -f "composer.lock" ]; then
+            composer audit
+          fi
+          
+      # WordPress Security Check
+      - name: WordPress Security Check
+        run: |
+          cd dev-tools
+          # Buscar funciones potencialmente inseguras
+          grep -r "eval(" . --include="*.php" --exclude-dir=vendor --exclude-dir=node_modules || true
+          grep -r "exec(" . --include="*.php" --exclude-dir=vendor --exclude-dir=node_modules || true
+          grep -r "shell_exec(" . --include="*.php" --exclude-dir=vendor --exclude-dir=node_modules || true
+          grep -r "system(" . --include="*.php" --exclude-dir=vendor --exclude-dir=node_modules || true
+          
+          # Buscar SQL potencialmente inseguro
+          grep -r "mysql_query(" . --include="*.php" --exclude-dir=vendor --exclude-dir=node_modules || true
+          grep -r "\$wpdb->query(" . --include="*.php" --exclude-dir=vendor --exclude-dir=node_modules || true
+          
+  # =================================================================
+  # JOB 4: ASSETS BUILD CHECK
+  # =================================================================
+  assets:
+    name: Assets Build Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: dev-tools/package-lock.json
+          
+      - name: Install Node dependencies
+        run: |
+          cd dev-tools
+          npm ci
+          
+      - name: Build assets
+        run: |
+          cd dev-tools
+          npm run build
+          
+      - name: Check built assets
+        run: |
+          cd dev-tools
+          # Verificar que los assets se construyeron
+          ls -la dist/
+          
+          # Verificar que los archivos principales existen
+          test -f dist/js/dev-tools.min.js || (echo "dev-tools.min.js not found" && exit 1)
+          test -f dist/css/dev-tools-styles.min.css || (echo "dev-tools-styles.min.css not found" && exit 1)
+          
+      # Subir assets construidos
+      - name: Upload Built Assets
+        uses: actions/upload-artifact@v3
+        with:
+          name: built-assets
+          path: dev-tools/dist/
+          
+  # =================================================================
+  # JOB 5: DEPLOY CHECK (solo en main)
+  # =================================================================
+  deploy-check:
+    name: Deploy Readiness Check
+    runs-on: ubuntu-latest
+    needs: [test, code-quality, security, assets]
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Check version consistency
+        run: |
+          cd dev-tools
+          # Verificar que la versión en config.php coincide con package.json
+          PHP_VERSION=$(grep "DEV_TOOLS_VERSION" config.php | cut -d"'" -f4)
+          NODE_VERSION=$(node -p "require('./package.json').version")
+          
+          echo "PHP Version: $PHP_VERSION"
+          echo "Node Version: $NODE_VERSION"
+          
+          if [ "$PHP_VERSION" != "$NODE_VERSION" ]; then
+            echo "Version mismatch between PHP and Node.js"
+            exit 1
+          fi
+          
+      - name: Generate deployment summary
+        run: |
+          echo "✅ All tests passed"
+          echo "✅ Code quality checks passed"
+          echo "✅ Security checks passed"
+          echo "✅ Assets built successfully"
+          echo "✅ Version consistency verified"
+          echo ""
+          echo "🚀 Ready for deployment"

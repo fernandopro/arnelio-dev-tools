@@ -107,9 +107,12 @@ function dev_tools_show_debug_on_failure() {
     if ($debug_shown) return;
     $debug_shown = true;
     
+    // Acceder a la variable global del table_prefix
+    global $table_prefix;
+    
     error_log('=== DEBUG TAROKINA TESTS ===');
     error_log('Base de datos: ' . DB_NAME . '@' . DB_HOST);
-    error_log('Prefijo tablas: ' . $table_prefix);
+    error_log('Prefijo tablas: ' . (isset($table_prefix) ? $table_prefix : 'wp_test_tarokina_'));
     error_log('Sitio URL: ' . WP_HOME);
     error_log('Plugin: ' . (defined('DEV_TOOLS_PLUGIN_FILE') ? DEV_TOOLS_PLUGIN_FILE : 'No detectado'));
     error_log('============================');
