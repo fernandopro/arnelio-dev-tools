@@ -114,7 +114,16 @@ class DashboardModule extends DevToolsModuleBase {
      * Agregar página de administración
      */
     public function addAdminPage(): void {
-        $menu_slug = $this->config->get('dev_tools.menu_slug');
+        // Defensive check: Handle missing config during test environment
+        if (!$this->config || !method_exists($this->config, 'get')) {
+            // During tests, config might not be available
+            // Use fallback slug that won't break WordPress admin
+            $menu_slug = 'dev-tools-dashboard-test';
+            $this->log_external('Config not available during initialization (test environment), using fallback menu slug', 'warning');
+        } else {
+            $menu_slug = $this->config->get('dev_tools.menu_slug');
+        }
+        
         $capability = 'manage_options';
         
         add_management_page(
@@ -130,7 +139,15 @@ class DashboardModule extends DevToolsModuleBase {
      * Enqueue assets del dashboard
      */
     public function enqueueAssets($hook): void {
+        // Protección para entorno de tests donde config puede no estar inicializado
+        if (!$this->config || !method_exists($this->config, 'get')) {
+            return;
+        }
+        
         $menu_slug = $this->config->get('dev_tools.menu_slug');
+        if (!$menu_slug) {
+            return;
+        }
         
         // Solo cargar en la página de dev-tools
         if ($hook !== "tools_page_{$menu_slug}") {
@@ -138,6 +155,9 @@ class DashboardModule extends DevToolsModuleBase {
         }
         
         $dev_tools_url = $this->config->get('paths.dev_tools_url');
+        if (!$dev_tools_url) {
+            return;
+        }
         
         // CSS - Comentado: El loader.php se encarga del CSS global
         // wp_enqueue_style(
@@ -157,10 +177,13 @@ class DashboardModule extends DevToolsModuleBase {
         );
         
         // Configuración para JavaScript
+        $nonce_action = $this->config->get('ajax.nonce_action') ?: 'dev_tools_ajax';
+        $action_prefix = $this->config->get('ajax.action_prefix') ?: 'dev_tools';
+        
         wp_localize_script('dev-tools-dashboard', 'devToolsConfig', [
             'ajaxUrl' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce($this->config->get('ajax.nonce_action')),
-            'actionPrefix' => $this->config->get('ajax.action_prefix'),
+            'nonce' => wp_create_nonce($nonce_action),
+            'actionPrefix' => $action_prefix,
             'debug' => defined('WP_DEBUG') && WP_DEBUG,
             'version' => '3.0.0'
         ]);
