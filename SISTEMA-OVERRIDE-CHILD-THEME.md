@@ -1,8 +1,14 @@
 # 🎯 Sistema de Override tipo Child Theme - DevTools 3.0
 
-## 🚀 **NUEVA ARQUITECTURA IMPLEMENTADA**
+## 🚀 **NUEVA ARQUITECTURA IMPLEMENTADA (ACTUAL - JUNIO 2025)**
 
 Hemos implementado un sistema de **override de archivos similar a los child themes de WordPress** que resuelve completamente el problema de separación entre archivos específicos del plugin y el core compartido.
+
+### 📅 **EVOLUCIÓN ARQUITECTÓNICA**
+- **❌ Arquitectura Híbrida (ELIMINADA):** Archivos locales dentro del submódulo dev-tools/
+- **✅ Sistema Override Child Theme (ACTUAL):** Archivos específicos en plugin-dev-tools/
+
+Este cambio **elimina la contaminación entre plugins** y **simplifica la gestión de configuraciones específicas**.
 
 ## 🏗️ **Cómo Funciona (Similar a Child Themes)**
 
@@ -37,14 +43,16 @@ plugin-directory/
 
 ## 🎯 **VENTAJAS vs ARQUITECTURA ANTERIOR**
 
-| Aspecto | ❌ Antes (dev-tools/) | ✅ Ahora (plugin-dev-tools/) |
-|---------|----------------------|------------------------------|
-| **Ubicación** | Dentro del submódulo | En la raíz del plugin |
-| **Git** | Se committeaba al submódulo | Independiente del submódulo |
-| **Compartición** | Se compartía entre plugins | Específico de cada plugin |
-| **Conflictos** | Contaminación entre plugins | Aislamiento total |
-| **Actualizaciones** | Se perdían configuraciones | Configuraciones preservadas |
-| **Override** | Manual y propenso a errores | Automático y transparente |
+| Aspecto | ❌ Antes (Arquitectura Híbrida) | ✅ Ahora (Override Child Theme) |
+|---------|--------------------------------|-----------------------------------|
+| **Ubicación** | dev-tools/ + archivos locales | plugin-dev-tools/ completamente separado |
+| **Git** | Conflictos con submódulo | Independiente del submódulo |
+| **Compartición** | Contaminación entre plugins | Aislamiento total por plugin |
+| **Conflictos** | Archivos locales en submódulo | Sin conflictos, jerarquía clara |
+| **Actualizaciones** | Se perdían configuraciones | Configuraciones preservadas automáticamente |
+| **Override** | Manual y propenso a errores | Automático y transparente como child themes |
+| **Testing** | Tests mixtos entre plugins | Tests específicos por plugin |
+| **Logs** | Logs compartidos | Logs independientes por plugin |
 
 ## 💻 **Uso del Sistema**
 
@@ -279,8 +287,40 @@ include 'dev-tools/demo-override-system.php';
 
 ## 🎉 **Resultado Final**
 
-**Sistema híbrido que mantiene la potencia del dev-tools compartido eliminando completamente la contaminación entre plugins**, con la simplicidad y elegancia del sistema de child themes de WordPress.
+**Sistema override tipo child theme que mantiene la potencia del dev-tools compartido eliminando completamente la contaminación entre plugins**, con la simplicidad y elegancia del sistema de child themes de WordPress.
+
+## 📋 **MIGRACIÓN DESDE ARQUITECTURA HÍBRIDA**
+
+### ✅ **Cambios Implementados (Junio 2025)**
+
+1. **❌ ELIMINADO: Archivos locales en dev-tools/**
+   ```bash
+   # Estos archivos YA NO EXISTEN:
+   dev-tools/config-local.php
+   dev-tools/wp-tests-config-local.php
+   dev-tools/phpunit-local.xml
+   dev-tools/run-tests-local.sh
+   ```
+
+2. **✅ NUEVO: Estructura plugin-dev-tools/**
+   ```bash
+   # Nueva ubicación para archivos específicos:
+   plugin-dev-tools/config-local.php
+   plugin-dev-tools/wp-tests-config-local.php  
+   plugin-dev-tools/modules/TarokinaModule.php
+   plugin-dev-tools/tests/
+   plugin-dev-tools/logs/
+   ```
+
+3. **🔄 AUTOMÁTICO: Sistema de carga con jerarquía**
+   - El loader busca automáticamente en plugin-dev-tools/ primero
+   - Si no encuentra el archivo, usa la versión de dev-tools/
+   - **NO requiere configuración manual**
+
+### 🚨 **ARCHIVO OBSOLETO ELIMINADO**
+- **`dev-tools/ARQUITECTURA-HIBRIDA.md`** → Reemplazado por este documento
 
 ---
 
-**🔧 DevTools 3.0 - Override System Implementado**
+**🔧 DevTools 3.0 - Sistema Override Child Theme Completado**  
+**📅 Migración Completada: 9 de junio de 2025**
