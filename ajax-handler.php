@@ -1,7 +1,21 @@
 <?php
 /**
  * AJAX Handler para Dev Tools - Arquitectura 3.0
- * Sistema modular con manejo centralizado de peticiones AJAX
+ * Sistema         // Comandos básicos del sistema
+        $this->registerCommand('ping', [$this, 'handlePing']);
+        $this->registerCommand('get_system_info', [$this, 'handleGetSystemInfo']);
+        $this->registerCommand('system_info', [$this, 'handleGetSystemInfo']); // Alias
+        $this->registerCommand('test_connection', [$this, 'handleTestConnection']);
+        $this->registerCommand('clear_cache', [$this, 'handleClearCache']);
+        $this->registerCommand('run_test', [$this, 'handleRunTest']);
+        
+        // Comandos específicos para verificaciones del sistema
+        $this->registerCommand('check_anti_deadlock', [$this, 'handleCheckAntiDeadlock']);
+        $this->registerCommand('check_test_framework', [$this, 'handleCheckTestFramework']);
+        
+        // Comandos de debugging
+        $this->registerCommand('debug_400_errors', [$this, 'handleDebug400Errors']);
+        $this->registerCommand('validate_request', [$this, 'handleValidateRequest']); manejo centralizado de peticiones AJAX
  * 
  * @package DevTools
  * @version 3.0.0
@@ -113,26 +127,68 @@ class DevToolsAjaxHandler {
      * Manejar petición AJAX principal
      */
     public function handleAjaxRequest() {
+        $action = 'unknown';
+        
         try {
-            // Verificar nonce - usar la clave de configuración dinámica
+            // 1. Validar método HTTP
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                throw new Exception('Bad Request: Only POST method allowed', 400);
+            }
+            
+            // 2. Validar Content-Type
+            $content_type = $_SERVER['CONTENT_TYPE'] ?? '';
+            if (!empty($content_type) && 
+                !str_contains($content_type, 'application/x-www-form-urlencoded') && 
+                !str_contains($content_type, 'multipart/form-data')) {
+                $this->logger->logError("Unexpected Content-Type: {$content_type}");
+            }
+            
+            // 3. Validar que $_POST existe y no está vacío
+            if (empty($_POST)) {
+                throw new Exception('Bad Request: No POST data received', 400);
+            }
+            
+            // 4. Verificar acción WordPress
+            $wp_action = $this->sanitizeInput($_POST['action'] ?? '');
+            $expected_action = $this->config->get('ajax.action_name');
+            if ($wp_action !== $expected_action) {
+                throw new Exception("Bad Request: Invalid WordPress action. Expected: {$expected_action}, got: {$wp_action}", 400);
+            }
+            
+            // 5. Verificar nonce
             $nonce = $this->sanitizeInput($_POST['nonce'] ?? '');
+            if (empty($nonce)) {
+                throw new Exception('Bad Request: Nonce parameter missing', 400);
+            }
+            
             $nonce_action = $this->config->get('ajax.nonce_action', 'dev_tools_nonce');
             if (!wp_verify_nonce($nonce, $nonce_action)) {
-                throw new Exception('Invalid nonce');
+                throw new Exception('Bad Request: Invalid or expired nonce', 400);
             }
             
-            // Obtener acción
+            // 6. Obtener acción interna
             $action = $this->sanitizeInput($_POST['action_type'] ?? '');
             if (empty($action)) {
-                throw new Exception('No action specified');
+                throw new Exception('Bad Request: action_type parameter missing', 400);
             }
             
-            // Verificar permisos
+            // 7. Verificar que la acción contiene solo caracteres válidos
+            if (!preg_match('/^[a-zA-Z0-9_-]+$/', $action)) {
+                throw new Exception('Bad Request: action_type contains invalid characters', 400);
+            }
+            
+            // 8. Verificar permisos
             if (!current_user_can('manage_options')) {
-                throw new Exception('Insufficient permissions');
+                throw new Exception('Forbidden: Insufficient permissions', 403);
             }
             
-            // Ejecutar comando
+            // 9. Validar tamaño del request
+            $request_size = strlen(http_build_query($_POST));
+            if ($request_size > 1048576) { // 1MB límite
+                throw new Exception('Bad Request: Request too large', 400);
+            }
+            
+            // 10. Ejecutar comando
             $result = $this->executeCommand($action, $_POST);
             
             // Respuesta exitosa
@@ -140,17 +196,36 @@ class DevToolsAjaxHandler {
                 'action' => $action,
                 'data' => $result,
                 'timestamp' => current_time('c'),
-                'memory_usage' => $this->getMemoryUsage()
+                'memory_usage' => $this->getMemoryUsage(),
+                'request_size' => $request_size
             ]);
             
         } catch (Exception $e) {
-            $this->logger->logError("AJAX Error: " . $e->getMessage());
+            $error_code = $e->getCode() ?: 500;
+            $this->logger->logError("AJAX Error ({$error_code}): " . $e->getMessage());
             
-            wp_send_json_error([
+            // Si es error 400, proporcionar información adicional de debug
+            $error_response = [
                 'message' => $e->getMessage(),
-                'action' => $action ?? 'unknown',
-                'timestamp' => current_time('c')
-            ]);
+                'action' => $action,
+                'timestamp' => current_time('c'),
+                'error_code' => $error_code
+            ];
+            
+            // En modo debug, añadir información adicional
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                $error_response['debug_info'] = [
+                    'method' => $_SERVER['REQUEST_METHOD'] ?? 'unknown',
+                    'content_type' => $_SERVER['CONTENT_TYPE'] ?? 'not-set',
+                    'post_params' => array_keys($_POST),
+                    'get_params' => array_keys($_GET),
+                    'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'not-set'
+                ];
+            }
+            
+            // Enviar respuesta con código HTTP apropiado
+            status_header($error_code);
+            wp_send_json_error($error_response);
         }
     }
     
@@ -579,6 +654,103 @@ class DevToolsAjaxHandler {
         } catch (Exception $e) {
             throw new Exception("Test framework check failed: " . $e->getMessage());
         }
+    }
+    
+    /**
+     * Comando: Debug de errores 400
+     * Proporciona información detallada sobre validación de requests
+     */
+    public function handleDebug400Errors($data) {
+        // Cargar el debug helper si no está ya cargado
+        if (!class_exists('DevToolsAjax400Debug')) {
+            require_once dirname(__FILE__) . '/debug-ajax-400.php';
+        }
+        
+        try {
+            $debug_results = DevToolsAjax400Debug::runValidationTest();
+            $request_log = DevToolsAjax400Debug::getRequestLog();
+            
+            return [
+                'message' => 'Debug de errores 400 completado',
+                'validation_tests' => $debug_results,
+                'recent_requests' => array_slice($request_log, -5), // Últimos 5 requests
+                'server_info' => [
+                    'method' => $_SERVER['REQUEST_METHOD'] ?? 'unknown',
+                    'content_type' => $_SERVER['CONTENT_TYPE'] ?? 'not-set',
+                    'content_length' => $_SERVER['CONTENT_LENGTH'] ?? 'not-set',
+                    'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'not-set'
+                ],
+                'config_info' => [
+                    'ajax_action' => $this->config->get('ajax.action_name'),
+                    'nonce_action' => $this->config->get('ajax.nonce_action'),
+                    'wp_debug' => defined('WP_DEBUG') && WP_DEBUG
+                ],
+                'timestamp' => current_time('c')
+            ];
+            
+        } catch (Exception $e) {
+            throw new Exception("400 debug failed: " . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Comando: Validar request actual
+     * Valida el request actual usando el debug helper
+     */
+    public function handleValidateRequest($data) {
+        // Cargar el debug helper si no está ya cargado
+        if (!class_exists('DevToolsAjax400Debug')) {
+            require_once dirname(__FILE__) . '/debug-ajax-400.php';
+        }
+        
+        try {
+            $validation = DevToolsAjax400Debug::validateAjaxRequest($data);
+            
+            return [
+                'message' => 'Validación de request completada',
+                'validation_result' => $validation,
+                'request_data' => [
+                    'method' => $_SERVER['REQUEST_METHOD'] ?? 'unknown',
+                    'content_type' => $_SERVER['CONTENT_TYPE'] ?? 'not-set',
+                    'post_count' => count($_POST),
+                    'get_count' => count($_GET)
+                ],
+                'recommendations' => $this->getValidationRecommendations($validation),
+                'timestamp' => current_time('c')
+            ];
+            
+        } catch (Exception $e) {
+            throw new Exception("Request validation failed: " . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Obtener recomendaciones basadas en validación
+     */
+    private function getValidationRecommendations($validation) {
+        $recommendations = [];
+        
+        if (!$validation['valid']) {
+            $recommendations[] = 'Request inválido - revisar errores listados';
+        }
+        
+        if (!empty($validation['warnings'])) {
+            $recommendations[] = 'Hay advertencias - considerar revisarlas';
+        }
+        
+        if ($validation['request_size'] > 4096) {
+            $recommendations[] = 'Request grande - considerar optimizar datos enviados';
+        }
+        
+        if ($validation['params_count'] > 20) {
+            $recommendations[] = 'Muchos parámetros - considerar simplificar request';
+        }
+        
+        if (empty($recommendations)) {
+            $recommendations[] = 'Request parece correcto - no hay recomendaciones específicas';
+        }
+        
+        return $recommendations;
     }
 }
 
