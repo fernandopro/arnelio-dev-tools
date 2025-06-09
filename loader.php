@@ -16,12 +16,6 @@ if (!defined('ABSPATH')) {
 // Log temporal para diagnóstico
 error_log('[DEV-TOOLS] Loader iniciando...');
 
-// Solo cargar en el admin
-if (!is_admin()) {
-    error_log('[DEV-TOOLS] No es admin, saliendo...');
-    return;
-}
-
 // ========================================
 // CARGA DE COMPONENTES CORE
 // ========================================
@@ -216,6 +210,11 @@ function dev_tools_enqueue_assets($hook) {
 
     $plugin_url = $config->get('paths.dev_tools_url');
     $plugin_version = $config->get('host.version');
+    
+    // DEBUG: Verificar URL generada
+    error_log('🔧 Dev-Tools CSS URL Debug:');
+    error_log('Plugin URL: ' . $plugin_url);
+    error_log('Full CSS URL: ' . $plugin_url . 'dist/css/dev-tools-styles.min.css');
     
     // Dev Tools CSS compilado (incluye Bootstrap y estilos personalizados)
     wp_enqueue_style(
