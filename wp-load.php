@@ -144,11 +144,11 @@ function dev_tools_render_error_page($error_message) {
     <?php
 }
 
-// Definir constantes del entorno si no existen
-if (!defined('TAROKINA_PRODUCTION_MODE')) {
-    define('TAROKINA_PRODUCTION_MODE', false);
+// Definir constantes del entorno INDEPENDIENTES de Dev-Tools si no existen
+if (!defined('DEV_TOOLS_PRODUCTION_MODE')) {
+    define('DEV_TOOLS_PRODUCTION_MODE', false);
 }
 
-if (!defined('TAROKINA_DEV_MODE')) {
-    define('TAROKINA_DEV_MODE', !TAROKINA_PRODUCTION_MODE);
+if (!defined('DEV_TOOLS_DEV_MODE')) {
+    define('DEV_TOOLS_DEV_MODE', !DEV_TOOLS_PRODUCTION_MODE);
 }

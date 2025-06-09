@@ -87,6 +87,51 @@ class DevToolsController {
     }
 
     /**
+     * Detecta automáticamente la configuración de dev-tools del plugin host
+     * Sistema plugin-agnóstico que no depende de nombres específicos
+     * 
+     * @returns {Object|null} Configuración detectada o null si no se encuentra
+     */
+    detectHostDevToolsConfig() {
+        // Cache para evitar múltiples detecciones
+        if (this._cachedHostConfig !== undefined) {
+            return this._cachedHostConfig;
+        }
+
+        // Patrones comunes de nombres de configuración dev-tools
+        const possibleConfigNames = [
+            // Patrón genérico: [prefix]_dev_tools_config
+            'dev_tools_config',
+            'tkn_dev_tools_config',  // Retrocompatibilidad
+            'wp_dev_tools_config',
+            'plugin_dev_tools_config'
+        ];
+
+        // Buscar en variables globales
+        for (const configName of possibleConfigNames) {
+            if (typeof window[configName] !== 'undefined') {
+                this._cachedHostConfig = window[configName];
+                this.logInternal(`🔍 Configuración dev-tools detectada: ${configName}`, this._cachedHostConfig, 'minimal');
+                return this._cachedHostConfig;
+            }
+        }
+
+        // Buscar por patrones dinámicos en window
+        for (const key in window) {
+            if (key.endsWith('_dev_tools_config') && typeof window[key] === 'object') {
+                this._cachedHostConfig = window[key];
+                this.logInternal(`🔍 Configuración dev-tools detectada dinámicamente: ${key}`, this._cachedHostConfig, 'minimal');
+                return this._cachedHostConfig;
+            }
+        }
+
+        // No se encontró configuración
+        this._cachedHostConfig = null;
+        this.logInternal('⚠️ No se detectó configuración específica del plugin host, usando fallbacks', null, 'minimal');
+        return null;
+    }
+
+    /**
      * Inicialización principal del sistema
      * Sigue protocolo de detección de modo verbose/debug establecido en guía
      */
@@ -180,10 +225,13 @@ class DevToolsController {
      * Implementa detección robusta de variables de entorno y parámetros
      */
     detectModes() {
+        // Detección automática de configuración del plugin host
+        const hostConfig = this.detectHostDevToolsConfig();
+        
         // Detección de modo verbose (protocolo establecido)
         this.verboseMode = (
-            // Desde configuración WordPress localizada
-            (typeof tkn_dev_tools_config !== 'undefined' && tkn_dev_tools_config.verbose_mode) ||
+            // Desde configuración WordPress localizada (genérica)
+            (hostConfig && hostConfig.verbose_mode) ||
             // Desde parámetros URL
             new URLSearchParams(window.location.search).has('verbose') ||
             // Desde localStorage para persistencia de sesión
@@ -198,8 +246,8 @@ class DevToolsController {
             // Variables de entorno específicas del sistema
             this.checkEnvironmentVariable('DEV_TOOLS_TESTS_DEBUG') ||
             this.checkEnvironmentVariable('DEV_TOOLS_TESTS_VERBOSE') ||
-            // Desde configuración WordPress
-            (typeof tkn_dev_tools_config !== 'undefined' && tkn_dev_tools_config.debug_mode) ||
+            // Desde configuración WordPress (genérica)
+            (hostConfig && hostConfig.debug_mode) ||
             // Modo verbose implica debug
             this.verboseMode ||
             // Parámetro URL directo
@@ -237,10 +285,13 @@ class DevToolsController {
      * Implementa verificación robusta según mejores prácticas de la guía
      */
     checkEnvironmentVariable(varName) {
-        // 1. Desde configuración WordPress localizada
-        if (typeof tkn_dev_tools_config !== 'undefined' && 
-            tkn_dev_tools_config.env_vars && 
-            tkn_dev_tools_config.env_vars[varName] === '1') {
+        // Detectar configuración del plugin host automáticamente
+        const hostConfig = this.detectHostDevToolsConfig();
+        
+        // 1. Desde configuración WordPress localizada (genérica)
+        if (hostConfig && 
+            hostConfig.env_vars && 
+            hostConfig.env_vars[varName] === '1') {
             return true;
         }
 
@@ -286,12 +337,11 @@ class DevToolsController {
             return window[configVar];
         }
         
-        // Fallback a variables comunes conocidas
+        // Fallback a variables genéricas comunes
         const fallbackVars = [
-            'tarokina_2025_dev_tools_config', // Nombre correcto sanitizado
-            'tkn_dev_tools_config',           // Nombre legacy
-            'tarokina-2025_dev_tools_config', // Versión con guión
-            'dev_tools_config'                // Genérico
+            'dev_tools_config',               // Genérico principal
+            'wp_dev_tools_config',            // WordPress genérico
+            'plugin_dev_tools_config'         // Plugin genérico
         ];
         
         for (const varName of fallbackVars) {
@@ -373,9 +423,12 @@ class DevToolsController {
      * Sigue protocolo de URLs dinámicas establecido
      */
     getAjaxUrl() {
+        // Detectar configuración del plugin host automáticamente
+        const hostConfig = this.detectHostDevToolsConfig();
+        
         // 1. Desde configuración localizada (método preferido)
-        if (typeof tkn_dev_tools_config !== 'undefined' && tkn_dev_tools_config.ajax_url) {
-            return tkn_dev_tools_config.ajax_url;
+        if (hostConfig && hostConfig.ajax_url) {
+            return hostConfig.ajax_url;
         }
         
         // 2. Desde variable global WordPress
@@ -393,8 +446,11 @@ class DevToolsController {
      * Obtener URL de administración dinámicamente
      */
     getAdminUrl() {
-        if (typeof tkn_dev_tools_config !== 'undefined' && tkn_dev_tools_config.admin_url) {
-            return tkn_dev_tools_config.admin_url;
+        // Detectar configuración del plugin host automáticamente
+        const hostConfig = this.detectHostDevToolsConfig();
+        
+        if (hostConfig && hostConfig.admin_url) {
+            return hostConfig.admin_url;
         }
         
         const port = this.detectLocalPort();
@@ -406,8 +462,11 @@ class DevToolsController {
      * Obtener URL del sitio dinámicamente
      */
     getSiteUrl() {
-        if (typeof tkn_dev_tools_config !== 'undefined' && tkn_dev_tools_config.site_url) {
-            return tkn_dev_tools_config.site_url;
+        // Detectar configuración del plugin host automáticamente
+        const hostConfig = this.detectHostDevToolsConfig();
+        
+        if (hostConfig && hostConfig.site_url) {
+            return hostConfig.site_url;
         }
         
         const port = this.detectLocalPort();
@@ -739,8 +798,9 @@ class DevToolsController {
             // Verificar WordPress
             checks.wordpress_loaded = (typeof wp !== 'undefined' || typeof ajaxurl !== 'undefined');
             
-            // Verificar plugin dev-tools
-            checks.dev_tools_plugin = (typeof tkn_dev_tools_config !== 'undefined');
+            // Verificar plugin dev-tools (genérico)
+            const hostConfig = this.detectHostDevToolsConfig();
+            checks.dev_tools_plugin = (hostConfig !== null);
             
             // Verificar sistema anti-deadlock
             checks.anti_deadlock_system = await this.checkAntiDeadlockSystem();

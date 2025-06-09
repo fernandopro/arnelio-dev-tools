@@ -317,7 +317,54 @@ class DevToolsConfig {
             defined('WP_DEBUG') && WP_DEBUG ||
             getenv('DEV_TOOLS_TESTS_DEBUG') === 'true' ||
             getenv('DEV_TOOLS_FORCE_DEBUG') === 'true' ||
-            (defined('TAROKINA_PRODUCTION_MODE') && !TAROKINA_PRODUCTION_MODE) // true si no está en producción
+            // INDEPENDIENTE: usar constantes de dev-tools, no del plugin principal
+            (defined('DEV_TOOLS_PRODUCTION_MODE') && !DEV_TOOLS_PRODUCTION_MODE) || // true si no está en producción
+            // Detección automática del modo del plugin host (sin dependencias específicas)
+            $this->detect_host_development_mode()
+        );
+    }
+    
+    /**
+     * Detectar automáticamente si el plugin host está en modo desarrollo
+     * Sin depender de constantes específicas del plugin
+     */
+    private function detect_host_development_mode() {
+        // Detección por patrones comunes de constantes de desarrollo
+        $dev_patterns = [
+            '_PRODUCTION_MODE',
+            '_DEV_MODE',
+            '_DEBUG_MODE',
+            '_DEVELOPMENT_MODE'
+        ];
+        
+        // Buscar constantes del plugin host con estos patrones
+        $defined_constants = get_defined_constants();
+        $host_namespace = strtoupper($this->get('host.namespace', 'UNKNOWN'));
+        
+        foreach ($dev_patterns as $pattern) {
+            $constant_name = $host_namespace . $pattern;
+            
+            if (isset($defined_constants[$constant_name])) {
+                // Si termina en PRODUCTION_MODE y es false, estamos en desarrollo
+                if (strpos($pattern, 'PRODUCTION') !== false) {
+                    return !$defined_constants[$constant_name];
+                }
+                // Si termina en DEV_MODE/DEBUG_MODE/DEVELOPMENT_MODE y es true, estamos en desarrollo
+                if (strpos($pattern, 'DEV') !== false || 
+                    strpos($pattern, 'DEBUG') !== false || 
+                    strpos($pattern, 'DEVELOPMENT') !== false) {
+                    return $defined_constants[$constant_name];
+                }
+            }
+        }
+        
+        // Fallback: detectar por entorno
+        return (
+            defined('WP_DEBUG') && WP_DEBUG ||
+            strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false ||
+            strpos($_SERVER['HTTP_HOST'] ?? '', '.local') !== false ||
+            strpos($_SERVER['HTTP_HOST'] ?? '', 'staging') !== false ||
+            strpos($_SERVER['HTTP_HOST'] ?? '', 'dev') !== false
         );
     }
     
@@ -355,6 +402,7 @@ class DevToolsConfig {
         }
         
         // Constantes de modo de desarrollo/producción (compatibilidad)
+        // IMPORTANTE: Estas se basan en el modo de Dev-Tools, no en el plugin host
         if (!defined($prefix . '_PRODUCTION_MODE')) {
             define($prefix . '_PRODUCTION_MODE', !$this->is_debug_mode());
         }
