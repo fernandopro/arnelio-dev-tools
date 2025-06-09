@@ -19,7 +19,7 @@ class AjaxIntegrationTest extends DevToolsTestCase {
         $this->requireDevTools();
         
         // Simular usuario admin
-        $admin_id = $this->factory->user->create(['role' => 'administrator']);
+        $admin_id = $this->factory()->user->create(['role' => 'administrator']);
         wp_set_current_user($admin_id);
         
         // Preparar datos AJAX reales según patrón dev-tools
@@ -105,9 +105,9 @@ class AjaxIntegrationTest extends DevToolsTestCase {
      */
     public function test_user_capabilities_integration() {
         // Crear usuarios con diferentes roles
-        $admin_id = $this->factory->user->create(['role' => 'administrator']);
-        $editor_id = $this->factory->user->create(['role' => 'editor']);
-        $subscriber_id = $this->factory->user->create(['role' => 'subscriber']);
+        $admin_id = $this->factory()->user->create(['role' => 'administrator']);
+        $editor_id = $this->factory()->user->create(['role' => 'editor']);
+        $subscriber_id = $this->factory()->user->create(['role' => 'subscriber']);
         
         // Test permisos admin
         wp_set_current_user($admin_id);
