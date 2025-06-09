@@ -69,7 +69,7 @@ async function testAjaxFix() {
             url: config.ajaxUrl,
             action: config.ajaxAction,
             nonce: config.nonce.substring(0, 10) + '...',
-            command: 'ping',
+            action_type: 'ping',  // CORRECCIÓN: mostrar action_type
             data: testData
         });
         
@@ -77,7 +77,7 @@ async function testAjaxFix() {
         const formData = new FormData();
         formData.append('action', config.ajaxAction);
         formData.append('nonce', config.nonce);
-        formData.append('command', 'ping');
+        formData.append('action_type', 'ping');  // CORRECCIÓN: usar action_type en lugar de command
         formData.append('data', JSON.stringify(testData));
         
         // Log detallado de FormData

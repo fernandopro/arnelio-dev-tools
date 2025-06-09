@@ -11,9 +11,13 @@ require_once __DIR__ . '/../bootstrap.php';
 class Ajax400ErrorTest extends DevToolsTestCase {
     
     protected $ajax_handler;
+    protected $config;
     
     public function setUp(): void {
         parent::setUp();
+        
+        // Cargar configuración
+        $this->config = DevToolsConfig::getInstance();
         
         // Cargar el debug helper
         require_once dirname(__DIR__, 2) . '/debug-ajax-400.php';
@@ -77,7 +81,7 @@ class Ajax400ErrorTest extends DevToolsTestCase {
         $_SERVER['REQUEST_METHOD'] = 'POST';
         $_POST = [
             'action' => 'wrong_action',
-            'nonce' => wp_create_nonce('tarokina-2025_dev_tools_nonce'),
+            'nonce' => wp_create_nonce($this->config->get('ajax.nonce_action')),
             'action_type' => 'ping'
         ];
         
@@ -102,7 +106,7 @@ class Ajax400ErrorTest extends DevToolsTestCase {
     public function test_missing_nonce_gives_400() {
         $_SERVER['REQUEST_METHOD'] = 'POST';
         $_POST = [
-            'action' => 'tarokina-2025_dev_tools',
+            'action' => $this->config->get('ajax.action_name'),
             'action_type' => 'ping'
         ];
         
@@ -127,7 +131,7 @@ class Ajax400ErrorTest extends DevToolsTestCase {
     public function test_invalid_nonce_gives_400() {
         $_SERVER['REQUEST_METHOD'] = 'POST';
         $_POST = [
-            'action' => 'tarokina-2025_dev_tools',
+            'action' => $this->config->get('ajax.action_name'),
             'nonce' => 'invalid_nonce',
             'action_type' => 'ping'
         ];
@@ -153,8 +157,8 @@ class Ajax400ErrorTest extends DevToolsTestCase {
     public function test_missing_action_type_gives_400() {
         $_SERVER['REQUEST_METHOD'] = 'POST';
         $_POST = [
-            'action' => 'tarokina-2025_dev_tools',
-            'nonce' => wp_create_nonce('tarokina-2025_dev_tools_nonce')
+            'action' => $this->config->get('ajax.action_name'),
+            'nonce' => wp_create_nonce($this->config->get('ajax.nonce_action'))
         ];
         
         $this->expectException(WPAjaxDieContinueException::class);
@@ -178,8 +182,8 @@ class Ajax400ErrorTest extends DevToolsTestCase {
     public function test_invalid_action_type_characters_gives_400() {
         $_SERVER['REQUEST_METHOD'] = 'POST';
         $_POST = [
-            'action' => 'tarokina-2025_dev_tools',
-            'nonce' => wp_create_nonce('tarokina-2025_dev_tools_nonce'),
+            'action' => $this->config->get('ajax.action_name'),
+            'nonce' => wp_create_nonce($this->config->get('ajax.nonce_action')),
             'action_type' => 'ping<script>alert("xss")</script>'
         ];
         
@@ -204,8 +208,8 @@ class Ajax400ErrorTest extends DevToolsTestCase {
     public function test_valid_request_works() {
         $_SERVER['REQUEST_METHOD'] = 'POST';
         $_POST = [
-            'action' => 'tarokina-2025_dev_tools',
-            'nonce' => wp_create_nonce('tarokina-2025_dev_tools_nonce'),
+            'action' => $this->config->get('ajax.action_name'),
+            'nonce' => wp_create_nonce($this->config->get('ajax.nonce_action')),
             'action_type' => 'ping'
         ];
         
