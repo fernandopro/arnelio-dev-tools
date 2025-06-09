@@ -1,8 +1,8 @@
 <?php
 /**
- * Test del Sistema de Override - WordPress PHPUnit
+ * Test del Sistema Core Dev-Tools - WordPress PHPUnit
  *
- * Verifica que el sistema de override tipo child-theme funciona correctamente
+ * Verifica que el sistema core de dev-tools funciona correctamente
  * en el entorno de testing adaptado al estándar WordPress
  *
  * @package DevTools
@@ -10,38 +10,35 @@
  * @version 3.0.0
  */
 
-class Test_Override_System extends DevToolsTestCase {
+class Test_DevTools_Core extends DevToolsTestCase {
 
     /**
-     * Test que el sistema de override está inicializado
+     * Test que el sistema core está inicializado
      */
-    public function test_override_system_initialized() {
+    public function test_core_system_initialized() {
         $config = dev_tools_config();
-        $override_system = $config->getOverrideSystem();
         
-        $this->assertNotNull( $override_system, 'Sistema de override debe estar inicializado' );
-        $this->assertTrue( class_exists( 'FileOverrideSystem' ), 'Clase FileOverrideSystem debe existir' );
+        $this->assertNotNull( $config, 'Sistema de configuración debe estar inicializado' );
+        $this->assertTrue( class_exists( 'DevToolsConfig' ), 'Clase DevToolsConfig debe existir' );
     }
 
     /**
-     * Test que detecta correctamente los directorios
+     * Test que la estructura de directorios es correcta
      */
-    public function test_override_directories() {
+    public function test_directory_structure() {
         $config = dev_tools_config();
-        $override_info = $config->get_override_info();
+        $paths = $config->get( 'paths' );
         
-        $this->assertIsArray( $override_info, 'get_override_info debe retornar array' );
-        $this->assertArrayHasKey( 'parent_dir', $override_info );
-        $this->assertArrayHasKey( 'child_dir', $override_info );
-        $this->assertArrayHasKey( 'parent_exists', $override_info );
-        $this->assertArrayHasKey( 'child_exists', $override_info );
+        $this->assertIsArray( $paths, 'Paths debe ser array' );
+        $this->assertArrayHasKey( 'dev_tools_root', $paths );
+        $this->assertArrayHasKey( 'dev_tools_url', $paths );
         
-        // El directorio padre (dev-tools) debe existir
-        $this->assertTrue( $override_info['parent_exists'], 'Directorio padre debe existir' );
+        // El directorio dev-tools debe existir
+        $dev_tools_dir = $paths['dev_tools_root'];
+        $this->assertTrue( is_dir( $dev_tools_dir ), 'Directorio dev-tools debe existir' );
         
         // Verificar rutas correctas
-        $this->assertStringContains( 'dev-tools', $override_info['parent_dir'] );
-        $this->assertStringContains( 'plugin-dev-tools', $override_info['child_dir'] );
+        $this->assertStringContainsString( 'dev-tools', $dev_tools_dir );
     }
 
     /**
@@ -55,16 +52,16 @@ class Test_Override_System extends DevToolsTestCase {
         $this->assertNotEmpty( $admin_url, 'Admin URL debe estar configurada' );
         
         // Verificar que el sistema detectó el plugin host
-        $host_info = $config->get( 'host_plugin' );
+        $host_info = $config->get( 'host' );
         $this->assertIsArray( $host_info, 'Información del plugin host debe ser array' );
         $this->assertArrayHasKey( 'name', $host_info );
         $this->assertArrayHasKey( 'version', $host_info );
     }
 
     /**
-     * Test que el sistema de módulos funciona con override
+     * Test que el sistema de módulos funciona
      */
-    public function test_module_system_with_override() {
+    public function test_module_system() {
         // Verificar que el ModuleManager existe
         $this->assertTrue( class_exists( 'DevToolsModuleManager' ), 'DevToolsModuleManager debe existir' );
         
@@ -82,14 +79,13 @@ class Test_Override_System extends DevToolsTestCase {
      * Test que las constantes están definidas correctamente
      */
     public function test_constants_defined() {
-        $config = dev_tools_config();
-        
-        // Verificar que se registraron las constantes
-        $constants = $config->get( 'constants' );
-        $this->assertIsArray( $constants, 'Constantes deben estar definidas' );
-        
-        // En el entorno de testing, las constantes deben estar disponibles
+        // En el entorno de testing, las constantes básicas de WordPress deben estar disponibles
         $this->assertTrue( defined( 'ABSPATH' ), 'ABSPATH debe estar definida en testing' );
+        $this->assertTrue( defined( 'WP_DEBUG' ), 'WP_DEBUG debe estar definida en testing' );
+        
+        // Verificar que las constantes de dev-tools están disponibles
+        $this->assertTrue( defined( 'DEV_TOOLS_DIR_PATH' ), 'DEV_TOOLS_DIR_PATH debe estar definida' );
+        $this->assertTrue( defined( 'DEV_TOOLS_DIR_URL' ), 'DEV_TOOLS_DIR_URL debe estar definida' );
     }
 
     /**

@@ -2,7 +2,7 @@
 /**
  * Bootstrap para Tests - Dev-Tools Arquitectura 3.0
  * 
- * Bootstrap siguiendo estándar oficial de WordPress con sistema de override.
+ * Bootstrap siguiendo estándar oficial de WordPress.
  * Basado en: https://make.wordpress.org/core/handbook/testing/automated-testing/phpunit/
  * 
  * @package DevTools\Tests
@@ -16,39 +16,6 @@
 
 // Prevent timeouts when running the tests.
 ini_set( 'max_execution_time', 0 );
-
-// =============================================================================
-// SISTEMA DE OVERRIDE (Child Theme Pattern)
-// =============================================================================
-
-/**
- * Cargar bootstrap override específico del plugin si existe
- */
-function load_bootstrap_override() {
-    $override_bootstrap = dirname(dirname(dirname(__FILE__))) . '/plugin-dev-tools/tests/bootstrap.php';
-    
-    if (file_exists($override_bootstrap)) {
-        echo "🔄 Cargando bootstrap override específico del plugin...\n";
-        require_once $override_bootstrap;
-        
-        // Si el override define que debe terminar aquí, respetarlo
-        if (defined('DEV_TOOLS_BOOTSTRAP_OVERRIDE_COMPLETE') && DEV_TOOLS_BOOTSTRAP_OVERRIDE_COMPLETE) {
-            echo "✅ Bootstrap override completado, finalizando bootstrap core.\n";
-            return true;
-        }
-        
-        echo "✅ Bootstrap override cargado, continuando con bootstrap core.\n";
-    } else {
-        echo "ℹ️ No se encontró bootstrap override, usando configuración core.\n";
-    }
-    
-    return false;
-}
-
-// Intentar cargar override primero
-if (load_bootstrap_override()) {
-    return; // El override se encarga de todo
-}
 
 // =============================================================================
 // CONFIGURACIÓN WORDPRESS TESTING FRAMEWORK - ESTÁNDAR OFICIAL
