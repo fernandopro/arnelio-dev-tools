@@ -133,4 +133,13 @@ add_action( 'init', function() {
     echo "🔗 Site URL: " . get_site_url() . "\n";
 }, 1 );
 
+// Definir constantes de testing necesarias
+if ( ! defined( 'WP_TESTS_INDIVIDUAL' ) ) {
+    define( 'WP_TESTS_INDIVIDUAL', true );
+}
+
+if ( ! defined( 'PHPUNIT_RUNNING' ) ) {
+    define( 'PHPUNIT_RUNNING', true );
+}
+
 echo "✅ Bootstrap completado - Listo para tests de Arquitectura 3.0\n";

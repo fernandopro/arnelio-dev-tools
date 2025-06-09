@@ -8,9 +8,25 @@
 	convertWarningsToExceptions="true"
 	>
 	<testsuites>
+		<!-- Suite de tests unitarios (rápidos) -->
+		<testsuite name="unit">
+			<directory suffix="Test.php">./tests/unit/</directory>
+		</testsuite>
+		
+		<!-- Suite de tests de integración (lentos) -->
+		<testsuite name="integration">
+			<directory suffix="Test.php">./tests/integration/</directory>
+		</testsuite>
+		
+		<!-- Suite por defecto (todos los tests) -->
 		<testsuite name="default">
 			<directory prefix="test-" suffix=".php">./tests/</directory>
+			<directory suffix="Test.php">./tests/unit/</directory>
+			<directory suffix="Test.php">./tests/integration/</directory>
 			<exclude>./tests/fixtures</exclude>
+			<exclude>./tests/e2e</exclude>
+			<exclude>./tests/coverage</exclude>
+			<exclude>./tests/ci</exclude>
 		</testsuite>
 	</testsuites>
 	

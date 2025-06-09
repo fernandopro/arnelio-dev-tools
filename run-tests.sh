@@ -207,11 +207,11 @@ run_tests() {
     for arg in "$@"; do
         case $arg in
             --unit)
-                args="$args --testsuite=tarokina-unit-tests"
+                args="$args --testsuite=unit"
                 info "Ejecutando solo tests unitarios"
                 ;;
             --integration)
-                args="$args --testsuite=tarokina-integration-tests"
+                args="$args --testsuite=integration"
                 info "Ejecutando solo tests de integración"
                 ;;
             --others)
