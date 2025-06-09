@@ -30,7 +30,10 @@ require_once __DIR__ . '/core/DevToolsModuleBase.php';
 // 4. Manejador AJAX centralizado
 require_once __DIR__ . '/ajax-handler.php';
 
-// 5. Gestor de módulos
+// 5. Endpoint generador de nonces (para debugging)
+require_once __DIR__ . '/nonce-generator-endpoint.php';
+
+// 6. Gestor de módulos
 require_once __DIR__ . '/core/DevToolsModuleManager.php';
 
 // Obtener configuración dinámica

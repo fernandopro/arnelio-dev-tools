@@ -1,21 +1,7 @@
 <?php
 /**
  * AJAX Handler para Dev Tools - Arquitectura 3.0
- * Sistema         // Comandos básicos del sistema
-        $this->registerCommand('ping', [$this, 'handlePing']);
-        $this->registerCommand('get_system_info', [$this, 'handleGetSystemInfo']);
-        $this->registerCommand('system_info', [$this, 'handleGetSystemInfo']); // Alias
-        $this->registerCommand('test_connection', [$this, 'handleTestConnection']);
-        $this->registerCommand('clear_cache', [$this, 'handleClearCache']);
-        $this->registerCommand('run_test', [$this, 'handleRunTest']);
-        
-        // Comandos específicos para verificaciones del sistema
-        $this->registerCommand('check_anti_deadlock', [$this, 'handleCheckAntiDeadlock']);
-        $this->registerCommand('check_test_framework', [$this, 'handleCheckTestFramework']);
-        
-        // Comandos de debugging
-        $this->registerCommand('debug_400_errors', [$this, 'handleDebug400Errors']);
-        $this->registerCommand('validate_request', [$this, 'handleValidateRequest']); manejo centralizado de peticiones AJAX
+ * Sistema de manejo centralizado de peticiones AJAX
  * 
  * @package DevTools
  * @version 3.0.0
