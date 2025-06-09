@@ -251,6 +251,14 @@ class DashboardModule extends DevToolsModuleBase {
                                     <i class="bi bi-download"></i> Exportar Logs
                                 </button>
                             </div>
+                            <div class="btn-group mt-2" role="group">
+                                <button type="button" class="btn btn-outline-danger" id="btn-debug-config" onclick="window.open('<?php echo add_query_arg('debug_config', '1', admin_url('tools.php?page=' . $this->config->get('dev_tools.menu_slug'))); ?>', '_blank')">
+                                    <i class="bi bi-bug"></i> Debug Configuración
+                                </button>
+                                <button type="button" class="btn btn-outline-success" id="btn-open-console-script">
+                                    <i class="bi bi-terminal"></i> Script Consola
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -459,6 +467,97 @@ class DashboardModule extends DevToolsModuleBase {
                             const dashboard = new DevToolsDashboard();
                             dashboard.exportLogs();
                         }
+                    });
+                }
+                
+                // Botón para abrir script de consola de debug
+                const consoleScriptBtn = document.getElementById('btn-open-console-script');
+                if (consoleScriptBtn) {
+                    consoleScriptBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        
+                        // Crear modal con el script de debug
+                        const modalHtml = `
+                            <div class="modal fade" id="debugScriptModal" tabindex="-1">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">🔧 Script de Debug para Consola</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p><strong>Instrucciones:</strong></p>
+                                            <ol>
+                                                <li>Abre la consola del navegador (F12)</li>
+                                                <li>Copia todo el script de abajo</li>
+                                                <li>Pégalo en la consola y presiona Enter</li>
+                                                <li>Revisa los resultados del debug</li>
+                                            </ol>
+                                            <textarea id="debugScript" class="form-control" rows="15" readonly style="font-family: monospace; font-size: 12px;">
+// 🔧 === SCRIPT DE DEBUG PARA CONSOLA ===
+console.log('🔧 === DEBUG CONFIGURACIÓN DEV-TOOLS ===');
+
+// Buscar variables de configuración
+const possibleConfigs = ['tarokina_dev_tools_config', 'devToolsConfig', 'dev_tools_config'];
+let config = null;
+let configVar = null;
+
+possibleConfigs.forEach(name => {
+    if (window[name]) {
+        console.log('✅ Encontrada:', name, window[name]);
+        config = window[name];
+        configVar = name;
+    } else {
+        console.log('❌ No existe:', name);
+    }
+});
+
+if (config) {
+    console.log('📋 Configuración completa:', config);
+    
+    // Verificar campos críticos
+    ['ajaxUrl', 'nonce', 'actionPrefix'].forEach(field => {
+        console.log(config[field] ? '✅' : '❌', field + ':', config[field]);
+    });
+    
+    // Test de dashboard
+    if (typeof DevToolsDashboard !== 'undefined') {
+        try {
+            const dashboard = new DevToolsDashboard();
+            dashboard.init();
+            console.log('✅ Dashboard inicializado');
+        } catch (error) {
+            console.error('❌ Error en dashboard:', error);
+        }
+    }
+} else {
+    console.log('❌ No se encontró configuración');
+}
+                                            </textarea>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-success" onclick="
+                                                const script = document.getElementById('debugScript');
+                                                script.select();
+                                                script.setSelectionRange(0, 99999);
+                                                navigator.clipboard.writeText(script.value);
+                                                alert('Script copiado al portapapeles!');
+                                            ">📋 Copiar Script</button>
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        
+                        // Agregar modal al DOM si no existe
+                        if (!document.getElementById('debugScriptModal')) {
+                            document.body.insertAdjacentHTML('beforeend', modalHtml);
+                        }
+                        
+                        // Mostrar modal
+                        const modal = new bootstrap.Modal(document.getElementById('debugScriptModal'));
+                        modal.show();
                     });
                 }
             };

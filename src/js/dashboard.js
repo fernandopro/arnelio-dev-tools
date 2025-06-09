@@ -9,7 +9,11 @@
 
 class DevToolsDashboard {
     constructor() {
-        this.config = window.devToolsConfig || {};
+        // Buscar configuración en múltiples variables posibles
+        this.config = window.devToolsConfig || 
+                      window.tarokina_dev_tools_config || 
+                      window.dev_tools_config || 
+                      {};
         this.isInitialized = false;
         this.refreshInterval = null;
         this.logger = new DevToolsClientLogger();

@@ -130,15 +130,31 @@ function dev_tools_enqueue_assets($hook) {
         return;
     }
     
-    // JavaScript de utilidades del sistema
-    $enqueue_asset('script',
-        $config->get('assets.js_handle') . '-utils',
-        'dist/js/dev-utils.min.js',
-        array($config->get('assets.js_handle'))
+    // Usar variables globales de WordPress para detectar página actual
+    global $pagenow, $typenow;
+    
+    $current_page = isset($_GET['page']) ? $_GET['page'] : '';
+    $current_tab = isset($_GET['tab']) ? $_GET['tab'] : 'dashboard';
+    
+    // Detectar si estamos en página de dev-tools usando WordPress globals
+    $is_dev_tools_page = (
+        $pagenow === 'tools.php' && 
+        (strpos($current_page, 'dev-tools') !== false || 
+         strpos($current_page, 'tarokina-2025-dev-tools') !== false ||
+         $current_page === $menu_slug)
     );
+    
+    // JavaScript de utilidades del sistema (solo en páginas dev-tools)
+    if ($is_dev_tools_page) {
+        $enqueue_asset('script',
+            $config->get('assets.js_handle') . '-utils',
+            'dist/js/dev-utils.min.js',
+            array($config->get('assets.js_handle'))
+        );
+    }
 
-    // Módulos JavaScript de Arquitectura 3.0 (carga optimizada con verificación)
-    $modules = [
+    // Módulos JavaScript de Arquitectura 3.0 (carga condicional optimizada)
+    $all_modules = [
         'dashboard' => 'dashboard.min.js',
         'system-info' => 'system-info.min.js',
         'cache' => 'cache.min.js',
@@ -147,20 +163,73 @@ function dev_tools_enqueue_assets($hook) {
         'performance' => 'performance.min.js'
     ];
     
+    // Usar variables globales de WordPress para detectar página actual
+    global $pagenow, $typenow;
+    
+    $current_page = isset($_GET['page']) ? $_GET['page'] : '';
+    $current_tab = isset($_GET['tab']) ? $_GET['tab'] : 'dashboard';
+    
+    $modules_to_load = [];
+    
+    // Detectar si estamos en página de dev-tools usando WordPress globals
+    $is_dev_tools_page = (
+        $pagenow === 'tools.php' && 
+        (strpos($current_page, 'dev-tools') !== false || 
+         strpos($current_page, 'tarokina-2025-dev-tools') !== false ||
+         $current_page === $menu_slug)
+    );
+    
+    if ($is_dev_tools_page) {
+        // Estamos en dev-tools, cargar según tab activo
+        switch ($current_tab) {
+            case 'dashboard':
+                $modules_to_load = ['dashboard'];
+                break;
+            case 'system-info':
+                $modules_to_load = ['system-info'];
+                break;
+            case 'cache':
+                $modules_to_load = ['cache'];
+                break;
+            case 'ajax-tester':
+                $modules_to_load = ['ajax-tester'];
+                break;
+            case 'logs':
+                $modules_to_load = ['logs'];
+                break;
+            case 'performance':
+                $modules_to_load = ['performance'];
+                break;
+            default:
+                // Para tab no reconocido, cargar dashboard como fallback
+                $modules_to_load = ['dashboard'];
+                break;
+        }
+    } else {
+        // No estamos en dev-tools, no cargar módulos JavaScript
+        $modules_to_load = [];
+    }
+    
     $modules_loaded = 0;
-    foreach ($modules as $module => $file) {
-        if ($enqueue_asset('script',
-            $config->get('assets.js_handle') . '-' . $module,
-            'dist/js/' . $file,
-            array($config->get('assets.js_handle'))
-        )) {
-            $modules_loaded++;
+    foreach ($modules_to_load as $module) {
+        if (isset($all_modules[$module])) {
+            if ($enqueue_asset('script',
+                $config->get('assets.js_handle') . '-' . $module,
+                'dist/js/' . $all_modules[$module],
+                array($config->get('assets.js_handle'))
+            )) {
+                $modules_loaded++;
+            }
         }
     }
     
     // Log resumen de módulos cargados en modo debug
     if ($config->is_debug_mode()) {
-        error_log('[DEV-TOOLS] Módulos cargados: ' . $modules_loaded . '/' . count($modules));
+        error_log('[DEV-TOOLS] WordPress globals - $pagenow: ' . ($pagenow ?? 'undefined') . ', $typenow: ' . ($typenow ?? 'undefined'));
+        error_log('[DEV-TOOLS] GET params - page: ' . $current_page . ', tab: ' . $current_tab);
+        error_log('[DEV-TOOLS] Es página dev-tools: ' . ($is_dev_tools_page ? 'SÍ' : 'NO'));
+        error_log('[DEV-TOOLS] Módulos a cargar: ' . (empty($modules_to_load) ? 'NINGUNO' : implode(', ', $modules_to_load)));
+        error_log('[DEV-TOOLS] Módulos cargados: ' . $modules_loaded . '/' . count($modules_to_load));
     }
 
     // JavaScript de utilidades solo en desarrollo (evitar duplicación)
