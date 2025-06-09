@@ -164,7 +164,7 @@ class DevToolsConfig {
                 'plugin_root' => $this->host_plugin['dir_path'],
                 'plugin_url' => $this->host_plugin['dir_url'],
                 'dev_tools_root' => __DIR__,
-                'dev_tools_url' => plugins_url('/', __FILE__),
+                'dev_tools_url' => $this->host_plugin['dir_url'] . 'dev-tools/',
                 'tests' => __DIR__ . '/tests',
                 'docs' => __DIR__ . '/docs',
                 'src_js' => __DIR__ . '/src/js',

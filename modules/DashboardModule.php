@@ -137,7 +137,7 @@ class DashboardModule extends DevToolsModuleBase {
             return;
         }
         
-        $dev_tools_url = $this->config->get('urls.dev_tools');
+        $dev_tools_url = $this->config->get('paths.dev_tools_url');
         
         // CSS - Comentado: El loader.php se encarga del CSS global
         // wp_enqueue_style(

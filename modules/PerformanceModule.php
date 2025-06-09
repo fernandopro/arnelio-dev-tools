@@ -12,15 +12,12 @@
  * @since 1.0.0
  */
 
-namespace DevTools\Modules;
-
-use DevToolsModuleBase;
-use DevToolsAjaxHandler;
-use Exception;
-
 if (!defined('ABSPATH')) {
     exit;
 }
+
+// Cargar dependencias
+require_once dirname(__DIR__) . '/core/DevToolsModuleBase.php';
 
 /**
  * Módulo de Performance

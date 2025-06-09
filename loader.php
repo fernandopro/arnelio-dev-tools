@@ -13,37 +13,28 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-// Log temporal para diagnóstico
-error_log('[DEV-TOOLS] Loader iniciando...');
-
 // ========================================
 // CARGA DE COMPONENTES CORE
 // ========================================
 
 // 1. Configuración global (base del sistema)
 require_once __DIR__ . '/config.php';
-error_log('[DEV-TOOLS] Config cargado');
 
 // 2. Sistema de logging y debug
 require_once __DIR__ . '/debug-ajax.php';
-error_log('[DEV-TOOLS] Debug-ajax cargado');
 
 // 3. Interfaces y clases base
 require_once __DIR__ . '/core/interfaces/DevToolsModuleInterface.php';
 require_once __DIR__ . '/core/DevToolsModuleBase.php';
-error_log('[DEV-TOOLS] Clases base cargadas');
 
 // 4. Manejador AJAX centralizado
 require_once __DIR__ . '/ajax-handler.php';
-error_log('[DEV-TOOLS] Ajax-handler cargado');
 
 // 5. Gestor de módulos
 require_once __DIR__ . '/core/DevToolsModuleManager.php';
-error_log('[DEV-TOOLS] ModuleManager cargado');
 
 // Obtener configuración dinámica
 $config = dev_tools_config();
-error_log('[DEV-TOOLS] Configuración obtenida');
 
 // Habilitar modo debug si está en desarrollo
 if (defined('WP_DEBUG') && WP_DEBUG) {
@@ -51,137 +42,8 @@ if (defined('WP_DEBUG') && WP_DEBUG) {
 }
 
 // ========================================
-// FUNCIONES DEL SISTEMA LEGACY (COMPATIBILIDAD)
+// FUNCIONES CORE DEL SISTEMA
 // ========================================
-
-/**
- * DESACTIVADO: Sistema legacy de menú administrativo
- * La Arquitectura 3.0 con DashboardModule maneja todo el menú
- * 
- * @deprecated 3.0.0 - Sustituido por DashboardModule
- */
-function dev_tools_admin_menu() {
-    // SISTEMA LEGACY DESACTIVADO
-    // El DashboardModule de Arquitectura 3.0 maneja todo
-    error_log('[DEV-TOOLS] Sistema legacy menu DESACTIVADO - Arquitectura 3.0 activa');
-    return;
-}
-
-/**
- * Página legacy de dev-tools
- * Se usa solo si el DashboardModule no está disponible
- */
-function dev_tools_legacy_page() {
-    ?>
-    <div class="wrap">
-        <h1>Dev Tools - Modo Compatibilidad</h1>
-        <div class="notice notice-warning">
-            <p><strong>Arquitectura 3.0 en transición:</strong> El sistema está cargando en modo compatibilidad. 
-            Los módulos se están inicializando...</p>
-        </div>
-        
-        <div class="card">
-            <h2>Estado del Sistema</h2>
-            <table class="widefat">
-                <tr>
-                    <td><strong>Configuración:</strong></td>
-                    <td><?php echo class_exists('DevToolsConfig') ? '✓ Cargada' : '✗ Error'; ?></td>
-                </tr>
-                <tr>
-                    <td><strong>AJAX Handler:</strong></td>
-                    <td><?php echo class_exists('DevToolsAjaxHandler') ? '✓ Cargado' : '✗ Error'; ?></td>
-                </tr>
-                <tr>
-                    <td><strong>Module Manager:</strong></td>
-                    <td><?php echo class_exists('DevToolsModuleManager') ? '✓ Cargado' : '✗ Error'; ?></td>
-                </tr>
-                <tr>
-                    <td><strong>Dashboard Module:</strong></td>
-                    <td>
-                        <?php 
-                        if (class_exists('DevToolsModuleManager')) {
-                            $manager = DevToolsModuleManager::getInstance();
-                            $dashboard = $manager->getModule('dashboard');
-                            echo $dashboard ? '✓ Disponible' : '⚠ No encontrado';
-                        } else {
-                            echo '✗ Manager no disponible';
-                        }
-                        ?>
-                    </td>
-                </tr>
-            </table>
-        </div>
-        
-        <div class="card mt-4">
-            <h2>Acciones de Diagnóstico</h2>
-            <p>
-                <button class="button button-primary" onclick="testDevToolsSystem()">
-                    Test Sistema
-                </button>
-                <button class="button" onclick="refreshPage()">
-                    Refrescar Página
-                </button>
-            </p>
-        </div>
-    </div>
-    
-    <script>
-    function testDevToolsSystem() {
-        console.log('Testing dev-tools system...');
-        
-        // Test configuración
-        if (typeof devToolsConfig !== 'undefined') {
-            console.log('✓ Config disponible:', devToolsConfig);
-        } else {
-            console.log('✗ Config no disponible');
-        }
-        
-        // Test AJAX
-        if (typeof devToolsConfig !== 'undefined' && devToolsConfig.ajaxUrl) {
-            fetch(devToolsConfig.ajaxUrl, {
-                method: 'POST',
-                body: new FormData(Object.assign(document.createElement('form'), {
-                    innerHTML: `<input name="action" value="${devToolsConfig.actionPrefix}_dev_tools">
-                               <input name="action_type" value="ping">
-                               <input name="nonce" value="${devToolsConfig.nonce}">`
-                }))
-            })
-            .then(r => r.json())
-            .then(data => {
-                console.log('✓ AJAX Response:', data);
-                alert('Test completado. Ver consola para detalles.');
-            })
-            .catch(e => {
-                console.log('✗ AJAX Error:', e);
-                alert('Error en test AJAX. Ver consola.');
-            });
-        } else {
-            alert('No se puede realizar test AJAX: configuración no disponible');
-        }
-    }
-    
-    function refreshPage() {
-        window.location.reload();
-    }
-    </script>
-    
-    <style>
-    .card {
-        background: #fff;
-        border: 1px solid #ccd0d4;
-        padding: 20px;
-        margin: 20px 0;
-        box-shadow: 0 1px 1px rgba(0,0,0,.04);
-    }
-    .mt-4 {
-        margin-top: 20px;
-    }
-    </style>
-    <?php
-}
-
-// DESACTIVADO: Registro de menú legacy - Arquitectura 3.0 activa
-// add_action('admin_menu', 'dev_tools_admin_menu', 30); // DashboardModule maneja todo
 
 /**
  * Obtiene la instancia del Module Manager (Arquitectura 3.0)
@@ -197,7 +59,7 @@ function dev_tools_get_module_manager() {
 
 /**
  * Encola los estilos y scripts para dev-tools (dinámico)
- * Sigue las mejores prácticas de WordPress
+ * Sigue las mejores prácticas de WordPress con verificación de archivos
  */
 function dev_tools_enqueue_assets($hook) {
     $config = dev_tools_config();
@@ -208,73 +70,98 @@ function dev_tools_enqueue_assets($hook) {
         return;
     }
 
-    // Generar URL correcta del plugin dev-tools
-    $plugin_url = plugins_url('', __FILE__) . '/';
+    // CORRECCIÓN: Generar URL base correcta del directorio dev-tools
+    // Usar la ruta base del host plugin + dev-tools
+    $host_plugin_url = plugin_dir_url($config->get('host.file'));
+    $plugin_url = $host_plugin_url . 'dev-tools/';
     $plugin_version = $config->get('host.version');
     
+    // Debug: Log de URLs para verificación
+    if ($config->is_debug_mode()) {
+        error_log('[DEV-TOOLS] Plugin URL generada: ' . $plugin_url);
+    }
+    
+    // Función helper para verificar y encolar assets de forma segura
+    $enqueue_asset = function($type, $handle, $file_path, $deps = array()) use ($plugin_url, $plugin_version, $config) {
+        $file_system_path = __DIR__ . '/' . $file_path;
+        $url = $plugin_url . $file_path;
+        
+        // Verificar que el archivo existe antes de encolarlo
+        if (!file_exists($file_system_path)) {
+            if ($config->is_debug_mode()) {
+                error_log('[DEV-TOOLS] Asset no encontrado: ' . $file_system_path);
+            }
+            return false;
+        }
+        
+        if ($type === 'style') {
+            wp_enqueue_style($handle, $url, $deps, $plugin_version);
+        } else {
+            wp_enqueue_script($handle, $url, $deps, $plugin_version, true);
+        }
+        
+        if ($config->is_debug_mode()) {
+            error_log('[DEV-TOOLS] Asset encolado: ' . $url);
+        }
+        
+        return true;
+    };
+    
     // Dev Tools CSS compilado (incluye Bootstrap y estilos personalizados)
-    wp_enqueue_style(
+    $enqueue_asset('style', 
         $config->get('assets.css_handle'),
-        $plugin_url . 'dist/css/dev-tools-styles.min.css',
-        array(),
-        $plugin_version
+        'dist/css/dev-tools-styles.min.css'
     );
 
     // Dev Tools JavaScript principal compilado (incluye Bootstrap JS compilado)
-    wp_enqueue_script(
+    $main_js_enqueued = $enqueue_asset('script',
         $config->get('assets.js_handle'),
-        $plugin_url . 'dist/js/dev-tools.min.js',
-        array(),
-        $plugin_version,
-        true // Cargar en el footer
+        'dist/js/dev-tools.min.js'
     );
-
-    // JavaScript específico para la pestaña de tests compilado
-    wp_enqueue_script(
-        $config->get('assets.js_handle') . '-tests',
-        $plugin_url . 'dist/js/dev-tools-tests.min.js',
-        array($config->get('assets.js_handle')),
-        $plugin_version,
-        true // Cargar en el footer
-    );
-
-    // JavaScript específico para la pestaña de documentación
-    wp_enqueue_script(
-        $config->get('assets.js_handle') . '-docs',
-        $plugin_url . 'dist/js/dev-tools-docs.min.js',
-        array($config->get('assets.js_handle')),
-        $plugin_version,
-        true // Cargar en el footer
-    );
-
-    // JavaScript específico para la pestaña de mantenimiento
-    wp_enqueue_script(
-        $config->get('assets.js_handle') . '-maintenance',
-        $plugin_url . 'dist/js/dev-tools-maintenance.min.js',
-        array($config->get('assets.js_handle')),
-        $plugin_version,
-        true // Cargar en el footer
-    );
-
-    // JavaScript específico para la pestaña de configuración
-    wp_enqueue_script(
-        $config->get('assets.js_settings_handle'),
-        $plugin_url . 'dist/js/dev-tools-settings.min.js',
-        array($config->get('assets.js_handle')),
-        $plugin_version,
-        true // Cargar en el footer
-    );
-
-    // JavaScript de utilidades solo en desarrollo
-    if ($config->is_debug_mode()) {
-        wp_enqueue_script(
-            $config->get('assets.js_handle') . '-utils',
-            $plugin_url . 'dist/js/dev-utils.min.js',
-            array($config->get('assets.js_handle')),
-            $plugin_version,
-            true
-        );
+    
+    // Solo continuar si el JS principal se encoló correctamente
+    if (!$main_js_enqueued) {
+        if ($config->is_debug_mode()) {
+            error_log('[DEV-TOOLS] Error: No se pudo cargar el JS principal, cancelando carga de módulos');
+        }
+        return;
     }
+    
+    // JavaScript de utilidades del sistema
+    $enqueue_asset('script',
+        $config->get('assets.js_handle') . '-utils',
+        'dist/js/dev-utils.min.js',
+        array($config->get('assets.js_handle'))
+    );
+
+    // Módulos JavaScript de Arquitectura 3.0 (carga optimizada con verificación)
+    $modules = [
+        'dashboard' => 'dashboard.min.js',
+        'system-info' => 'system-info.min.js',
+        'cache' => 'cache.min.js',
+        'ajax-tester' => 'ajax-tester.min.js',
+        'logs' => 'logs.min.js',
+        'performance' => 'performance.min.js'
+    ];
+    
+    $modules_loaded = 0;
+    foreach ($modules as $module => $file) {
+        if ($enqueue_asset('script',
+            $config->get('assets.js_handle') . '-' . $module,
+            'dist/js/' . $file,
+            array($config->get('assets.js_handle'))
+        )) {
+            $modules_loaded++;
+        }
+    }
+    
+    // Log resumen de módulos cargados en modo debug
+    if ($config->is_debug_mode()) {
+        error_log('[DEV-TOOLS] Módulos cargados: ' . $modules_loaded . '/' . count($modules));
+    }
+
+    // JavaScript de utilidades solo en desarrollo (evitar duplicación)
+    // Ya se carga en la sección principal de módulos
 
     // Localizar script con configuración y traducciones (dinámico)
     wp_localize_script(
@@ -284,22 +171,6 @@ function dev_tools_enqueue_assets($hook) {
     );
 }
 add_action('admin_enqueue_scripts', 'dev_tools_enqueue_assets');
-/**
- * DESACTIVADO: Función callback legacy para renderizar dev-tools
- * La Arquitectura 3.0 con DashboardModule renderiza directamente
- * 
- * @deprecated 3.0.0 - Sustituido por DashboardModule::renderDashboardPage()
- */
-function dev_tools_page() {
-    // FUNCIÓN LEGACY DESACTIVADA
-    // El DashboardModule maneja el rendering con renderDashboardPage()
-    error_log('[DEV-TOOLS] Callback legacy dev_tools_page() DESACTIVADO - Arquitectura 3.0 activa');
-    
-    // Redirigir a mensaje de error si se ejecuta por accidente
-    echo '<div class="wrap"><h1>Error: Sistema Legacy Desactivado</h1>';
-    echo '<p>La función dev_tools_page() ha sido desactivada. El DashboardModule de Arquitectura 3.0 maneja el renderizado.</p></div>';
-    return;
-}
 
 /**
  * Configurar traducciones para JavaScript (dinámico)
@@ -311,13 +182,19 @@ function dev_tools_setup_translations() {
         $text_domain = $config->get('host.text_domain');
         $languages_path = $config->get('host.dir_path') . '/languages';
         
-        // Traducciones para los diferentes archivos JavaScript
-        $js_files = [
+        // Traducciones para los archivos JavaScript principales
+        $js_handles = [
             $config->get('assets.js_handle'),
-            $config->get('assets.js_handle') . '-tests',
+            $config->get('assets.js_handle') . '-utils'
         ];
         
-        foreach ($js_files as $handle) {
+        // Añadir handles de módulos existentes
+        $modules = ['dashboard', 'system-info', 'cache', 'ajax-tester', 'logs', 'performance'];
+        foreach ($modules as $module) {
+            $js_handles[] = $config->get('assets.js_handle') . '-' . $module;
+        }
+        
+        foreach ($js_handles as $handle) {
             wp_set_script_translations(
                 $handle,
                 $text_domain,
@@ -345,8 +222,6 @@ function dev_tools_plugin_action_links($links) {
 // Hook dinámico basado en el plugin host detectado
 $config = dev_tools_config();
 add_filter('plugin_action_links_' . $config->get('host.basename'), 'dev_tools_plugin_action_links');
-
-// Puedes utilizar la función `dev_tools_get_admin_url()` para generar URLs del admin de WordPress de manera segura y consistente, asegurando que se utilice `get_site_url()` nativo si `admin_url()` no está disponible. Esto es útil en entornos donde WordPress puede no estar completamente cargado o cuando se necesita una URL personalizada para el admin.
 
 /**
  * Genera URLs del admin de WordPress usando get_site_url() nativo
@@ -404,7 +279,4 @@ function dev_tools_admin_notice() {
     }
 }
 add_action('admin_notices', 'dev_tools_admin_notice');
-
-// Log final del loader
-error_log('[DEV-TOOLS] Loader completado exitosamente');
 
