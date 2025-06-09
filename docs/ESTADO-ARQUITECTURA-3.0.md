@@ -43,6 +43,16 @@ Se ha completado exitosamente la **Arquitectura 3.0** del sistema dev-tools con 
 - ✅ Todos los archivos PHP validados sintácticamente
 - ✅ Sistema de verificación automática `verify-arquitectura-3.0.sh`
 
+#### 🔍 **Sistema de Debug WordPress Dinámico (🆕 NÚCLEO)**
+- ✅ **DebugWordPressDynamic.php** - Integrado en el núcleo de Dev-Tools
+- ✅ **Debug Visual** - URLs `?debug_config=1` y `?debug_urls=1`
+- ✅ **Endpoints AJAX** - Validación programática segura con nonces
+- ✅ **Funciones Globales** - `get_debug_url_data()`, `validate_url_consistency()`, etc.
+- ✅ **Validación de URLs** - Análisis de 3 métodos de generación con recomendaciones
+- ✅ **Logging Integrado** - Registro automático en error.log de Local by Flywheel
+- ✅ **Singleton Pattern** - Carga automática y disponible para todos los plugins
+- ✅ **Documentación Completa** - `docs/DEBUG-WORDPRESS-DYNAMIC.md`
+
 ---
 
 ## 📁 ESTRUCTURA IMPLEMENTADA CON SISTEMA OVERRIDE
@@ -62,7 +72,8 @@ Se ha completado exitosamente la **Arquitectura 3.0** del sistema dev-tools con 
 │   │       ├── DevToolsModuleManager.php           # Gestor con auto-discovery ✅
 │   │       ├── DevToolsAjaxHandler.php             # Patrón Command AJAX ✅
 │   │       ├── DevToolsLogger.php                  # Logger dual interno/externo ✅
-│   │       └── DevToolsConfig.php                  # Config dinámica plugin-agnóstica ✅
+│   │       ├── DevToolsConfig.php                  # Config dinámica plugin-agnóstica ✅
+│   │       └── DebugWordPressDynamic.php           # 🆕 Sistema debug WordPress dinámico ✅
 │   │
 │   ├── 📦 MODULES (6/6 IMPLEMENTADOS - 100% COMPLETADO)
 │   │   ├── DashboardModule.php            # ✅ Panel principal con Bootstrap 5

@@ -36,6 +36,9 @@ require_once __DIR__ . '/nonce-generator-endpoint.php';
 // 6. Gestor de módulos
 require_once __DIR__ . '/core/DevToolsModuleManager.php';
 
+// 7. Sistema de debug de WordPress dinámico (parte del núcleo)
+require_once __DIR__ . '/core/DebugWordPressDynamic.php';
+
 // Obtener configuración dinámica
 $config = dev_tools_config();
 
