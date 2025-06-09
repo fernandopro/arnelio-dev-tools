@@ -2,9 +2,10 @@
 /**
  * Configuración Global de Dev Tools
  * Sistema plugin-agnóstico que detecta automáticamente el plugin host
+ * CON SISTEMA DE OVERRIDE tipo Child Theme
  * 
  * @package DevTools
- * @version 2.0.0
+ * @version 3.0.0
  * @since 1.0.0
  */
 
@@ -12,9 +13,13 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+// Cargar sistema de override
+require_once __DIR__ . '/core/FileOverrideSystem.php';
+
 /**
  * Clase principal de configuración para Dev Tools
  * Detecta automáticamente el plugin host y configura todo dinámicamente
+ * Incluye sistema de override de archivos tipo child theme
  */
 class DevToolsConfig {
     
@@ -34,10 +39,16 @@ class DevToolsConfig {
     private $config = [];
     
     /**
+     * Sistema de override de archivos
+     */
+    private $override_system = null;
+    
+    /**
      * Constructor privado para singleton
      */
     private function __construct() {
         $this->detect_host_plugin();
+        $this->init_override_system();
         $this->setup_config();
     }
     
@@ -49,6 +60,22 @@ class DevToolsConfig {
             self::$instance = new self();
         }
         return self::$instance;
+    }
+    
+    /**
+     * Obtener sistema de override
+     */
+    public function getOverrideSystem() {
+        return $this->override_system;
+    }
+    
+    /**
+     * Inicializar sistema de override
+     */
+    private function init_override_system() {
+        if ($this->host_plugin) {
+            $this->override_system = new DevToolsFileOverrideSystem($this->host_plugin);
+        }
     }
     
     /**
@@ -364,6 +391,128 @@ class DevToolsConfig {
                 error_log('[DEV-TOOLS-CONFIG-DATA] ' . print_r($data, true));
             }
         }
+    }
+    
+    /**
+     * Cargar archivo con sistema de override
+     * 
+     * @param string $relative_path Ruta relativa desde dev-tools/
+     * @param bool $once Si usar include_once
+     * @return mixed Resultado del include
+     */
+    public function include_file($relative_path, $once = true) {
+        if ($this->override_system) {
+            return $this->override_system->include_file($relative_path, $once);
+        }
+        
+        // Fallback sin override system
+        $file_path = __DIR__ . '/' . $relative_path;
+        if (file_exists($file_path)) {
+            return $once ? include_once $file_path : include $file_path;
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Cargar configuración específica con override
+     * 
+     * @param string $config_name Nombre del archivo de configuración
+     * @return array Configuración mergeada
+     */
+    public function load_override_config($config_name = 'config-local.php') {
+        if ($this->override_system) {
+            return $this->override_system->load_config($config_name);
+        }
+        
+        return [];
+    }
+    
+    /**
+     * Cargar template con override
+     * 
+     * @param string $template_name Nombre del template
+     * @param array $vars Variables para el template
+     * @return bool
+     */
+    public function load_template($template_name, $vars = []) {
+        if ($this->override_system) {
+            return $this->override_system->load_template($template_name, $vars);
+        }
+        
+        // Fallback sin override system
+        $template_file = __DIR__ . "/templates/{$template_name}";
+        if (file_exists($template_file)) {
+            if (!empty($vars)) {
+                extract($vars, EXTR_SKIP);
+            }
+            include $template_file;
+            return true;
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Obtener URL de archivo con override
+     * 
+     * @param string $relative_path Ruta relativa
+     * @return string URL del archivo
+     */
+    public function get_file_url($relative_path) {
+        if ($this->override_system) {
+            return $this->override_system->get_file_url($relative_path);
+        }
+        
+        // Fallback sin override system
+        return plugins_url($relative_path, __FILE__);
+    }
+    
+    /**
+     * Verificar si existe override para un archivo
+     * 
+     * @param string $relative_path Ruta relativa
+     * @return bool
+     */
+    public function has_override($relative_path) {
+        if ($this->override_system) {
+            return $this->override_system->has_override($relative_path);
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Migrar archivo a plugin-dev-tools para customización
+     * 
+     * @param string $relative_path Ruta relativa del archivo
+     * @return bool
+     */
+    public function create_override($relative_path) {
+        if ($this->override_system) {
+            return $this->override_system->migrate_to_override($relative_path);
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Obtener información del sistema de override
+     * 
+     * @return array
+     */
+    public function get_override_info() {
+        if ($this->override_system) {
+            return $this->override_system->get_directory_info();
+        }
+        
+        return [
+            'parent_dir' => __DIR__,
+            'child_dir' => $this->host_plugin['dir_path'] . '/plugin-dev-tools',
+            'parent_exists' => true,
+            'child_exists' => false,
+            'overrides_count' => 0
+        ];
     }
 }
 

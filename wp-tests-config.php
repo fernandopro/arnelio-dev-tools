@@ -187,6 +187,12 @@ $table_prefix = getenv('WP_TESTS_TABLE_PREFIX') ?: 'wp_test_';
 // Definir constantes para debugging
 define( 'DEV_TOOLS_TABLE_PREFIX', $table_prefix );
 
+// Definir dominio de pruebas
+if (!defined('WP_TESTS_DOMAIN')) {
+    $test_domain = getenv('WP_TESTS_DOMAIN') ?: 'localhost:10019';
+    define( 'WP_TESTS_DOMAIN', $test_domain );
+}
+
 // =============================================================================
 // CONFIGURACIÓN MÍNIMA DE WORDPRESS
 // =============================================================================
