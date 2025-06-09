@@ -4,10 +4,19 @@
 
 El **Sistema de Debug WordPress Dinámico** es una herramienta integrada en el núcleo de **Dev-Tools Arquitectura 3.0** que permite validar URLs dinámicas, configuración y detectar problemas en tiempo real dentro del contexto de WordPress.
 
+> 📖 **Documentación Relacionada**
+> - [`ESTADO-ARQUITECTURA-3.0.md`](ESTADO-ARQUITECTURA-3.0.md) - Estado completo de la implementación
+> - [`ANALISIS-REFACTORIZACION-2025-06-08.md`](ANALISIS-REFACTORIZACION-2025-06-08.md) - Análisis técnico detallado
+> - [`RESUMEN-DEBUG-SYSTEM-INTEGRATION.md`](RESUMEN-DEBUG-SYSTEM-INTEGRATION.md) - Resumen de integración
+
 ### Ubicación en el Sistema
 - **Archivo**: `dev-tools/core/DebugWordPressDynamic.php`
 - **Parte del núcleo**: Se carga automáticamente con Dev-Tools
 - **Disponibilidad**: Todos los plugins que usen Dev-Tools tienen acceso
+
+### 🎯 **Importancia Estratégica**
+
+Esta herramienta representa una **innovación crítica** en el ecosistema Dev-Tools, abordando uno de los problemas más comunes en el desarrollo de plugins WordPress: **la gestión confiable de URLs dinámicas**. Su integración en el núcleo garantiza que esté disponible automáticamente para todos los desarrolladores.
 
 ## Características Principales
 
