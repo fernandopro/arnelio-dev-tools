@@ -443,125 +443,191 @@ class DevToolsConfig {
     }
     
     /**
-     * Cargar archivo con sistema de override
+     * Obtener datos completos de debug para validación programática
+     * Consolida funcionalidad de debug-wordpress-dynamic.php
      * 
-     * @param string $relative_path Ruta relativa desde dev-tools/
-     * @param bool $once Si usar include_once
-     * @return mixed Resultado del include
+     * @return array Datos de configuración y URLs para validación
      */
-    public function include_file($relative_path, $once = true) {
-        if ($this->override_system) {
-            return $this->override_system->include_file($relative_path, $once);
-        }
-        
-        // Fallback sin override system
-        $file_path = __DIR__ . '/' . $relative_path;
-        if (file_exists($file_path)) {
-            return $once ? include_once $file_path : include $file_path;
-        }
-        
-        return false;
-    }
-    
-    /**
-     * Cargar configuración específica con override
-     * 
-     * @param string $config_name Nombre del archivo de configuración
-     * @return array Configuración mergeada
-     */
-    public function load_override_config($config_name = 'config-local.php') {
-        if ($this->override_system) {
-            return $this->override_system->load_config($config_name);
-        }
-        
-        return [];
-    }
-    
-    /**
-     * Cargar template con override
-     * 
-     * @param string $template_name Nombre del template
-     * @param array $vars Variables para el template
-     * @return bool
-     */
-    public function load_template($template_name, $vars = []) {
-        if ($this->override_system) {
-            return $this->override_system->load_template($template_name, $vars);
-        }
-        
-        // Fallback sin override system
-        $template_file = __DIR__ . "/templates/{$template_name}";
-        if (file_exists($template_file)) {
-            if (!empty($vars)) {
-                extract($vars, EXTR_SKIP);
-            }
-            include $template_file;
-            return true;
-        }
-        
-        return false;
-    }
-    
-    /**
-     * Obtener URL de archivo con override
-     * 
-     * @param string $relative_path Ruta relativa
-     * @return string URL del archivo
-     */
-    public function get_file_url($relative_path) {
-        if ($this->override_system) {
-            return $this->override_system->get_file_url($relative_path);
-        }
-        
-        // Fallback sin override system
-        return plugins_url($relative_path, __FILE__);
-    }
-    
-    /**
-     * Verificar si existe override para un archivo
-     * 
-     * @param string $relative_path Ruta relativa
-     * @return bool
-     */
-    public function has_override($relative_path) {
-        if ($this->override_system) {
-            return $this->override_system->has_override($relative_path);
-        }
-        
-        return false;
-    }
-    
-    /**
-     * Migrar archivo a plugin-dev-tools para customización
-     * 
-     * @param string $relative_path Ruta relativa del archivo
-     * @return bool
-     */
-    public function create_override($relative_path) {
-        if ($this->override_system) {
-            return $this->override_system->migrate_to_override($relative_path);
-        }
-        
-        return false;
-    }
-    
-    /**
-     * Obtener información del sistema de override
-     * 
-     * @return array
-     */
-    public function get_override_info() {
-        if ($this->override_system) {
-            return $this->override_system->get_directory_info();
-        }
-        
-        return [
-            'parent_dir' => __DIR__,
-            'child_dir' => $this->host_plugin['dir_path'] . '/plugin-dev-tools',
-            'parent_exists' => true,
-            'child_exists' => false,
-            'overrides_count' => 0
+    public function get_debug_data() {
+        $data = [
+            'success' => true,
+            'dev_tools_loaded' => true,
+            'urls' => $this->get_all_urls(),
+            'config' => $this->get_debug_config(),
+            'host_plugin' => $this->host_plugin,
+            'issues' => []
         ];
+        
+        // Validar consistencia automáticamente
+        $data['issues'] = $this->validate_configuration_consistency($data['urls'], $data['config']);
+        
+        return $data;
+    }
+    
+    /**
+     * Obtener todas las URLs dinámicas del sistema
+     * 
+     * @return array URLs dinámicas detectadas
+     */
+    public function get_all_urls() {
+        return [
+            'site_url' => get_site_url(),
+            'home_url' => get_home_url(),
+            'admin_url' => get_admin_url(),
+            'admin_ajax_url' => admin_url('admin-ajax.php'),
+            'plugins_url' => plugins_url(),
+            'dev_tools_url' => $this->get_admin_url('tools.php?page=' . $this->get('dev_tools.menu_slug')),
+            'current_url' => isset($_SERVER['REQUEST_URI']) ? home_url($_SERVER['REQUEST_URI']) : null,
+            'plugin_url' => $this->host_plugin['dir_url'],
+            'dev_tools_base_url' => $this->host_plugin['dir_url'] . 'dev-tools/'
+        ];
+    }
+    
+    /**
+     * Obtener configuración crítica para debug
+     * 
+     * @return array Configuración crítica del sistema
+     */
+    public function get_debug_config() {
+        return [
+            'js_config_var' => $this->get('dev_tools.js_config_var'),
+            'menu_slug' => $this->get('dev_tools.menu_slug'),
+            'ajax_action' => $this->get('ajax.action_name'),
+            'nonce_action' => $this->get('ajax.nonce_action'),
+            'js_handle' => $this->get('assets.js_handle'),
+            'debug_mode' => $this->is_debug_mode(),
+            'host_name' => $this->get('host.name'),
+            'host_slug' => $this->get('host.slug'),
+            'text_domain' => $this->get('host.text_domain')
+        ];
+    }
+    
+    /**
+     * Validar consistencia de URLs y configuración
+     * Consolida funcionalidad de debug-wordpress-dynamic.php
+     * 
+     * @param array $urls URLs detectadas
+     * @param array $config Configuración detectada
+     * @return array Lista de issues encontrados
+     */
+    public function validate_configuration_consistency($urls, $config) {
+        $issues = [];
+        
+        // Validar que todas las URLs tengan el mismo protocolo y dominio base
+        $base_patterns = [];
+        foreach ($urls as $key => $url) {
+            if ($url && filter_var($url, FILTER_VALIDATE_URL)) {
+                $parsed = parse_url($url);
+                $base = $parsed['scheme'] . '://' . $parsed['host'];
+                $base_patterns[$key] = $base;
+            } else {
+                $issues[] = "URL inválida detectada: {$key} = {$url}";
+            }
+        }
+        
+        // Verificar consistencia de dominios
+        $unique_bases = array_unique($base_patterns);
+        if (count($unique_bases) > 1) {
+            $issues[] = "Inconsistencia de dominios detectada: " . implode(', ', $unique_bases);
+        }
+        
+        // Validar configuración crítica
+        if (empty($config['ajax_action'])) {
+            $issues[] = "AJAX action no configurado";
+        }
+        
+        if (empty($config['nonce_action'])) {
+            $issues[] = "Nonce action no configurado";
+        }
+        
+        if (empty($config['js_config_var'])) {
+            $issues[] = "Variable JavaScript no configurada";
+        }
+        
+        // Validar configuración del host
+        if (empty($config['host_name'])) {
+            $issues[] = "Plugin host no detectado correctamente";
+        }
+        
+        return $issues;
+    }
+    
+    /**
+     * Registrar issues en el error log con formato consistente
+     * Consolida funcionalidad de debug-wordpress-dynamic.php
+     * 
+     * @param array $issues Lista de problemas encontrados
+     * @param string $context Contexto del debug (opcional)
+     */
+    public function log_configuration_issues($issues, $context = 'URL_CONSISTENCY') {
+        if (!empty($issues)) {
+            $this->log("🔧 DEV-TOOLS {$context} ISSUES:");
+            foreach ($issues as $issue) {
+                $this->log("   - {$issue}");
+            }
+        }
+    }
+    
+    /**
+     * Generar output HTML de debug para desarrollo
+     * Consolida funcionalidad de debug-wordpress-dynamic.php
+     * 
+     * @param bool $return_html Si retornar HTML en lugar de imprimirlo
+     * @return string|void HTML de debug o imprime directamente
+     */
+    public function render_debug_output($return_html = false) {
+        $debug_data = $this->get_debug_data();
+        
+        $output = '<div id="wpcontent"><pre style="background:rgb(39, 39, 39); color:#fff; padding: 20px; font-family: monospace; border: 1px solid #ccc; margin: 20px;">';
+        $output .= "🔧 === DEBUG CONFIGURACIÓN DEV-TOOLS (WORDPRESS REAL) ===\n\n";
+        
+        $output .= "✅ DevTools cargado correctamente\n\n";
+        
+        $output .= "📋 INFORMACIÓN DEL HOST PLUGIN:\n";
+        $output .= "────────────────────────────\n";
+        $output .= "Name: " . $this->get('host.name') . "\n";
+        $output .= "Slug: " . $this->get('host.slug') . "\n";
+        $output .= "Text Domain: " . $this->get('host.text_domain') . "\n";
+        $output .= "Dir Path: " . $this->get('host.dir_path') . "\n";
+        $output .= "Dir URL: " . $this->get('host.dir_url') . "\n";
+        
+        $output .= "\n📋 URLs DINÁMICAS REALES:\n";
+        $output .= "─────────────────────────\n";
+        foreach ($debug_data['urls'] as $key => $url) {
+            $output .= ucfirst(str_replace('_', ' ', $key)) . ": " . ($url ?: 'N/A') . "\n";
+        }
+        
+        $output .= "\n📋 CONFIGURACIÓN JAVASCRIPT REAL:\n";
+        $output .= "─────────────────────────────────\n";
+        $js_config = $this->get_js_config();
+        foreach ($js_config as $key => $value) {
+            $display_value = is_bool($value) ? ($value ? 'true' : 'false') : $value;
+            $output .= "  {$key}: {$display_value}\n";
+        }
+        
+        // Mostrar issues si los hay
+        if (!empty($debug_data['issues'])) {
+            $output .= "\n⚠️  ISSUES DETECTADOS:\n";
+            $output .= "───────────────────\n";
+            foreach ($debug_data['issues'] as $issue) {
+                $output .= "❌ {$issue}\n";
+            }
+        } else {
+            $output .= "\n✅ NO SE DETECTARON ISSUES\n";
+        }
+        
+        $output .= "\n📋 MODO DEBUG:\n";
+        $output .= "─────────────\n";
+        $output .= "Debug Mode: " . ($this->is_debug_mode() ? 'ACTIVADO' : 'DESACTIVADO') . "\n";
+        $output .= "WP_DEBUG: " . (defined('WP_DEBUG') && WP_DEBUG ? 'true' : 'false') . "\n";
+        
+        $output .= '</pre></div>';
+        
+        if ($return_html) {
+            return $output;
+        } else {
+            echo $output;
+        }
     }
 }
 
