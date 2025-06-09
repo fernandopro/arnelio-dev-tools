@@ -315,8 +315,14 @@ abstract class DevToolsModuleBase implements DevToolsModuleInterface {
      * Registrar comando AJAX para el módulo
      */
     protected function register_ajax_command(string $action, callable $callback): void {
+        // DEBUG: Log registro de comando
+        error_log('[DEV-TOOLS-DEBUG] Registrando comando AJAX: ' . $action . ' desde módulo: ' . $this->getModuleName());
+        
         $ajax_handler = DevToolsAjaxHandler::getInstance();
         $ajax_handler->registerCommand($action, $callback);
+        
+        // DEBUG: Verificar que se registró
+        error_log('[DEV-TOOLS-DEBUG] Comando ' . $action . ' registrado correctamente');
     }
     
     /**

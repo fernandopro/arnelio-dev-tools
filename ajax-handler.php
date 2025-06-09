@@ -63,6 +63,24 @@ class DevToolsAjaxHandler {
     private function init() {
         $this->registerCoreCommands();
         $this->registerWordPressHooks();
+        
+        // CRÍTICO: Inicializar Module Manager para que los comandos de módulos estén disponibles durante AJAX
+        $this->initializeModules();
+    }
+    
+    /**
+     * Inicializar módulos del sistema durante peticiones AJAX
+     */
+    private function initializeModules() {
+        // Solo inicializar si estamos en una petición AJAX
+        if (defined('DOING_AJAX') && DOING_AJAX) {
+            $module_manager = dev_tools_get_module_manager();
+            if ($module_manager) {
+                // Forzar inicialización de módulos para que registren sus comandos AJAX
+                $module_manager->initialize();
+                $this->logger->logInternal("Module Manager initialized for AJAX context");
+            }
+        }
     }
     
     /**
@@ -88,11 +106,11 @@ class DevToolsAjaxHandler {
     private function registerWordPressHooks() {
         $ajax_prefix = $this->config->get('ajax.action_prefix');
         
-        // Hook para usuarios logueados
+        // Hook principal con prefijo dinámico del plugin
         add_action("wp_ajax_{$ajax_prefix}_dev_tools", [$this, 'handleAjaxRequest']);
-        
-        // Hook para usuarios no logueados (solo para debugging específico)
         add_action("wp_ajax_nopriv_{$ajax_prefix}_dev_tools", [$this, 'handleAjaxRequest']);
+        
+        $this->logger->logInternal("Registered AJAX hooks: wp_ajax_{$ajax_prefix}_dev_tools");
     }
     
     /**
@@ -114,6 +132,11 @@ class DevToolsAjaxHandler {
      */
     public function handleAjaxRequest() {
         $action = 'unknown';
+        
+        // DEBUG: Log inmediato para verificar si llegamos aquí
+        error_log('[DEV-TOOLS-DEBUG] handleAjaxRequest() called');
+        error_log('[DEV-TOOLS-DEBUG] REQUEST_METHOD: ' . ($_SERVER['REQUEST_METHOD'] ?? 'undefined'));
+        error_log('[DEV-TOOLS-DEBUG] POST data: ' . print_r($_POST, true));
         
         try {
             // 1. Validar método HTTP

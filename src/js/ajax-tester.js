@@ -639,10 +639,18 @@ class DevToolsAjaxTester {
         // Fallback manual
         return new Promise((resolve, reject) => {
             const formData = new FormData();
-            formData.append('action', 'dev_tools_ajax');
-            formData.append('command', command);
-            formData.append('data', JSON.stringify(data));
+            // Usar la acción dinámica desde la configuración (plugin-agnóstico)
+            const ajaxAction = window.devToolsConfig?.ajaxAction || 
+                              (window.devToolsConfig?.actionPrefix + '_dev_tools') || 
+                              'dev_tools_ajax';
+            formData.append('action', ajaxAction);
+            formData.append('action_type', command);
             formData.append('nonce', window.devToolsConfig?.nonce || '');
+            
+            // Agregar datos individuales en lugar de JSON string
+            Object.keys(data).forEach(key => {
+                formData.append(key, data[key]);
+            });
 
             fetch(window.devToolsConfig?.ajaxUrl || '/wp-admin/admin-ajax.php', {
                 method: 'POST',
@@ -692,9 +700,17 @@ class DevToolsAjaxTester {
     }
 }
 
+// Exportar la clase constructora inmediatamente
+window.DevToolsAjaxTesterClass = DevToolsAjaxTester;
+
 // Inicializar cuando esté listo
 document.addEventListener('DOMContentLoaded', function() {
+    // Crear instancia global para uso directo
     window.DevToolsAjaxTester = new DevToolsAjaxTester();
+    
+    console.log('[DEV-TOOLS] AjaxTester module initialized');
+    console.log('[DEV-TOOLS] DevToolsAjaxTesterClass available as constructor');
+    console.log('[DEV-TOOLS] DevToolsAjaxTester available as instance');
 });
 
 // Export para uso modular

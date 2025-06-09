@@ -16,23 +16,24 @@ class DevToolsDashboard {
     }
 
     /**
-     * Inicializar dashboard
+     * Inicializar dashboard - MODO MANUAL
+     * No ejecuta cargas automáticas para evitar alerts no deseadas
      */
     init() {
         if (this.isInitialized) {
             return;
         }
 
-        this.logger.logInternal('Initializing DevTools Dashboard');
+        this.logger.logInternal('Initializing DevTools Dashboard - MANUAL MODE');
 
         try {
             this.validateConfig();
             this.bindEvents();
-            this.loadInitialData();
-            this.startAutoRefresh();
+            // ELIMINADO: this.loadInitialData(); // No cargar automáticamente
+            // ELIMINADO: this.startAutoRefresh(); // No iniciar auto-refresh
             
             this.isInitialized = true;
-            this.logger.logExternal('Dashboard initialized successfully', 'success');
+            this.logger.logExternal('Dashboard initialized successfully (manual mode)', 'success');
             
         } catch (error) {
             this.logger.logError('Dashboard initialization failed', error);
@@ -140,6 +141,11 @@ class DevToolsDashboard {
      */
     async runSystemTest() {
         try {
+            // Inicializar si no está listo
+            if (!this.isInitialized) {
+                this.init();
+            }
+            
             this.showAlert('Ejecutando test del sistema...', 'info');
             
             const testData = await this.makeAjaxRequest('run_test', {
@@ -159,6 +165,11 @@ class DevToolsDashboard {
      */
     async clearCache() {
         try {
+            // Inicializar si no está listo
+            if (!this.isInitialized) {
+                this.init();
+            }
+            
             this.showAlert('Limpiando cache...', 'info');
             
             const result = await this.makeAjaxRequest('clear_cache');
@@ -197,6 +208,11 @@ class DevToolsDashboard {
      */
     async exportLogs() {
         try {
+            // Inicializar si no está listo
+            if (!this.isInitialized) {
+                this.init();
+            }
+            
             this.showAlert('Preparando exportación de logs...', 'info');
             
             // Por ahora simular la exportación

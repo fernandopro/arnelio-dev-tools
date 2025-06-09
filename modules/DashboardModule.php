@@ -139,6 +139,10 @@ class DashboardModule extends DevToolsModuleBase {
      * Enqueue assets del dashboard
      */
     public function enqueueAssets($hook): void {
+        // CORRECCIÓN: El loader.php ya maneja toda la carga de assets
+        // Este método se mantiene vacío para evitar duplicación de scripts
+        // Solo el loader.php debe encolar JavaScript y CSS para mantener consistencia
+        
         // Protección para entorno de tests donde config puede no estar inicializado
         if (!$this->config || !method_exists($this->config, 'get')) {
             return;
@@ -154,39 +158,11 @@ class DashboardModule extends DevToolsModuleBase {
             return;
         }
         
-        $dev_tools_url = $this->config->get('paths.dev_tools_url');
-        if (!$dev_tools_url) {
-            return;
-        }
+        // ELIMINADO: No duplicar carga de assets que ya maneja loader.php
+        // Los scripts se cargan automáticamente desde loader.php con handles consistentes
         
-        // CSS - Comentado: El loader.php se encarga del CSS global
-        // wp_enqueue_style(
-        //     'dev-tools-dashboard',
-        //     $dev_tools_url . '/dist/css/dev-tools-styles.min.css',
-        //     [],
-        //     '3.0.0'
-        // );
-        
-        // JavaScript
-        wp_enqueue_script(
-            'dev-tools-dashboard',
-            $dev_tools_url . '/dist/js/dashboard.min.js',
-            [],
-            '3.0.0',
-            true
-        );
-        
-        // Configuración para JavaScript
-        $nonce_action = $this->config->get('ajax.nonce_action') ?: 'dev_tools_ajax';
-        $action_prefix = $this->config->get('ajax.action_prefix') ?: 'dev_tools';
-        
-        wp_localize_script('dev-tools-dashboard', 'devToolsConfig', [
-            'ajaxUrl' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce($nonce_action),
-            'actionPrefix' => $action_prefix,
-            'debug' => defined('WP_DEBUG') && WP_DEBUG,
-            'version' => '3.0.0'
-        ]);
+        // Nota: La configuración JavaScript ya se aplica en loader.php
+        // wp_localize_script() se ejecuta allí con la configuración centralizada
     }
     
     /**
@@ -406,17 +382,18 @@ class DashboardModule extends DevToolsModuleBase {
         </style>
         
         <script>
-        // JavaScript específico del dashboard
+        // JavaScript específico del dashboard - SIN AUTO-INICIALIZACIÓN
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🎨 Dev-Tools Dashboard Dark Theme cargado');
             
-            // Inicializar funcionalidad del dashboard
-            if (typeof DevToolsDashboard !== 'undefined') {
-                const dashboard = new DevToolsDashboard();
-                dashboard.init();
-            }
+            // CORRECCIÓN: NO inicializar automáticamente para evitar ejecuciones no deseadas
+            // El dashboard se inicializará SOLO cuando el usuario interactúe con botones
+            // if (typeof DevToolsDashboard !== 'undefined') {
+            //     const dashboard = new DevToolsDashboard();
+            //     dashboard.init(); // Esto causaba ejecuciones automáticas
+            // }
             
-            // Funcionalidad de botones de acción rápida
+            // Funcionalidad de botones de acción rápida - SOLO CONSOLE LOGS
             const initQuickActions = () => {
                 const testSystemBtn = document.getElementById('btn-test-system');
                 const clearCacheBtn = document.getElementById('btn-clear-cache');
@@ -424,30 +401,49 @@ class DashboardModule extends DevToolsModuleBase {
                 const exportLogsBtn = document.getElementById('btn-export-logs');
                 
                 if (testSystemBtn) {
-                    testSystemBtn.addEventListener('click', () => {
-                        console.log('🔧 Test Sistema ejecutándose...');
-                        // TODO: Implementar test del sistema
+                    testSystemBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        console.log('🔧 Test Sistema iniciado por usuario...');
+                        
+                        // Inicializar dashboard solo cuando se necesite
+                        if (typeof DevToolsDashboard !== 'undefined') {
+                            const dashboard = new DevToolsDashboard();
+                            dashboard.runSystemTest();
+                        }
                     });
                 }
                 
                 if (clearCacheBtn) {
-                    clearCacheBtn.addEventListener('click', () => {
-                        console.log('🗑️ Limpiando cache...');
-                        // TODO: Implementar limpieza de cache
+                    clearCacheBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        console.log('🗑️ Limpieza de cache iniciada por usuario...');
+                        
+                        // Inicializar dashboard solo cuando se necesite
+                        if (typeof DevToolsDashboard !== 'undefined') {
+                            const dashboard = new DevToolsDashboard();
+                            dashboard.clearCache();
+                        }
                     });
                 }
                 
                 if (refreshDataBtn) {
-                    refreshDataBtn.addEventListener('click', () => {
-                        console.log('🔄 Actualizando datos...');
+                    refreshDataBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        console.log('🔄 Actualización de datos iniciada por usuario...');
                         location.reload();
                     });
                 }
                 
                 if (exportLogsBtn) {
-                    exportLogsBtn.addEventListener('click', () => {
-                        console.log('📥 Exportando logs...');
-                        // TODO: Implementar exportación de logs
+                    exportLogsBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        console.log('📥 Exportación de logs iniciada por usuario...');
+                        
+                        // Inicializar dashboard solo cuando se necesite
+                        if (typeof DevToolsDashboard !== 'undefined') {
+                            const dashboard = new DevToolsDashboard();
+                            dashboard.exportLogs();
+                        }
                     });
                 }
             };

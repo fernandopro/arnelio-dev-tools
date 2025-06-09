@@ -34,6 +34,9 @@ class AjaxTesterModule extends DevToolsModuleBase {
      * Inicialización específica del módulo
      */
     protected function initializeModule(): bool {
+        // DEBUG: Log que este método se está ejecutando
+        error_log('[DEV-TOOLS-DEBUG] AjaxTesterModule::initializeModule() ejecutándose');
+        
         // Registrar comandos AJAX específicos
         $this->register_ajax_command('test_ajax_endpoint', [$this, 'handle_test_ajax_endpoint']);
         $this->register_ajax_command('get_test_history', [$this, 'handle_get_test_history']);
@@ -41,6 +44,9 @@ class AjaxTesterModule extends DevToolsModuleBase {
         $this->register_ajax_command('save_test_preset', [$this, 'handle_save_test_preset']);
         $this->register_ajax_command('load_test_presets', [$this, 'handle_load_test_presets']);
         $this->register_ajax_command('get_wordpress_ajax_actions', [$this, 'handle_get_wordpress_ajax_actions']);
+        
+        // DEBUG: Log comandos registrados
+        error_log('[DEV-TOOLS-DEBUG] AjaxTesterModule: 6 comandos AJAX registrados');
         
         // Cargar presets predeterminados
         $this->load_default_presets();
@@ -53,11 +59,22 @@ class AjaxTesterModule extends DevToolsModuleBase {
      * Registrar hooks de WordPress
      */
     public function registerHooks(): void {
-        // Hook para interceptar todas las peticiones AJAX si está en modo debug
+        // CORREGIDO: WordPress no soporta wildcards en hooks
+        // Los wildcards causan errores 500 y comportamiento impredecible
+        
+        // Si queremos logging específico, debemos registrar hooks individuales
+        // Por ahora comentamos este feature hasta implementar correctamente
+        
+        /* TODO: Implementar logging AJAX específico sin wildcards
         if (defined('WP_DEBUG') && WP_DEBUG) {
-            add_action('wp_ajax_nopriv_*', [$this, 'log_ajax_request'], 1);
-            add_action('wp_ajax_*', [$this, 'log_ajax_request'], 1);
+            // Registrar hooks para acciones específicas que queremos monitorear
+            $monitored_actions = ['heartbeat', 'admin_color_scheme_picker'];
+            foreach ($monitored_actions as $action) {
+                add_action("wp_ajax_{$action}", [$this, 'log_ajax_request'], 1);
+                add_action("wp_ajax_nopriv_{$action}", [$this, 'log_ajax_request'], 1);
+            }
         }
+        */
     }
     
     /**
