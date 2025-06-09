@@ -154,7 +154,7 @@ class DevToolsConfig {
                 'page_title' => $this->host_plugin['name'] . ' - Dev Tools',
                 'menu_title' => 'Dev Tools',
                 'capability' => 'manage_options',
-                'ajax_action' => $slug . '_dev_tools_ajax',
+                'ajax_action' => $slug . '_dev_tools',
                 'nonce_key' => $slug . '_dev_tools_nonce',
                 'js_config_var' => $this->sanitize_js_var($slug) . '_dev_tools_config'
             ],

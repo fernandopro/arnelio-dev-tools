@@ -274,13 +274,37 @@ class DevToolsController {
             key.endsWith('_dev_tools_config')
         );
         
-        if (configVars.length > 0) {
-            return window[configVars[0]];
+        if (this.verboseMode) {
+            console.log('🔍 Variables de configuración encontradas:', configVars);
         }
         
-        // Fallback a la variable estática (compatibilidad)
-        if (typeof window.tkn_dev_tools_config !== 'undefined') {
-            return window.tkn_dev_tools_config;
+        if (configVars.length > 0) {
+            const configVar = configVars[0];
+            if (this.verboseMode) {
+                console.log(`✅ Usando configuración: ${configVar}`, window[configVar]);
+            }
+            return window[configVar];
+        }
+        
+        // Fallback a variables comunes conocidas
+        const fallbackVars = [
+            'tarokina_2025_dev_tools_config', // Nombre correcto sanitizado
+            'tkn_dev_tools_config',           // Nombre legacy
+            'tarokina-2025_dev_tools_config', // Versión con guión
+            'dev_tools_config'                // Genérico
+        ];
+        
+        for (const varName of fallbackVars) {
+            if (typeof window[varName] !== 'undefined') {
+                if (this.verboseMode) {
+                    console.log(`✅ Usando fallback: ${varName}`, window[varName]);
+                }
+                return window[varName];
+            }
+        }
+        
+        if (this.verboseMode) {
+            console.warn('⚠️ No se encontró configuración localizada. Sistema funcionará con configuración mínima.');
         }
         
         return null;
@@ -298,6 +322,14 @@ class DevToolsController {
                 ...this.config,
                 ...devToolsConfig
             };
+            
+            if (this.verboseMode) {
+                console.log('✅ Configuración WordPress localizada cargada:', devToolsConfig);
+            }
+        } else {
+            if (this.verboseMode) {
+                console.warn('⚠️ Configuración WordPress no disponible - usando configuración mínima');
+            }
         }
 
         // URLs dinámicas (protocolo Local by Flywheel)
@@ -778,7 +810,8 @@ class DevToolsController {
         } catch (error) {
             this.logError('❌ Error en verificación de conectividad AJAX', {
                 error: error.message,
-                url: this.config.ajaxUrl,                    action: this.getAjaxAction('ping')
+                url: this.config.ajaxUrl,
+                command: 'ping'
             });
             return false;
         }
@@ -939,7 +972,7 @@ class DevToolsController {
                 options: requestOptions
             };
             
-            this.logError(`❌ Error en petición AJAX: ${action}`, errorInfo);
+            this.logError(`❌ Error en petición AJAX: ${command}`, errorInfo);
             throw error;
         }
     }
@@ -1242,16 +1275,19 @@ class DevToolsController {
  * Se ejecuta cuando el DOM está listo
  */
 document.addEventListener('DOMContentLoaded', () => {
+    // Exponer la clase DevToolsController globalmente para testing/debugging
+    window.DevToolsController = DevToolsController;
+    
     // Crear instancia global del controlador
-    window.DevToolsController = new DevToolsController();
+    window.devToolsController = new DevToolsController();
     
     // Exponer API pública para módulos
-    window.DevToolsAPI = window.DevToolsController.getPublicAPI();
+    window.DevToolsAPI = window.devToolsController.getPublicAPI();
     
     // Evento para notificar que el sistema está listo
     document.dispatchEvent(new CustomEvent('devtools:ready', {
         detail: {
-            controller: window.DevToolsController,
+            controller: window.devToolsController,
             api: window.DevToolsAPI
         }
     }));
@@ -1266,13 +1302,17 @@ if (document.readyState === 'loading') {
 } else {
     // DOM ya está listo, inicializar inmediatamente
     setTimeout(() => {
-        if (!window.DevToolsController) {
-            window.DevToolsController = new DevToolsController();
-            window.DevToolsAPI = window.DevToolsController.getPublicAPI();
+        if (!window.devToolsController) {
+            // Exponer la clase DevToolsController globalmente
+            window.DevToolsController = DevToolsController;
+            
+            // Crear instancia global
+            window.devToolsController = new DevToolsController();
+            window.DevToolsAPI = window.devToolsController.getPublicAPI();
             
             document.dispatchEvent(new CustomEvent('devtools:ready', {
                 detail: {
-                    controller: window.DevToolsController,
+                    controller: window.devToolsController,
                     api: window.DevToolsAPI
                 }
             }));
