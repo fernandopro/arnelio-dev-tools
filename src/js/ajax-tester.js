@@ -703,6 +703,8 @@ class DevToolsAjaxTester {
 // Exportar la clase constructora inmediatamente
 window.DevToolsAjaxTesterClass = DevToolsAjaxTester;
 
+// COMENTADO: Auto-inicialización deshabilitada para evitar ejecuciones no deseadas
+/*
 // Inicializar cuando esté listo
 document.addEventListener('DOMContentLoaded', function() {
     // Crear instancia global para uso directo
@@ -712,6 +714,18 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('[DEV-TOOLS] DevToolsAjaxTesterClass available as constructor');
     console.log('[DEV-TOOLS] DevToolsAjaxTester available as instance');
 });
+*/
+
+// Función para inicialización manual del AjaxTester
+window.initializeAjaxTester = function() {
+    if (window.DevToolsAjaxTester) {
+        return window.DevToolsAjaxTester; // Ya inicializado
+    }
+    
+    window.DevToolsAjaxTester = new DevToolsAjaxTester();
+    console.log('[DEV-TOOLS] AjaxTester module initialized manually');
+    return window.DevToolsAjaxTester;
+};
 
 // Export para uso modular
 if (typeof module !== 'undefined' && module.exports) {

@@ -1333,9 +1333,12 @@ class DevToolsController {
 }
 
 /**
- * Inicialización automática del sistema
- * Se ejecuta cuando el DOM está listo
+ * Inicialización MANUAL del sistema
+ * DESHABILITADA auto-inicialización para evitar bucles infinitos
+ * El sistema se inicializa solo cuando el usuario interactúa con dev-tools
  */
+// COMENTADO: Auto-inicialización deshabilitada para evitar ejecuciones no deseadas
+/*
 document.addEventListener('DOMContentLoaded', () => {
     // Exponer la clase DevToolsController globalmente para testing/debugging
     window.DevToolsController = DevToolsController;
@@ -1354,11 +1357,43 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }));
 });
+*/
+
+/**
+ * Función para inicialización manual del sistema
+ * Se llama solo cuando el usuario interactúa con dev-tools
+ */
+function initializeDevToolsSystem() {
+    if (window.devToolsController) {
+        return window.devToolsController; // Ya inicializado
+    }
+    
+    // Exponer la clase DevToolsController globalmente para testing/debugging
+    window.DevToolsController = DevToolsController;
+    
+    // Crear instancia global del controlador
+    window.devToolsController = new DevToolsController();
+    
+    // Exponer API pública para módulos
+    window.DevToolsAPI = window.devToolsController.getPublicAPI();
+    
+    // Evento para notificar que el sistema está listo
+    document.dispatchEvent(new CustomEvent('devtools:ready', {
+        detail: {
+            controller: window.devToolsController,
+            api: window.DevToolsAPI
+        }
+    }));
+    
+    return window.devToolsController;
+}
 
 /**
  * Compatibilidad con inicialización manual
- * Para casos donde DOMContentLoaded ya se ejecutó
+ * DESHABILITADA - Todo es manual ahora para evitar ejecuciones automáticas
  */
+// COMENTADO: Auto-inicialización deshabilitada completamente
+/*
 if (document.readyState === 'loading') {
     // El código anterior se ejecutará automáticamente
 } else {
@@ -1381,3 +1416,15 @@ if (document.readyState === 'loading') {
         }
     }, 0);
 }
+*/
+
+// Exponer solo la clase para uso manual
+window.DevToolsController = DevToolsController;
+
+// Función de utilidad para verificar si el sistema está inicializado
+window.isDevToolsInitialized = function() {
+    return !!window.devToolsController;
+};
+
+// Función global para inicialización manual
+window.initializeDevTools = initializeDevToolsSystem;

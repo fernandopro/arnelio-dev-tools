@@ -1192,12 +1192,31 @@ Generado por Dev-Tools Arquitectura 3.0
     }
 }
 
+// COMENTADO: Auto-inicialización deshabilitada para evitar ejecuciones no deseadas
+/*
 // Inicializar cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('performance-module')) {
         window.performanceModule = new PerformanceModule();
     }
 });
+*/
+
+// Función para inicialización manual del PerformanceModule
+window.initializePerformanceModule = function() {
+    if (window.performanceModule) {
+        return window.performanceModule; // Ya inicializado
+    }
+    
+    if (document.getElementById('performance-module')) {
+        window.performanceModule = new PerformanceModule();
+        console.log('[DEV-TOOLS] Performance module initialized manually');
+        return window.performanceModule;
+    }
+    
+    console.log('[DEV-TOOLS] Performance module container not found');
+    return null;
+};
 
 // Exportar para uso como módulo
 export { PerformanceModule };

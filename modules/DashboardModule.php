@@ -405,6 +405,11 @@ class DashboardModule extends DevToolsModuleBase {
                         e.preventDefault();
                         console.log('🔧 Test Sistema iniciado por usuario...');
                         
+                        // Inicializar sistema dev-tools solo cuando se necesite
+                        if (typeof window.initializeDevTools === 'function') {
+                            window.initializeDevTools();
+                        }
+                        
                         // Inicializar dashboard solo cuando se necesite
                         if (typeof DevToolsDashboard !== 'undefined') {
                             const dashboard = new DevToolsDashboard();
@@ -417,6 +422,11 @@ class DashboardModule extends DevToolsModuleBase {
                     clearCacheBtn.addEventListener('click', (e) => {
                         e.preventDefault();
                         console.log('🗑️ Limpieza de cache iniciada por usuario...');
+                        
+                        // Inicializar sistema dev-tools solo cuando se necesite
+                        if (typeof window.initializeDevTools === 'function') {
+                            window.initializeDevTools();
+                        }
                         
                         // Inicializar dashboard solo cuando se necesite
                         if (typeof DevToolsDashboard !== 'undefined') {
@@ -438,6 +448,11 @@ class DashboardModule extends DevToolsModuleBase {
                     exportLogsBtn.addEventListener('click', (e) => {
                         e.preventDefault();
                         console.log('📥 Exportación de logs iniciada por usuario...');
+                        
+                        // Inicializar sistema dev-tools solo cuando se necesite
+                        if (typeof window.initializeDevTools === 'function') {
+                            window.initializeDevTools();
+                        }
                         
                         // Inicializar dashboard solo cuando se necesite
                         if (typeof DevToolsDashboard !== 'undefined') {
