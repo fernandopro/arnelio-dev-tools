@@ -109,9 +109,10 @@ class DevToolsAjaxHandler {
      */
     public function handleAjaxRequest() {
         try {
-            // Verificar nonce
+            // Verificar nonce - usar la clave de configuración dinámica
             $nonce = $this->sanitizeInput($_POST['nonce'] ?? '');
-            if (!wp_verify_nonce($nonce, 'dev_tools_nonce')) {
+            $nonce_action = $this->config->get('ajax.nonce_action', 'dev_tools_nonce');
+            if (!wp_verify_nonce($nonce, $nonce_action)) {
                 throw new Exception('Invalid nonce');
             }
             

@@ -141,10 +141,11 @@ class DevToolsController {
         const testActions = ['ping', 'check_anti_deadlock', 'check_test_framework'];
         
         for (const action of testActions) {
-            const fullAction = this.getAjaxAction(action);
+            const wpAction = this.getWordPressAjaxAction();
             debugInfo.test_actions[action] = {
-                generated_action: fullAction,
-                expected_endpoint: `wp_ajax_${fullAction}`
+                command: action,
+                wordpress_action: wpAction,
+                expected_endpoint: `wp_ajax_${wpAction}`
             };
             
             // Intentar ping básico
@@ -318,13 +319,21 @@ class DevToolsController {
     }
 
     /**
-     * Generar acción AJAX dinámicamente
-     * Usa el prefijo configurado desde PHP o fallback por defecto
+     * Obtener acción AJAX de WordPress
+     * Devuelve la acción completa para wp_ajax_*
+     */
+    getWordPressAjaxAction() {
+        return this.config.ajaxAction || 'dev_tools_ajax';
+    }
+
+    /**
+     * Generar acción AJAX dinámicamente (DEPRECATED)
+     * @deprecated Usar getWordPressAjaxAction() en su lugar
      */
     getAjaxAction(action) {
-        // Usar el prefijo desde configuración si está disponible
-        const prefix = (this.config.ajaxAction || 'dev_tools').replace('_action', '');
-        return `${prefix}_${action}`;
+        // DEPRECATED: Mantener para compatibilidad temporal
+        console.warn('getAjaxAction() está deprecado. Usar getWordPressAjaxAction()');
+        return this.getWordPressAjaxAction();
     }
 
     /**
@@ -735,7 +744,8 @@ class DevToolsController {
             
             this.logInternal('🔍 Verificando conectividad AJAX...', { 
                 url: this.config.ajaxUrl,
-                action: this.getAjaxAction('ping')
+                wordpress_action: this.getWordPressAjaxAction(),
+                command: 'ping'
             }, 'minimal');
             
             const response = await fetch(this.config.ajaxUrl, {
@@ -744,7 +754,9 @@ class DevToolsController {
                     'Content-Type': 'application/x-www-form-urlencoded'
                 },
                 body: new URLSearchParams({
-                    action: this.getAjaxAction('ping')
+                    action: this.getWordPressAjaxAction(),
+                    action_type: 'ping',
+                    nonce: this.config.nonce || ''
                 }),
                 signal: controller.signal
             });
@@ -779,10 +791,10 @@ class DevToolsController {
     async checkAntiDeadlockSystem() {
         try {
             this.logInternal('🔍 Verificando sistema anti-deadlock...', { 
-                action: this.getAjaxAction('check_anti_deadlock')
+                command: 'check_anti_deadlock'
             }, 'minimal');
             
-            const response = await this.makeAjaxRequest(this.getAjaxAction('check_anti_deadlock'), {}, { timeout: 5000 });
+            const response = await this.makeAjaxRequest('check_anti_deadlock', {}, { timeout: 5000 });
             
             if (response.success && response.data?.processes_ok) {
                 this.logInternal('✅ Sistema anti-deadlock OK', response.data, 'minimal');
@@ -794,7 +806,7 @@ class DevToolsController {
         } catch (error) {
             this.logError('❌ Error verificando sistema anti-deadlock', {
                 error: error.message,
-                action: this.getAjaxAction('check_anti_deadlock')
+                command: 'check_anti_deadlock'
             });
             return false;
         }
@@ -806,10 +818,10 @@ class DevToolsController {
     async checkTestFramework() {
         try {
             this.logInternal('🔍 Verificando framework de testing...', { 
-                action: this.getAjaxAction('check_test_framework')
+                command: 'check_test_framework'
             }, 'minimal');
             
-            const response = await this.makeAjaxRequest(this.getAjaxAction('check_test_framework'), {}, { timeout: 5000 });
+            const response = await this.makeAjaxRequest('check_test_framework', {}, { timeout: 5000 });
             
             if (response.success && response.data?.all_files_ok) {
                 this.logInternal('✅ Framework de testing OK', response.data, 'minimal');
@@ -821,7 +833,7 @@ class DevToolsController {
         } catch (error) {
             this.logError('❌ Error verificando framework de testing', {
                 error: error.message,
-                action: this.getAjaxAction('check_test_framework')
+                command: 'check_test_framework'
             });
             return false;
         }
@@ -831,7 +843,7 @@ class DevToolsController {
      * Realizar petición AJAX genérica
      * Método centralizado para todas las comunicaciones AJAX
      */
-    async makeAjaxRequest(action, data = {}, options = {}) {
+    async makeAjaxRequest(command, data = {}, options = {}) {
         const defaultOptions = {
             method: 'POST',
             headers: {
@@ -842,8 +854,12 @@ class DevToolsController {
 
         const requestOptions = { ...defaultOptions, ...options };
         
+        // Configurar parámetros AJAX correctamente:
+        // - action: Acción WordPress (wp_ajax_) 
+        // - action_type: Comando interno del handler
         const requestData = new URLSearchParams({
-            action: action,
+            action: this.config.ajaxAction || 'dev_tools_ajax', // Acción WordPress
+            action_type: command,                               // Comando interno
             nonce: this.config.nonce || '',
             ...data
         });
@@ -851,7 +867,8 @@ class DevToolsController {
         // AJAX DEBUG: Log detallado cuando está habilitado
         if (this.AJAX_DEBUG_MODE) {
             console.group('🔍 AJAX DEBUG');
-            console.log('Action:', action);
+            console.log('Command:', command);
+            console.log('WordPress Action:', this.config.ajaxAction);
             console.log('URL:', this.config.ajaxUrl);
             console.log('Nonce:', this.config.nonce);
             console.log('Request Data:', Object.fromEntries(requestData));
@@ -864,7 +881,7 @@ class DevToolsController {
         const timeoutId = setTimeout(() => controller.abort(), requestOptions.timeout);
 
         try {
-            this.logDebug(`📡 Petición AJAX: ${action}`, { data, timeout: requestOptions.timeout });
+            this.logDebug(`📡 Petición AJAX: ${command}`, { data, timeout: requestOptions.timeout });
             
             const response = await fetch(this.config.ajaxUrl, {
                 method: requestOptions.method,
@@ -899,7 +916,7 @@ class DevToolsController {
                 console.groupEnd();
             }
             
-            this.logDebug(`📥 Respuesta AJAX: ${action}`, result);
+            this.logDebug(`📥 Respuesta AJAX: ${command}`, result);
             
             return result;
 
@@ -914,7 +931,8 @@ class DevToolsController {
             
             // Información detallada del error para debugging
             const errorInfo = {
-                action,
+                command,
+                wpAction: this.config.ajaxAction,
                 url: this.config.ajaxUrl,
                 error: error.message,
                 data,
@@ -1044,11 +1062,11 @@ class DevToolsController {
                 data[key] = value;
             }
             
-            // Determinar acción AJAX según tipo de formulario
-            let ajaxAction = this.getAjaxAction(formType);
+            // Determinar comando AJAX según tipo de formulario
+            let command = formType;
             
             // Realizar petición
-            const response = await this.makeAjaxRequest(ajaxAction, data);
+            const response = await this.makeAjaxRequest(command, data);
             
             if (response.success) {
                 this.showNotification('Formulario procesado correctamente', 'success');
