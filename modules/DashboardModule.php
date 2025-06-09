@@ -139,13 +139,13 @@ class DashboardModule extends DevToolsModuleBase {
         
         $dev_tools_url = $this->config->get('urls.dev_tools');
         
-        // CSS
-        wp_enqueue_style(
-            'dev-tools-dashboard',
-            $dev_tools_url . '/dist/css/dev-tools-styles.min.css',
-            [],
-            '3.0.0'
-        );
+        // CSS - Comentado: El loader.php se encarga del CSS global
+        // wp_enqueue_style(
+        //     'dev-tools-dashboard',
+        //     $dev_tools_url . '/dist/css/dev-tools-styles.min.css',
+        //     [],
+        //     '3.0.0'
+        // );
         
         // JavaScript
         wp_enqueue_script(

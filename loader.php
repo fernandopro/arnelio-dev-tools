@@ -208,13 +208,9 @@ function dev_tools_enqueue_assets($hook) {
         return;
     }
 
-    $plugin_url = $config->get('paths.dev_tools_url');
+    // Generar URL correcta del plugin dev-tools
+    $plugin_url = plugins_url('', __FILE__) . '/';
     $plugin_version = $config->get('host.version');
-    
-    // DEBUG: Verificar URL generada
-    error_log('🔧 Dev-Tools CSS URL Debug:');
-    error_log('Plugin URL: ' . $plugin_url);
-    error_log('Full CSS URL: ' . $plugin_url . 'dist/css/dev-tools-styles.min.css');
     
     // Dev Tools CSS compilado (incluye Bootstrap y estilos personalizados)
     wp_enqueue_style(
