@@ -37,6 +37,39 @@ if (!defined('DEV_TOOLS_VERBOSE')) {
 }
 
 // =============================================================================
+// SISTEMA DE OVERRIDE (Child Theme Pattern)
+// =============================================================================
+
+/**
+ * Cargar bootstrap override específico del plugin si existe
+ */
+function load_bootstrap_override() {
+    $override_bootstrap = dirname(dirname(dirname(__FILE__))) . '/plugin-dev-tools/tests/bootstrap.php';
+    
+    if (file_exists($override_bootstrap)) {
+        test_log("🔄 Cargando bootstrap override específico del plugin...");
+        require_once $override_bootstrap;
+        
+        // Si el override define que debe terminar aquí, respetarlo
+        if (defined('DEV_TOOLS_BOOTSTRAP_OVERRIDE_COMPLETE') && DEV_TOOLS_BOOTSTRAP_OVERRIDE_COMPLETE) {
+            test_log("✅ Bootstrap override completado, finalizando bootstrap core.");
+            return true;
+        }
+        
+        test_log("✅ Bootstrap override cargado, continuando con bootstrap core.");
+    } else {
+        test_log("ℹ️ No se encontró bootstrap override, usando configuración core.");
+    }
+    
+    return false;
+}
+
+// Intentar cargar override primero
+if (load_bootstrap_override()) {
+    return; // El override se encarga de todo
+}
+
+// =============================================================================
 // FUNCIONES DE UTILIDAD
 // =============================================================================
 

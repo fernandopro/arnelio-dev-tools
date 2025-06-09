@@ -1,11 +1,13 @@
 <?php
 /**
- * Configuración de Base de Datos para Tests - Plugin-Agnóstica
+ * Configuración de Testing - Dev-Tools Core
  * 
- * Configuración genérica para dev-tools que funciona con cualquier plugin.
- * Las configuraciones específicas del plugin deben ir en wp-tests-config-local.php
+ * Configuración CORE del framework oficial de WordPress PHPUnit.
+ * Este archivo contiene la configuración base que se comparte entre todos los plugins.
  * 
- * Este archivo será cargado automáticamente por el framework oficial de WordPress PHPUnit.
+ * Para personalizaciones específicas del plugin, usar el sistema override:
+ * - Crear: plugin-dev-tools/wp-tests-config.php
+ * - Será cargado automáticamente por el sistema override
  * 
  * @package DevTools
  * @subpackage Tests
@@ -255,6 +257,22 @@ define( 'LOGGED_IN_SALT',   'test-logged-in-salt-generic' );
 define( 'NONCE_SALT',       'test-nonce-salt-generic' );
 
 // =============================================================================
+// SISTEMA DE OVERRIDE (Child Theme Pattern)
+// =============================================================================
+
+// Detectar si existe configuración override específica del plugin
+$override_config_file = dirname(dirname(__FILE__)) . '/plugin-dev-tools/wp-tests-config.php';
+if (file_exists($override_config_file)) {
+    // Cargar configuración específica del plugin que puede override estas configuraciones
+    require_once $override_config_file;
+    
+    // Si la configuración override define que debe terminar aquí, respetarlo
+    if (defined('DEV_TOOLS_OVERRIDE_COMPLETE') && DEV_TOOLS_OVERRIDE_COMPLETE) {
+        return;
+    }
+}
+
+// =============================================================================
 // CONSTANTES DE DEBUG PARA TESTS
 // =============================================================================
 
@@ -271,20 +289,11 @@ if (!defined('WP_TESTS_INDIVIDUAL')) {
 }
 
 // =============================================================================
-// CARGA DE CONFIGURACIÓN LOCAL (PLUGIN-ESPECÍFICA)
+// CARGA DE CONFIGURACIÓN OVERRIDE (NUEVO SISTEMA)
 // =============================================================================
 
-// Cargar configuración específica del plugin si existe
-$local_config_files = [
-    __DIR__ . '/wp-tests-config-local.php'
-];
-
-foreach ($local_config_files as $local_config_file) {
-    if (file_exists($local_config_file)) {
-        require_once $local_config_file;
-        break;
-    }
-}
+// El sistema override ya se ejecutó arriba, esta sección es para retrocompatibilidad
+// y se mantendrá temporalmente para compatibilidad con configuraciones antiguas
 
 // =============================================================================
 // SISTEMA DE DEBUG CONDICIONAL
