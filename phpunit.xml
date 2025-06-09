@@ -1,95 +1,26 @@
 <?xml version="1.0"?>
 <phpunit
-    bootstrap="tests/bootstrap.php"
-    backupGlobals="false"
-    colors="true"
-    convertErrorsToExceptions="true"
-    convertNoticesToExceptions="true"
-    convertWarningsToExceptions="true"
-    verbose="true"
-    stopOnError="false"
-    stopOnFailure="false"
-    beStrictAboutTestsThatDoNotTestAnything="true"
-    beStrictAboutOutputDuringTests="false"
-    beStrictAboutChangesToGlobalState="false"
->
-    <testsuites>
-        <testsuite name="tarokina-unit-tests">
-            <directory suffix="Test.php">./tests/unit/</directory>
-        </testsuite>
-        <testsuite name="tarokina-integration-tests">
-            <directory suffix="Test.php">./tests/integration/</directory>
-        </testsuite>
-        <testsuite name="tarokina-other-tests">
-            <directory suffix="Test.php">./tests/</directory>
-            <exclude>./tests/unit/</exclude>
-            <exclude>./tests/integration/</exclude>
-            <exclude>./tests/bootstrap.php</exclude>
-            <exclude>./tests/DevToolsTestCase.php</exclude>
-        </testsuite>
-        <testsuite name="all-tests">
-            <directory suffix="Test.php">./tests/</directory>
-            <exclude>./tests/bootstrap.php</exclude>
-            <exclude>./tests/DevToolsTestCase.php</exclude>
-        </testsuite>
-    </testsuites>
-    
-    <!-- Configuración para evitar deadlocks en tests de BD -->
-    <groups>
-        <exclude>
-            <group>database-intensive</group>
-        </exclude>
-    </groups>
-    
-    <coverage processUncoveredFiles="true">
-        <include>
-            <directory suffix=".php">../</directory>
-        </include>
-        <exclude>
-            <directory>./vendor/</directory>
-            <directory>./tests/</directory>
-            <directory>./coverage/</directory>
-            <directory>../dev-tools/</directory>
-            <directory>../node_modules/</directory>
-            <directory>../vendor/</directory>
-        </exclude>
-    </coverage>
-    
-    <php>
-        <!-- Configuración principal del framework WordPress OFICIAL -->
-        <const name="WP_TESTS_PHPUNIT_POLYFILLS_PATH" value="./vendor/yoast/phpunit-polyfills"/>
-        
-        <!-- CRÍTICO: Archivo de configuración personalizado para Local by Flywheel -->
-        <env name="WP_TESTS_CONFIG_FILE_PATH" value="/Users/fernandovazquezperez/Local Sites/tarokina-2025/app/public/wp-content/plugins/tarokina-2025/dev-tools/wp-tests-config.php" />
-        
-        <!-- Ruta al directorio WordPress Core Testing Framework -->
-        <env name="WP_TESTS_DIR" value="./wordpress-develop/tests/phpunit" />
-        <env name="WP_CORE_DIR" value="/Users/fernandovazquezperez/Local Sites/tarokina-2025/app/public" />
-        
-        <!-- Base de datos de tests (configuración específica para Local by Flywheel) -->
-        <!-- IMPORTANTE: Base de datos SEPARADA con prefijo DIFERENTE al principal -->
-        <env name="WP_TESTS_DB_NAME" value="local" />
-        <env name="WP_TESTS_DB_USER" value="root" />
-        <env name="WP_TESTS_DB_PASSWORD" value="root" />
-        <env name="WP_TESTS_DB_HOST" value="localhost" />
-        <env name="WP_TESTS_TABLE_PREFIX" value="wp_test_" />
-        
-        <!-- Configuración del sitio WordPress (Local by Flywheel específica) -->
-        <env name="WP_TESTS_DOMAIN" value="localhost:10019" />
-        <env name="WP_TESTS_EMAIL" value="admin@localhost" />
-        <env name="WP_TESTS_TITLE" value="Tarokina Pro Testing Site" />
-        <env name="WP_PHP_BINARY" value="/opt/homebrew/bin/php" />
-        <env name="WP_TESTS_MULTISITE" value="false" />
-        
-        <!-- Variables del plugin Tarokina Pro -->
-        <env name="TAROKINA_PLUGIN_FILE" value="/Users/fernandovazquezperez/Local Sites/tarokina-2025/app/public/wp-content/plugins/tarokina-2025/tarokina-pro.php" />
-        <env name="TAROKINA_PLUGIN_DIR" value="/Users/fernandovazquezperez/Local Sites/tarokina-2025/app/public/wp-content/plugins/tarokina-2025" />
-        
-        <!-- Variables adicionales de configuración -->
-        <env name="WP_TESTS_SKIP_INSTALL" value="false" />
-        <env name="WP_DEBUG" value="true" />
-        <env name="WP_DEBUG_LOG" value="true" />
-        <env name="WP_DEBUG_DISPLAY" value="false" />
-        <env name="SCRIPT_DEBUG" value="true" />
-    </php>
+	bootstrap="tests/bootstrap.php"
+	backupGlobals="false"
+	colors="true"
+	convertErrorsToExceptions="true"
+	convertNoticesToExceptions="true"
+	convertWarningsToExceptions="true"
+	>
+	<testsuites>
+		<testsuite name="default">
+			<directory prefix="test-" suffix=".php">./tests/</directory>
+			<exclude>./tests/fixtures</exclude>
+		</testsuite>
+	</testsuites>
+	
+	<!-- Environment variables -->
+	<php>
+		<env name="WP_TESTS_DIR" value="./wordpress-develop/tests/phpunit" />
+		<env name="WP_TESTS_CONFIG_FILE_PATH" value="./wp-tests-config.php" />
+		<env name="WP_TESTS_MULTISITE" value="0" />
+		<env name="WP_TESTS_DOMAIN" value="localhost" />
+		<env name="WP_TESTS_EMAIL" value="admin@localhost.test" />
+		<env name="WP_TESTS_TITLE" value="Dev-Tools Test Site" />
+	</php>
 </phpunit>

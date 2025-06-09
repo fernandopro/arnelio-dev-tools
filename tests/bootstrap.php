@@ -2,16 +2,8 @@
 /**
  * Bootstrap para Tests - Dev-Tools Arquitectura 3.0
  * 
- * Bootstrap PLUGIN-AGNÓSTICO para la Arquitectura 3.0 de Dev-Tools.
- * Diseñado para funcionar con cualquier plugin de WordPress.
- * 
- * Características:
- * - 100% independiente del plugin host
- * - Carga automática de la arquitectura modular
- * - Configuración dinámica sin dependencias externas
- * - Compatibilidad completa con PHPUnit
- * - Sistema de logging unificado
- * - Detección automática del entorno
+ * Bootstrap siguiendo estándar oficial de WordPress con sistema de override.
+ * Basado en: https://make.wordpress.org/core/handbook/testing/automated-testing/phpunit/
  * 
  * @package DevTools\Tests
  * @since Arquitectura 3.0
@@ -19,22 +11,11 @@
  */
 
 // =============================================================================
-// CONFIGURACIÓN INICIAL
+// CONFIGURACIÓN INICIAL - ESTÁNDAR WORDPRESS
 // =============================================================================
 
-// Definir que estamos en contexto de testing
-if (!defined('WP_TESTS_INDIVIDUAL')) {
-    define('WP_TESTS_INDIVIDUAL', true);
-}
-
-if (!defined('PHPUNIT_RUNNING')) {
-    define('PHPUNIT_RUNNING', true);
-}
-
-// Configuración de verbosidad para dev-tools
-if (!defined('DEV_TOOLS_VERBOSE')) {
-    define('DEV_TOOLS_VERBOSE', getenv('DEV_TOOLS_VERBOSE') === '1');
-}
+// Prevent timeouts when running the tests.
+ini_set( 'max_execution_time', 0 );
 
 // =============================================================================
 // SISTEMA DE OVERRIDE (Child Theme Pattern)
@@ -47,18 +28,18 @@ function load_bootstrap_override() {
     $override_bootstrap = dirname(dirname(dirname(__FILE__))) . '/plugin-dev-tools/tests/bootstrap.php';
     
     if (file_exists($override_bootstrap)) {
-        test_log("🔄 Cargando bootstrap override específico del plugin...");
+        echo "🔄 Cargando bootstrap override específico del plugin...\n";
         require_once $override_bootstrap;
         
         // Si el override define que debe terminar aquí, respetarlo
         if (defined('DEV_TOOLS_BOOTSTRAP_OVERRIDE_COMPLETE') && DEV_TOOLS_BOOTSTRAP_OVERRIDE_COMPLETE) {
-            test_log("✅ Bootstrap override completado, finalizando bootstrap core.");
+            echo "✅ Bootstrap override completado, finalizando bootstrap core.\n";
             return true;
         }
         
-        test_log("✅ Bootstrap override cargado, continuando con bootstrap core.");
+        echo "✅ Bootstrap override cargado, continuando con bootstrap core.\n";
     } else {
-        test_log("ℹ️ No se encontró bootstrap override, usando configuración core.");
+        echo "ℹ️ No se encontró bootstrap override, usando configuración core.\n";
     }
     
     return false;
@@ -70,133 +51,86 @@ if (load_bootstrap_override()) {
 }
 
 // =============================================================================
-// FUNCIONES DE UTILIDAD
+// CONFIGURACIÓN WORDPRESS TESTING FRAMEWORK - ESTÁNDAR OFICIAL
 // =============================================================================
+
+$_tests_dir = getenv( 'WP_TESTS_DIR' );
+
+if ( ! $_tests_dir ) {
+    // Usar nuestro wordpress-develop local
+    $_tests_dir = dirname( dirname( __FILE__ ) ) . '/wordpress-develop/tests/phpunit';
+}
+
+// CRÍTICO: Configurar la ruta del archivo de configuración ANTES de cargar el framework
+$config_file_path = dirname( dirname( __FILE__ ) ) . '/wp-tests-config.php';
+if ( ! file_exists( $config_file_path ) ) {
+    echo "Error: wp-tests-config.php no encontrado en: $config_file_path" . PHP_EOL;
+    exit( 1 );
+}
+
+// Definir la constante que espera WordPress
+define( 'WP_TESTS_CONFIG_FILE_PATH', $config_file_path );
+
+// Forward custom PHPUnit Polyfills directory.
+if ( ! defined( 'WP_TESTS_PHPUNIT_POLYFILLS_PATH' ) && false !== getenv( 'WP_TESTS_PHPUNIT_POLYFILLS_PATH' ) ) {
+    define( 'WP_TESTS_PHPUNIT_POLYFILLS_PATH', getenv( 'WP_TESTS_PHPUNIT_POLYFILLS_PATH' ) );
+}
+
+if ( ! file_exists( $_tests_dir . '/includes/functions.php' ) ) {
+    echo "Could not find $_tests_dir/includes/functions.php, have you run bin/install-wp-tests.sh ?" . PHP_EOL;
+    exit( 1 );
+}
+
+echo "✅ Configuración WordPress testing establecida\n";
+echo "📁 Tests dir: $_tests_dir\n";
+echo "📄 Config file: $config_file_path\n";
+
+// Give access to tests_add_filter() function.
+require_once $_tests_dir . '/includes/functions.php';
 
 /**
- * Echo seguro para entorno de testing
+ * Manually load the plugin being tested - ESTÁNDAR WORDPRESS
  */
-function test_log($message) {
-    if (php_sapi_name() === 'cli') {
-        echo $message . PHP_EOL;
-    }
-}
+function _manually_load_plugin() {
+    echo "🏗️ Cargando Dev-Tools Arquitectura 3.0...\n";
 
-/**
- * Verificar si un archivo existe y es legible
- */
-function verify_file($path, $description) {
-    if (!file_exists($path)) {
-        throw new Exception("❌ {$description} no encontrado: {$path}");
-    }
-    test_log("✅ {$description}: " . basename($path));
-    return $path;
-}
-
-// =============================================================================
-// VERIFICACIONES INICIALES
-// =============================================================================
-
-test_log('🚀 DEV-TOOLS ARQUITECTURA 3.0: Iniciando bootstrap plugin-agnóstico...');
-
-// Verificar estructura de directorios
-$dev_tools_root = dirname(__DIR__);
-$plugin_root = dirname($dev_tools_root);
-
-test_log("📁 Dev-Tools detectado en: " . basename($dev_tools_root));
-test_log("📁 Plugin host detectado en: " . basename($plugin_root));
-
-// Verificar archivos críticos de Arquitectura 3.0
-verify_file($dev_tools_root . '/config.php', 'Config principal');
-verify_file($dev_tools_root . '/loader.php', 'Loader de Arquitectura 3.0');
-verify_file($dev_tools_root . '/ajax-handler.php', 'AJAX Handler');
-verify_file($dev_tools_root . '/core/DevToolsModuleBase.php', 'Clase base de módulos');
-
-// =============================================================================
-// CONFIGURACIÓN DE WORDPRESS TESTING
-// =============================================================================
-
-// Configurar ruta de configuración de tests
-$config_file_path = $dev_tools_root . '/wp-tests-config.php';
-verify_file($config_file_path, 'Configuración de tests');
-
-define('WP_TESTS_CONFIG_FILE_PATH', $config_file_path);
-
-// Verificar framework oficial de WordPress
-$wp_tests_bootstrap = $dev_tools_root . '/wordpress-develop/tests/phpunit/includes/bootstrap.php';
-verify_file($wp_tests_bootstrap, 'Framework WordPress PHPUnit');
-
-test_log('🔧 Cargando framework oficial de WordPress...');
-require_once $wp_tests_bootstrap;
-
-test_log('✅ WordPress testing framework cargado');
-
-// =============================================================================
-// CARGAR DEV-TOOLS ARQUITECTURA 3.0
-// =============================================================================
-
-test_log('🏗️  Cargando Dev-Tools Arquitectura 3.0...');
-
-// 1. Cargar configuración principal
-require_once $dev_tools_root . '/config.php';
-test_log('✅ Configuración cargada');
-
-// 2. Cargar loader principal (que carga todo el sistema modular)
-require_once $dev_tools_root . '/loader.php';
-test_log('✅ Loader principal cargado');
-
-// 3. Inicializar el sistema de módulos
-if (class_exists('DevToolsModuleManager')) {
-    // El loader ya debería haber inicializado el sistema
-    test_log('✅ Sistema de módulos disponible');
-} else {
-    test_log('⚠️  Sistema de módulos no disponible - cargando manualmente...');
     
-    // Cargar core manualmente si es necesario
-    require_once $dev_tools_root . '/core/interfaces/DevToolsModuleInterface.php';
-    require_once $dev_tools_root . '/core/DevToolsModuleBase.php';
-    require_once $dev_tools_root . '/core/DevToolsModuleManager.php';
-}
-
-// 4. Cargar AJAX handler
-require_once $dev_tools_root . '/ajax-handler.php';
-test_log('✅ AJAX Handler cargado');
-
-// =============================================================================
-// CARGAR PLUGIN HOST (OPCIONAL)
-// =============================================================================
-
-test_log('🔌 Detectando plugin host...');
-
-// Buscar archivo principal del plugin host (sin asumir nombres específicos)
-$possible_plugin_files = glob($plugin_root . '/*.php');
-$main_plugin_file = null;
-
-foreach ($possible_plugin_files as $file) {
-    $content = file_get_contents($file, false, null, 0, 1000); // Solo primeros 1000 bytes
-    if (strpos($content, 'Plugin Name:') !== false) {
-        $main_plugin_file = $file;
-        break;
+    // Cargar Dev-Tools configuration
+    $dev_tools_root = dirname( dirname( __FILE__ ) );
+    require_once $dev_tools_root . '/config.php';
+    echo "✅ Configuración cargada\n";
+    
+    // Cargar Dev-Tools loader (sistema modular)
+    require_once $dev_tools_root . '/loader.php';
+    echo "✅ Loader principal cargado\n";
+    
+    // Cargar AJAX handler
+    require_once $dev_tools_root . '/ajax-handler.php';
+    echo "✅ AJAX Handler cargado\n";
+    
+    // Cargar plugin host si está disponible
+    $plugin_root = dirname( $dev_tools_root );
+    $plugin_main_file = $plugin_root . '/tarokina-pro.php';
+    if ( file_exists( $plugin_main_file ) ) {
+        require_once $plugin_main_file;
+        echo "✅ Plugin host cargado: Tarokina Pro\n";
+    } else {
+        echo "ℹ️ Ejecutando dev-tools en modo independiente\n";
+    }
+    
+    // Verificar que los módulos estén disponibles
+    if ( class_exists( 'DevToolsModuleManager' ) ) {
+        echo "✅ Sistema de módulos disponible\n";
+    } else {
+        echo "⚠️ Sistema de módulos no disponible\n";
     }
 }
 
-if ($main_plugin_file) {
-    // Extraer nombre del plugin del header
-    $plugin_content = file_get_contents($main_plugin_file, false, null, 0, 2000);
-    preg_match('/Plugin Name:\s*(.+)/i', $plugin_content, $matches);
-    $plugin_name = isset($matches[1]) ? trim($matches[1]) : basename($main_plugin_file, '.php');
-    
-    test_log("📦 Plugin host detectado: {$plugin_name}");
-    test_log("📄 Archivo principal: " . basename($main_plugin_file));
-    
-    // Cargar plugin solo si es seguro (evitar efectos secundarios)
-    if (file_exists($main_plugin_file)) {
-        require_once $main_plugin_file;
-        test_log('✅ Plugin host cargado');
-    }
-} else {
-    test_log('ℹ️  No se detectó plugin host - ejecutando dev-tools en modo independiente');
-}
+// Hook para cargar nuestro plugin usando el estándar WordPress
+tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
+
+// Start up the WP testing environment - ESTÁNDAR WORDPRESS
+require $_tests_dir . '/includes/bootstrap.php';
 
 // =============================================================================
 // CARGAR CLASE BASE DE TESTING
@@ -204,11 +138,11 @@ if ($main_plugin_file) {
 
 // Cargar nuestra clase base personalizada
 $test_case_file = __DIR__ . '/DevToolsTestCase.php';
-if (file_exists($test_case_file)) {
+if ( file_exists( $test_case_file ) ) {
     require_once $test_case_file;
-    test_log('✅ DevToolsTestCase cargada');
+    echo "✅ DevToolsTestCase cargada\n";
 } else {
-    test_log('⚠️  DevToolsTestCase no encontrada - usando WP_UnitTestCase estándar');
+    echo "⚠️ DevToolsTestCase no encontrada - usando WP_UnitTestCase estándar\n";
 }
 
 // =============================================================================
@@ -216,34 +150,20 @@ if (file_exists($test_case_file)) {
 // =============================================================================
 
 // Hook para después de que WordPress esté completamente cargado
-add_action('init', function() {
-    test_log('🎉 Sistema completo iniciado - WordPress + Dev-Tools Arquitectura 3.0');
+add_action( 'init', function() {
+    echo "🎉 Sistema completo iniciado - WordPress + Dev-Tools Arquitectura 3.0\n";
     
     // Verificar que los módulos estén disponibles
-    if (class_exists('DevToolsModuleManager')) {
+    if ( class_exists( 'DevToolsModuleManager' ) ) {
         $manager = DevToolsModuleManager::getInstance();
         $modules = $manager->getModulesStatus();
-        test_log('📦 Módulos cargados: ' . implode(', ', array_keys($modules)));
+        echo '📦 Módulos cargados: ' . implode( ', ', array_keys( $modules ) ) . "\n";
     }
     
     // Información del entorno (plugin-agnóstico)
     $current_theme = wp_get_theme();
-    test_log("🎨 Tema activo: {$current_theme->get('Name')}");
-    test_log("🔗 Site URL: " . get_site_url());
-}, 1);
+    echo "🎨 Tema activo: {$current_theme->get('Name')}\n";
+    echo "🔗 Site URL: " . get_site_url() . "\n";
+}, 1 );
 
-test_log('✅ Bootstrap completado - Listo para tests de Arquitectura 3.0');
-
-// =============================================================================
-// CONFIGURACIÓN DE ERROR HANDLING
-// =============================================================================
-
-// Configurar manejo de errores para testing
-if (DEV_TOOLS_VERBOSE) {
-    error_reporting(E_ALL);
-    ini_set('display_errors', 1);
-    ini_set('log_errors', 1);
-}
-
-// Configurar timeout generoso para tests
-ini_set('max_execution_time', 300); // 5 minutos
+echo "✅ Bootstrap completado - Listo para tests de Arquitectura 3.0\n";
