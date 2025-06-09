@@ -72,9 +72,14 @@ class DevToolsAjaxHandler {
         // Comandos básicos del sistema
         $this->registerCommand('ping', [$this, 'handlePing']);
         $this->registerCommand('get_system_info', [$this, 'handleSystemInfo']);
+        $this->registerCommand('system_info', [$this, 'handleSystemInfo']); // Alias para compatibilidad
         $this->registerCommand('test_connection', [$this, 'handleTestConnection']);
         $this->registerCommand('clear_cache', [$this, 'handleClearCache']);
         $this->registerCommand('run_test', [$this, 'handleRunTest']);
+        
+        // Comandos específicos para verificaciones del sistema
+        $this->registerCommand('check_anti_deadlock', [$this, 'handleCheckAntiDeadlock']);
+        $this->registerCommand('check_test_framework', [$this, 'handleCheckTestFramework']);
     }
     
     /**
@@ -407,6 +412,173 @@ class DevToolsAjaxHandler {
             'peak' => round(memory_get_peak_usage() / 1024 / 1024, 2) . ' MB',
             'limit' => ini_get('memory_limit')
         ];
+    }
+    
+    /**
+     * Comando: Verificar sistema anti-deadlock
+     * Compatible con DevToolsTestCase y framework de testing
+     */
+    public function handleCheckAntiDeadlock($data) {
+        try {
+            $checks = [];
+            
+            // Verificar constantes del sistema anti-deadlock
+            $checks['constants'] = [
+                'DEV_TOOLS_DISABLE_ANTI_DEADLOCK' => defined('DEV_TOOLS_DISABLE_ANTI_DEADLOCK') ? 
+                    constant('DEV_TOOLS_DISABLE_ANTI_DEADLOCK') : false,
+                'DEV_TOOLS_FORCE_ANTI_DEADLOCK' => defined('DEV_TOOLS_FORCE_ANTI_DEADLOCK') ? 
+                    constant('DEV_TOOLS_FORCE_ANTI_DEADLOCK') : null,
+                'DEV_TOOLS_TESTS_VERBOSE' => defined('DEV_TOOLS_TESTS_VERBOSE') ? 
+                    constant('DEV_TOOLS_TESTS_VERBOSE') : false
+            ];
+            
+            // Verificar archivos del sistema
+            $test_files = [
+                'DevToolsTestCase.php' => $this->config->get('paths.dev_tools') . '/tests/DevToolsTestCase.php',
+                'bootstrap.php' => $this->config->get('paths.dev_tools') . '/tests/bootstrap.php',
+                'phpunit.xml' => $this->config->get('paths.dev_tools') . '/phpunit.xml'
+            ];
+            
+            $checks['files'] = [];
+            foreach ($test_files as $name => $path) {
+                $checks['files'][$name] = file_exists($path);
+            }
+            
+            // Verificar clases del sistema
+            $checks['classes'] = [
+                'DevToolsTestCase' => class_exists('DevToolsTestCase'),
+                'DevToolsAjaxHandler' => class_exists('DevToolsAjaxHandler'),
+                'DevToolsConfig' => class_exists('DevToolsConfig')
+            ];
+            
+            // Verificar contexto AJAX
+            $checks['context'] = [
+                'ajax_context' => defined('DOING_AJAX') && DOING_AJAX,
+                'wp_debug' => defined('WP_DEBUG') && WP_DEBUG,
+                'phpunit_running' => defined('PHPUNIT_RUNNING') && PHPUNIT_RUNNING
+            ];
+            
+            // Verificar procesos de base de datos
+            global $wpdb;
+            $processes_result = $wpdb->get_var("SHOW STATUS LIKE 'Threads_connected'");
+            $checks['database'] = [
+                'connected' => $wpdb->ready,
+                'processes_count' => $processes_result ? intval($processes_result) : 0,
+                'processes_ok' => $processes_result ? (intval($processes_result) < 50) : true
+            ];
+            
+            // Determinar estado general
+            $all_files_ok = !in_array(false, $checks['files']);
+            $all_classes_ok = !in_array(false, $checks['classes']);
+            $database_ok = $checks['database']['connected'] && $checks['database']['processes_ok'];
+            
+            return [
+                'anti_deadlock_active' => !$checks['constants']['DEV_TOOLS_DISABLE_ANTI_DEADLOCK'],
+                'processes_ok' => $database_ok,
+                'files_ok' => $all_files_ok,
+                'classes_ok' => $all_classes_ok,
+                'system_ready' => $all_files_ok && $all_classes_ok && $database_ok,
+                'checks' => $checks,
+                'timestamp' => current_time('c')
+            ];
+            
+        } catch (Exception $e) {
+            throw new Exception("Anti-deadlock check failed: " . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Comando: Verificar framework de testing WordPress PHPUnit
+     */
+    public function handleCheckTestFramework($data) {
+        try {
+            $checks = [];
+            
+            // Verificar archivos principales de testing
+            $test_files = [
+                'phpunit.xml' => $this->config->get('paths.dev_tools') . '/phpunit.xml',
+                'bootstrap.php' => $this->config->get('paths.dev_tools') . '/tests/bootstrap.php',
+                'DevToolsTestCase.php' => $this->config->get('paths.dev_tools') . '/tests/DevToolsTestCase.php'
+            ];
+            
+            $checks['core_files'] = [];
+            foreach ($test_files as $name => $path) {
+                $checks['core_files'][$name] = [
+                    'exists' => file_exists($path),
+                    'readable' => file_exists($path) && is_readable($path),
+                    'size' => file_exists($path) ? filesize($path) : 0
+                ];
+            }
+            
+            // Verificar directorios de testing
+            $test_dirs = [
+                'tests' => $this->config->get('paths.dev_tools') . '/tests',
+                'unit' => $this->config->get('paths.dev_tools') . '/tests/unit',
+                'integration' => $this->config->get('paths.dev_tools') . '/tests/integration'
+            ];
+            
+            $checks['directories'] = [];
+            foreach ($test_dirs as $name => $path) {
+                $checks['directories'][$name] = [
+                    'exists' => is_dir($path),
+                    'writable' => is_dir($path) && is_writable($path)
+                ];
+            }
+            
+            // Verificar constantes de PHPUnit
+            $checks['phpunit'] = [
+                'phpunit_running' => defined('PHPUNIT_RUNNING') && PHPUNIT_RUNNING,
+                'wp_tests_domain' => defined('WP_TESTS_DOMAIN') ? constant('WP_TESTS_DOMAIN') : null,
+                'wp_tests_email' => defined('WP_TESTS_EMAIL') ? constant('WP_TESTS_EMAIL') : null
+            ];
+            
+            // Verificar clases de testing
+            $checks['classes'] = [
+                'WP_UnitTestCase' => class_exists('WP_UnitTestCase'),
+                'DevToolsTestCase' => class_exists('DevToolsTestCase'),
+                'WP_Ajax_UnitTestCase' => class_exists('WP_Ajax_UnitTestCase')
+            ];
+            
+            // Verificar funciones de WordPress testing
+            $checks['functions'] = [
+                '_delete_all_data' => function_exists('_delete_all_data'),
+                'wp_set_current_user' => function_exists('wp_set_current_user'),
+                'wp_create_nonce' => function_exists('wp_create_nonce')
+            ];
+            
+            // Determinar estado general
+            $all_files_ok = true;
+            foreach ($checks['core_files'] as $file_info) {
+                if (!$file_info['exists'] || !$file_info['readable'] || $file_info['size'] == 0) {
+                    $all_files_ok = false;
+                    break;
+                }
+            }
+            
+            $all_dirs_ok = true;
+            foreach ($checks['directories'] as $dir_info) {
+                if (!$dir_info['exists']) {
+                    $all_dirs_ok = false;
+                    break;
+                }
+            }
+            
+            $classes_ok = $checks['classes']['WP_UnitTestCase'] || $checks['classes']['DevToolsTestCase'];
+            $functions_ok = $checks['functions']['wp_set_current_user'] && $checks['functions']['wp_create_nonce'];
+            
+            return [
+                'all_files_ok' => $all_files_ok,
+                'directories_ok' => $all_dirs_ok,
+                'classes_ok' => $classes_ok,
+                'functions_ok' => $functions_ok,
+                'framework_ready' => $all_files_ok && $all_dirs_ok && $classes_ok && $functions_ok,
+                'checks' => $checks,
+                'timestamp' => current_time('c')
+            ];
+            
+        } catch (Exception $e) {
+            throw new Exception("Test framework check failed: " . $e->getMessage());
+        }
     }
 }
 
