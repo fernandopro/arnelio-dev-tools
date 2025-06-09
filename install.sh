@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # ===========================================
-# 🚀 INSTALADOR AUTOMÁTICO - Tarokina Pro Dev Tools
+# 🚀 INSTALADOR AUTOMÁTICO - Dev Tools Arquitectura 3.0
 # ===========================================
-# Script completo para instalar dependencias después de clonar desde GitHub
+# Script plugin-agnóstico para instalar dependencias después de clonar desde GitHub
 # Incluye: Node.js modules, Composer, WordPress testing framework
 # Compatible con macOS, Linux y Windows (WSL/Git Bash)
 #
@@ -15,8 +15,8 @@
 # 3. Framework oficial de WordPress para testing
 # 4. Compilación inicial de assets (npm run dev)
 
-echo "🚀 Instalador Automático - Tarokina Pro Dev Tools"
-echo "=================================================="
+echo "🚀 Instalador Automático - Dev Tools Arquitectura 3.0"
+echo "====================================================="
 echo "📦 Instalación completa del entorno de desarrollo"
 echo ""
 
@@ -82,6 +82,27 @@ fi
 
 PHP_VERSION=$(php -r "echo PHP_MAJOR_VERSION.'.'.PHP_MINOR_VERSION;")
 success "PHP $PHP_VERSION detectado"
+
+# ==========================================
+# DETECCIÓN AUTOMÁTICA DEL PLUGIN PADRE
+# ==========================================
+info "Detectando configuración del plugin padre..."
+
+# Detectar directorio del plugin padre
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PLUGIN_DIR="$(dirname "$SCRIPT_DIR")"
+PLUGIN_NAME="$(basename "$PLUGIN_DIR")"
+
+success "Plugin detectado: $PLUGIN_NAME"
+info "Directorio plugin: $PLUGIN_DIR"
+info "Directorio dev-tools: $SCRIPT_DIR"
+
+# Verificar que existe el sistema de debug
+if [ -f "$SCRIPT_DIR/core/DebugWordPressDynamic.php" ]; then
+    success "Sistema de Debug WordPress Dinámico encontrado"
+else
+    warning "Sistema de debug no encontrado (se instalará con la carga automática)"
+fi
 
 echo ""
 echo "🏗️  Iniciando instalación completa..."
@@ -183,21 +204,52 @@ echo ""
 success "🧪 Sistema de testing listo - Framework WordPress oficial descargado"
 success "📦 Dependencias de Node.js y PHP instaladas"
 success "🔧 Assets compilados para desarrollo"
+success "🔍 Sistema de Debug WordPress Dinámico integrado"
 echo ""
 info "Comandos útiles disponibles:"
-echo "  🔧 npm run dev           - Compilar para desarrollo (CRÍTICO para dev-tools)"
-echo "  📦 npm run build         - Compilar para producción"
-echo "  👀 npm run watch         - Compilar y observar cambios"
-echo "  🧪 ./run-tests.sh        - Ejecutar todos los tests"
-echo "  🧪 ./run-tests.sh --unit - Ejecutar solo tests unitarios"
-echo "  🧪 ./run-tests.sh --integration - Ejecutar tests de integración"
+echo "  🔧 npm run dev                    - Compilar para desarrollo (CRÍTICO para dev-tools)"
+echo "  📦 npm run build                  - Compilar para producción"
+echo "  👀 npm run watch                  - Compilar y observar cambios"
+echo "  🧪 ./run-tests.sh                 - Ejecutar todos los tests"
+echo "  🧪 ./run-tests.sh --unit          - Ejecutar solo tests unitarios"
+echo "  🧪 ./run-tests.sh --integration   - Ejecutar tests de integración"
+echo "  ✅ ./verify-debug-system.sh       - Verificar sistema de debug"
 echo ""
 warning "⚠️  RECORDATORIO CRÍTICO:"
 echo "   El sistema dev-tools requiere 'npm run dev' para funcionar correctamente."
 echo "   Siempre ejecuta este comando antes de trabajar con dev-tools."
 echo ""
-info "Panel de dev-tools disponible en:"
-echo "   http://localhost:10019/wp-admin/tools.php?page=tarokina-dev-tools"
+info "🔍 Sistema de Debug disponible:"
+echo "   • Debug visual: ?debug_config=1 y ?debug_urls=1"
+echo "   • Funciones PHP: get_debug_url_data(), validate_url_consistency()"
+echo "   • Endpoints AJAX: wp_ajax_debug_validate_urls"
+echo "   • Documentación: docs/DEBUG-WORDPRESS-DYNAMIC.md"
 echo ""
-success "¡El sistema Dev Tools está completamente listo para usar!"
+info "📍 Panel de dev-tools disponible en:"
+echo "   🌐 [URL dinámica] - Usar sistema de debug para URLs específicas"
+echo "   📋 Formato: /wp-admin/tools.php?page=[dev_tools_slug]"
+echo "   🔧 Debug de URLs: Agregar ?debug_config=1 a cualquier página admin"
+echo ""
+
+# ==========================================
+# VERIFICACIÓN FINAL DEL SISTEMA
+# ==========================================
+info "🔍 Ejecutando verificación final del sistema..."
+
+if [ -f "verify-debug-system.sh" ]; then
+    echo ""
+    info "Ejecutando verificador de debug..."
+    bash verify-debug-system.sh
+    echo ""
+else
+    warning "Script de verificación no encontrado (verify-debug-system.sh)"
+fi
+
+success "¡El sistema Dev Tools Arquitectura 3.0 está completamente listo para usar!"
+echo ""
+info "🎯 Próximos pasos recomendados:"
+echo "   1. Activar el plugin en WordPress"
+echo "   2. Ir al admin y usar ?debug_config=1 para ver URLs dinámicas"
+echo "   3. Acceder al panel de dev-tools desde Herramientas > Dev Tools"
+echo "   4. Revisar la documentación en docs/"
 echo ""
