@@ -181,6 +181,7 @@ class DevToolsConfig {
             // Configuración AJAX (CRÍTICO: faltaba esta sección)
             'ajax' => [
                 'action_prefix' => $slug,
+                'action_name' => $slug . '_dev_tools', // Acción completa de WordPress
                 'nonce_action' => $slug . '_dev_tools_nonce'
             ],
             
