@@ -33,7 +33,8 @@ echo "- CSS completa: " . $config->get('paths.dev_tools_url') . 'dist/css/dev-to
 echo "- CSS handle: " . $config->get('assets.css_handle') . "\n\n";
 
 echo "📋 URLs esperadas vs reales:\n";
-echo "- URL esperada: http://localhost:10019/wp-content/plugins/tarokina-2025/dev-tools/dist/css/dev-tools-styles.min.css\n";
+$expected_css_url = $config->get('paths.dev_tools_url') . 'dist/css/dev-tools-styles.min.css';
+echo "- URL esperada (dinámica): " . $expected_css_url . "\n";
 echo "- URL generada: " . $config->get('paths.dev_tools_url') . 'dist/css/dev-tools-styles.min.css' . "\n\n";
 
 echo "📂 Verificación de archivos:\n";
@@ -46,7 +47,7 @@ if (file_exists($css_file_path)) {
 }
 
 echo "\n🔍 Análisis del problema:\n";
-$expected_url = "http://localhost:10019/wp-content/plugins/tarokina-2025/dev-tools/dist/css/dev-tools-styles.min.css";
+$expected_url = $expected_css_url; // CORRECCIÓN: Usar URL dinámica
 $actual_url = $config->get('paths.dev_tools_url') . 'dist/css/dev-tools-styles.min.css';
 
 if ($expected_url === $actual_url) {

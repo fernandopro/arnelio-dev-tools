@@ -1,13 +1,21 @@
 <?php
 /**
  * Dashboard Tab - Panel principal de dev-tools
+ * PLUGIN-AGNÓSTICO: Detecta automáticamente el plugin host
  */
+
+// Obtener configuración dinámica del sistema
+$config = dev_tools_config();
 
 // Obtener información del sistema
 $php_version = PHP_VERSION;
 $wp_version = get_bloginfo('version');
-$plugin_data = get_plugin_data(dirname(dirname(__DIR__)) . '/tarokina-pro.php');
+
+// CORRECCIÓN: Usar configuración dinámica en lugar de hardcoded
+$plugin_file = $config->get('host.file');
+$plugin_data = get_plugin_data($plugin_file);
 $plugin_version = $plugin_data['Version'] ?? 'N/A';
+$plugin_name = $config->get('host.name');
 
 // Estadísticas del sistema
 $stats = [

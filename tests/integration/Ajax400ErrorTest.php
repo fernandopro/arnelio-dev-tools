@@ -43,7 +43,7 @@ class Ajax400ErrorTest extends DevToolsTestCase {
             $data = json_decode($response, true);
             
             $this->assertFalse($data['success']);
-            $this->assertStringContains('Bad Request: Only POST method allowed', $data['data']['message']);
+            $this->assertStringContainsString('Bad Request: Only POST method allowed', $data['data']['message']);
             throw $e; // Re-lanzar para el expectException
         }
     }
@@ -65,7 +65,7 @@ class Ajax400ErrorTest extends DevToolsTestCase {
             $data = json_decode($response, true);
             
             $this->assertFalse($data['success']);
-            $this->assertStringContains('Bad Request: No POST data received', $data['data']['message']);
+            $this->assertStringContainsString('Bad Request: No POST data received', $data['data']['message']);
             throw $e;
         }
     }
@@ -91,7 +91,7 @@ class Ajax400ErrorTest extends DevToolsTestCase {
             $data = json_decode($response, true);
             
             $this->assertFalse($data['success']);
-            $this->assertStringContains('Bad Request: Invalid WordPress action', $data['data']['message']);
+            $this->assertStringContainsString('Bad Request: Invalid WordPress action', $data['data']['message']);
             throw $e;
         }
     }
@@ -116,7 +116,7 @@ class Ajax400ErrorTest extends DevToolsTestCase {
             $data = json_decode($response, true);
             
             $this->assertFalse($data['success']);
-            $this->assertStringContains('Bad Request: Nonce parameter missing', $data['data']['message']);
+            $this->assertStringContainsString('Bad Request: Nonce parameter missing', $data['data']['message']);
             throw $e;
         }
     }
@@ -142,7 +142,7 @@ class Ajax400ErrorTest extends DevToolsTestCase {
             $data = json_decode($response, true);
             
             $this->assertFalse($data['success']);
-            $this->assertStringContains('Bad Request: Invalid or expired nonce', $data['data']['message']);
+            $this->assertStringContainsString('Bad Request: Invalid or expired nonce', $data['data']['message']);
             throw $e;
         }
     }
@@ -167,7 +167,7 @@ class Ajax400ErrorTest extends DevToolsTestCase {
             $data = json_decode($response, true);
             
             $this->assertFalse($data['success']);
-            $this->assertStringContains('Bad Request: action_type parameter missing', $data['data']['message']);
+            $this->assertStringContainsString('Bad Request: action_type parameter missing', $data['data']['message']);
             throw $e;
         }
     }
@@ -193,7 +193,7 @@ class Ajax400ErrorTest extends DevToolsTestCase {
             $data = json_decode($response, true);
             
             $this->assertFalse($data['success']);
-            $this->assertStringContains('Bad Request: action_type contains invalid characters', $data['data']['message']);
+            $this->assertStringContainsString('Bad Request: action_type contains invalid characters', $data['data']['message']);
             throw $e;
         }
     }

@@ -782,7 +782,7 @@ class DevToolsLogger {
     }
 }
 
-// Inicializar el manejador AJAX
-add_action('init', function() {
+// Inicializar el manejador AJAX muy temprano para asegurar que los hooks se registren
+add_action('plugins_loaded', function() {
     DevToolsAjaxHandler::getInstance();
-});
+}, 5); // Prioridad 5 para ejecutar temprano

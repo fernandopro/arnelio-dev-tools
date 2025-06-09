@@ -6,6 +6,10 @@
 // Cargar WordPress
 require_once '../../../wp-config.php';
 
+// Cargar sistema de configuración
+require_once __DIR__ . '/config.php';
+$config = new DevToolsConfig();
+
 echo "=== DEBUG URL GENERATION ===\n\n";
 
 echo "1. __FILE__: " . __FILE__ . "\n";
@@ -32,10 +36,11 @@ echo "\nMétodo 2 (construcción manual): " . $url_method2 . "\n";
 echo "CSS URL Método 2: " . $url_method2 . 'dist/css/dev-tools-styles.min.css' . "\n";
 echo "JS URL Método 2: " . $url_method2 . 'dist/js/dashboard.min.js' . "\n";
 
-// Método 3: Usando get_site_url()
+// Método 3: Usando configuración dinámica
 $site_url = get_site_url();
-$url_method3 = $site_url . '/wp-content/plugins/tarokina-2025/dev-tools/';
-echo "\nMétodo 3 (site_url directo): " . $url_method3 . "\n";
+$host_plugin_slug = $config->get('host.slug');
+$url_method3 = $site_url . '/wp-content/plugins/' . $host_plugin_slug . '/dev-tools/';
+echo "\nMétodo 3 (configuración dinámica): " . $url_method3 . "\n";
 echo "CSS URL Método 3: " . $url_method3 . 'dist/css/dev-tools-styles.min.css' . "\n";
 echo "JS URL Método 3: " . $url_method3 . 'dist/js/dashboard.min.js' . "\n";
 

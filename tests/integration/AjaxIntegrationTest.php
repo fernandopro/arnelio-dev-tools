@@ -22,18 +22,23 @@ class AjaxIntegrationTest extends DevToolsTestCase {
         $admin_id = $this->factory()->user->create(['role' => 'administrator']);
         wp_set_current_user($admin_id);
         
+        // CORRECCIÓN: Usar configuración dinámica
+        $config = dev_tools_config();
+        $ajax_action = $config->get('ajax.action_name');
+        $nonce_action = $config->get('ajax.nonce_action');
+        
         // Preparar datos AJAX reales según patrón dev-tools
-        $_POST['action'] = 'tarokina-2025_dev_tools';  // Acción WordPress
+        $_POST['action'] = $ajax_action;  // Acción WordPress dinámica
         $_POST['action_type'] = 'get_system_info';     // Comando interno
-        $_POST['nonce'] = wp_create_nonce('tarokina-2025_dev_tools_nonce');
+        $_POST['nonce'] = wp_create_nonce($nonce_action);
         $_REQUEST['_ajax_nonce'] = $_POST['nonce'];
         
         // Capturar salida AJAX
         ob_start();
         
         try {
-            // Ejecutar AJAX handler real
-            do_action('wp_ajax_tarokina-2025_dev_tools');
+            // Ejecutar AJAX handler real con acción dinámica
+            do_action('wp_ajax_' . $ajax_action);
         } catch (WPAjaxDieContinueException $e) {
             // Expected - AJAX termina con wp_die()
         }

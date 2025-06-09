@@ -75,12 +75,17 @@ function _manually_load_plugin() {
     require_once $dev_tools_root . '/ajax-handler.php';
     echo "✅ AJAX Handler cargado\n";
     
-    // Cargar plugin host si está disponible
+    // Cargar plugin host si está disponible (DINÁMICO)
     $plugin_root = dirname( $dev_tools_root );
-    $plugin_main_file = $plugin_root . '/tarokina-pro.php';
+    
+    // CORRECCIÓN: Detectar automáticamente el archivo principal del plugin
+    $config = dev_tools_config();
+    $plugin_main_file = $config->get('host.file');
+    
     if ( file_exists( $plugin_main_file ) ) {
         require_once $plugin_main_file;
-        echo "✅ Plugin host cargado: Tarokina Pro\n";
+        $plugin_name = $config->get('host.name');
+        echo "✅ Plugin host cargado: {$plugin_name}\n";
     } else {
         echo "ℹ️ Ejecutando dev-tools en modo independiente\n";
     }

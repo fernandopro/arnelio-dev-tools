@@ -296,7 +296,7 @@ class DevToolsConfig {
         return [
             'ajaxUrl' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce($this->get('ajax.nonce_action')),
-            'ajaxAction' => $this->get('dev_tools.ajax_action'),
+            'ajaxAction' => $this->get('ajax.action_name'), // CORRECCIÓN: usar ajax.action_name consistente
             'actionPrefix' => $this->get('ajax.action_prefix'), // Usar configuración AJAX específica
             'menuSlug' => $this->get('dev_tools.menu_slug'), // Slug dinámico del menú
             'pluginName' => $this->get('host.name'),

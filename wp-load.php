@@ -120,7 +120,7 @@ function dev_tools_render_error_page($error_message) {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Error - Tarokina Dev Tools</title>
+        <title>Error - Dev Tools</title>
         <style>
             body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 40px; }
             .error-container { max-width: 600px; margin: 0 auto; padding: 20px; border: 2px solid #d63638; border-radius: 8px; background: #fef7f7; }
@@ -130,7 +130,7 @@ function dev_tools_render_error_page($error_message) {
     </head>
     <body>
         <div class="error-container">
-            <h1 class="error-title">⚠️ Error en Tarokina Dev Tools</h1>
+            <h1 class="error-title">⚠️ Error en Dev Tools</h1>
             <p class="error-message"><?php echo esc_html($error_message); ?></p>
             <p class="error-message">
                 <strong>Soluciones posibles:</strong><br>

@@ -37,22 +37,20 @@ class DevToolsBasicTest extends DevToolsTestCase {
      * Test de detección del plugin host
      */
     public function test_plugin_host_detected() {
+        $config = dev_tools_config();
+        
+        // Verificar que la configuración detectó el plugin host
+        $this->assertNotNull($config->get('host.file'), 'Host plugin file should be detected');
+        $this->assertNotNull($config->get('host.name'), 'Host plugin name should be detected');
+        $this->assertNotNull($config->get('host.slug'), 'Host plugin slug should be detected');
+        
+        // Verificar que el archivo del plugin host existe
+        $plugin_file = $config->get('host.file');
+        $this->assertTrue(file_exists($plugin_file), 'Plugin main file should exist: ' . $plugin_file);
+        
         // Verificar que el directorio del plugin host existe
-        $plugin_dir = dirname(dirname(dirname(__DIR__)));
-        $this->assertTrue(is_dir($plugin_dir), 'Plugin directory should exist');
-        
-        // Verificar que existe un archivo principal del plugin
-        $possible_files = ['tarokina-pro.php', 'tarokina-2025.php'];
-        $plugin_file_found = false;
-        
-        foreach ($possible_files as $file) {
-            if (file_exists($plugin_dir . '/' . $file)) {
-                $plugin_file_found = true;
-                break;
-            }
-        }
-        
-        $this->assertTrue($plugin_file_found, 'Plugin main file should exist');
+        $plugin_dir = $config->get('host.dir_path');
+        $this->assertTrue(is_dir($plugin_dir), 'Plugin directory should exist: ' . $plugin_dir);
     }
     
     /**
