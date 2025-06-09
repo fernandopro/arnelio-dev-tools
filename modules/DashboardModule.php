@@ -159,7 +159,7 @@ class DashboardModule extends DevToolsModuleBase {
         // Configuración para JavaScript
         wp_localize_script('dev-tools-dashboard', 'devToolsConfig', [
             'ajaxUrl' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce('dev_tools_nonce'),
+            'nonce' => wp_create_nonce($this->config->get('ajax.nonce_action')),
             'actionPrefix' => $this->config->get('ajax.action_prefix'),
             'debug' => defined('WP_DEBUG') && WP_DEBUG,
             'version' => '3.0.0'

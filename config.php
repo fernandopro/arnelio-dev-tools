@@ -294,9 +294,9 @@ class DevToolsConfig {
     public function get_js_config() {
         return [
             'ajaxUrl' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce($this->get('dev_tools.nonce_key')),
+            'nonce' => wp_create_nonce($this->get('ajax.nonce_action')),
             'ajaxAction' => $this->get('dev_tools.ajax_action'),
-            'actionPrefix' => $this->get('host.slug'), // Prefijo del plugin host
+            'actionPrefix' => $this->get('ajax.action_prefix'), // Usar configuración AJAX específica
             'menuSlug' => $this->get('dev_tools.menu_slug'), // Slug dinámico del menú
             'pluginName' => $this->get('host.name'),
             'pluginSlug' => $this->get('host.slug'),
