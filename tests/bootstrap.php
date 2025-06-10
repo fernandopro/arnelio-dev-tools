@@ -59,43 +59,18 @@ require_once $_tests_dir . '/includes/functions.php';
  * Manually load the plugin being tested - ESTÁNDAR WORDPRESS
  */
 function _manually_load_plugin() {
-    echo "🏗️ Cargando Dev-Tools Arquitectura 3.0...\n";
 
-    
-    // Cargar Dev-Tools configuration
-    $dev_tools_root = dirname( dirname( __FILE__ ) );
-    require_once $dev_tools_root . '/config.php';
-    echo "✅ Configuración cargada\n";
-    
-    // Cargar Dev-Tools loader (sistema modular)
-    require_once $dev_tools_root . '/loader.php';
-    echo "✅ Loader principal cargado\n";
-    
-    // Cargar AJAX handler
-    require_once $dev_tools_root . '/ajax-handler.php';
-    echo "✅ AJAX Handler cargado\n";
-    
-    // Cargar plugin host si está disponible (DINÁMICO)
-    $plugin_root = dirname( $dev_tools_root );
-    
-    // CORRECCIÓN: Detectar automáticamente el archivo principal del plugin
-    $config = dev_tools_config();
-    $plugin_main_file = $config->get('host.file');
-    
-    if ( file_exists( $plugin_main_file ) ) {
-        require_once $plugin_main_file;
-        $plugin_name = $config->get('host.name');
-        echo "✅ Plugin host cargado: {$plugin_name}\n";
-    } else {
-        echo "ℹ️ Ejecutando dev-tools en modo independiente\n";
-    }
-    
-    // Verificar que los módulos estén disponibles
-    if ( class_exists( 'DevToolsModuleManager' ) ) {
-        echo "✅ Sistema de módulos disponible\n";
-    } else {
-        echo "⚠️ Sistema de módulos no disponible\n";
-    }
+
+
+    // falta codigo aquí...
+
+
+
+
+
+
+
+   
 }
 
 // Hook para cargar nuestro plugin usando el estándar WordPress

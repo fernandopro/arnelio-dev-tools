@@ -35,7 +35,7 @@ define( 'WP_DEBUG', true );
  */
 
 // Auto-detect Local by Flywheel socket or use default MySQL
-$socket_key = null;
+$socket_key = 'ky0STI0TK';
 
 // Try to detect from Local by Flywheel paths
 $local_run_path = '/Users/' . get_current_user() . '/Library/Application Support/Local/run/';
