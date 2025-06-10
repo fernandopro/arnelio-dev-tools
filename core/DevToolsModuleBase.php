@@ -45,9 +45,10 @@ abstract class DevToolsModuleBase implements DevToolsModuleInterface {
     
     /**
      * Constructor
+     * VERSIÓN OPTIMIZADA: Usa singleton del logger para evitar instancias múltiples
      */
     public function __construct() {
-        $this->logger = new DevToolsLogger();
+        $this->logger = DevToolsLogger::getInstance();
     }
     
     /**

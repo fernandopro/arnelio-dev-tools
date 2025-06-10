@@ -55,10 +55,11 @@ class DevToolsModuleManager {
     
     /**
      * Constructor privado para singleton
+     * VERSIÓN OPTIMIZADA: Usa singleton del logger para evitar instancias múltiples
      */
     private function __construct() {
         $this->config = dev_tools_config();
-        $this->logger = new DevToolsLogger();
+        $this->logger = DevToolsLogger::getInstance();
     }
     
     /**
@@ -73,9 +74,13 @@ class DevToolsModuleManager {
     
     /**
      * Inicializar el gestor de módulos
+     * VERSIÓN SEGURA: Evita inicializaciones múltiples
      */
     public function initialize() {
         if ($this->is_initialized) {
+            if ($this->config && $this->config->is_debug_mode()) {
+                $this->logger->logInternal('Module Manager already initialized (skipped)');
+            }
             return true;
         }
         
@@ -107,10 +112,14 @@ class DevToolsModuleManager {
     
     /**
      * Registrar un módulo
+     * VERSIÓN SEGURA: Evita registros duplicados y bucles infinitos
      */
     public function registerModule(string $name, DevToolsModuleInterface $module) {
         if (isset($this->modules[$name])) {
-            $this->logger->logError("Module already registered: {$name}");
+            // Solo loggear en modo debug para evitar spam en logs
+            if ($this->config && $this->config->is_debug_mode()) {
+                $this->logger->logInternal("Module already registered (skipped): {$name}");
+            }
             return false;
         }
         
@@ -295,13 +304,38 @@ class DevToolsModuleManager {
     
     /**
      * Cargar módulo desde archivo
+     * VERSIÓN SEGURA: Evita cargas duplicadas y errores de naming
      */
     private function loadModuleFromFile(string $file) {
         try {
-            require_once $file;
-            
+            // Verificar si el archivo ya fue incluido para evitar redefiniciones
             $filename = basename($file, '.php');
             $class_name = $filename;
+            
+            // Si la clase ya existe, verificar si ya está registrada
+            if (class_exists($class_name)) {
+                $reflection = new ReflectionClass($class_name);
+                
+                if ($reflection->implementsInterface('DevToolsModuleInterface')) {
+                    $module = new $class_name();
+                    $module_info = $module->getModuleInfo();
+                    $module_name = $module_info['name'] ?? $class_name;
+                    
+                    // Solo registrar si no existe ya
+                    if (!isset($this->modules[$module_name])) {
+                        $this->registerModule($module_name, $module);
+                        $this->logger->logInternal("Loaded module from file: {$file}");
+                    } else if ($this->config && $this->config->is_debug_mode()) {
+                        $this->logger->logInternal("Module {$module_name} already loaded (skipped file: {$file})");
+                    }
+                } else {
+                    $this->logger->logError("Class {$class_name} does not implement DevToolsModuleInterface");
+                }
+                return;
+            }
+            
+            // Si la clase no existe, incluir el archivo
+            require_once $file;
             
             if (class_exists($class_name)) {
                 $reflection = new ReflectionClass($class_name);
@@ -436,8 +470,5 @@ class DevToolsModuleManager {
     }
 }
 
-// Inicializar el gestor de módulos
-add_action('init', function() {
-    $module_manager = DevToolsModuleManager::getInstance();
-    $module_manager->initialize();
-}, 20); // Prioridad 20 para ejecutar después del config y ajax handler
+// NOTA: La inicialización del gestor de módulos se maneja desde loader.php
+// para evitar registros duplicados de hooks y bucles infinitos

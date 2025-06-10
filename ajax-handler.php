@@ -43,7 +43,7 @@ class DevToolsAjaxHandler {
      */
     private function __construct() {
         $this->config = dev_tools_config();
-        $this->logger = new DevToolsLogger();
+        $this->logger = DevToolsLogger::getInstance();
         $this->init();
     }
     
@@ -765,19 +765,41 @@ class DevToolsAjaxHandler {
 
 /**
  * Logger básico para el sistema dev-tools
+ * VERSIÓN SINGLETON: Evita instancias múltiples y bucles infinitos
  */
 class DevToolsLogger {
     
+    private static $instance = null;
     private $log_level;
     private $is_debug;
+    private $initialization_count = 0;
     
-    public function __construct() {
+    /**
+     * Constructor privado para singleton
+     */
+    private function __construct() {
+        $this->initialization_count++;
         $this->is_debug = defined('WP_DEBUG') && WP_DEBUG;
         $this->log_level = $this->is_debug ? 'debug' : 'error';
+        
+        // Debug: detectar inicializaciones múltiples
+        if ($this->initialization_count > 1) {
+            error_log('[DEV-TOOLS-WARNING] DevToolsLogger inicializado múltiples veces: ' . $this->initialization_count);
+        }
     }
     
     /**
-     * Log interno (siempre silencioso)
+     * Obtener instancia singleton
+     */
+    public static function getInstance() {
+        if (self::$instance === null) {
+            self::$instance = new self();
+        }
+        return self::$instance;
+    }
+    
+    /**
+     * Log interno (siempre silencioso para evitar spam)
      */
     public function logInternal($message, $data = null) {
         if ($this->is_debug) {
@@ -786,10 +808,13 @@ class DevToolsLogger {
     }
     
     /**
-     * Log de errores
+     * Log de errores (solo errores importantes para evitar spam)
      */
     public function logError($message, $data = null) {
-        error_log('[DEV-TOOLS-ERROR] ' . $message . ($data ? ' | Data: ' . print_r($data, true) : ''));
+        // Solo loggear errores importantes, no advertencias menores
+        if (!$this->isMinorWarning($message)) {
+            error_log('[DEV-TOOLS-ERROR] ' . $message . ($data ? ' | Data: ' . print_r($data, true) : ''));
+        }
     }
     
     /**
@@ -803,9 +828,38 @@ class DevToolsLogger {
             error_log('[DEV-TOOLS-' . strtoupper($type) . '] ' . $message);
         }
     }
+    
+    /**
+     * Verificar si es una advertencia menor que no debe loggearse
+     */
+    private function isMinorWarning($message) {
+        $minor_warnings = [
+            'Module already registered',
+            'already initialized',
+            'already loaded',
+            'already exists'
+        ];
+        
+        foreach ($minor_warnings as $warning) {
+            if (strpos($message, $warning) !== false) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
 }
 
-// Inicializar el manejador AJAX muy temprano para asegurar que los hooks se registren
+// Inicializar SOLO el manejador AJAX muy temprano para asegurar que los hooks se registren
+// NOTA: El Module Manager se inicializa desde loader.php para evitar duplicaciones
 add_action('plugins_loaded', function() {
-    DevToolsAjaxHandler::getInstance();
+    // Solo inicializar el handler AJAX, no el sistema completo
+    $ajax_handler = DevToolsAjaxHandler::getInstance();
+    
+    // Debug: confirmar que solo se ejecuta una vez
+    static $ajax_init_count = 0;
+    $ajax_init_count++;
+    if ($ajax_init_count > 1) {
+        error_log('[DEV-TOOLS-WARNING] AJAX Handler inicializado múltiples veces: ' . $ajax_init_count);
+    }
 }, 5); // Prioridad 5 para ejecutar temprano
