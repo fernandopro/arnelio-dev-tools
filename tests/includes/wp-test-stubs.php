@@ -47,6 +47,13 @@ if (!class_exists('WP_UnitTestCase')) {
      * WordPress Unit Test Case stub for IntelliSense
      */
     class WP_UnitTestCase {
+        
+        /**
+         * WordPress Test Factory instance
+         * @var WP_UnitTest_Factory
+         */
+        protected $factory;
+        
         public function setUp() {}
         public function tearDown() {}
         
@@ -81,7 +88,9 @@ if (!class_exists('WP_UnitTestCase')) {
         
         // String assertions
         public function assertStringContains($needle, $haystack, $message = '') {}
+        public function assertStringContainsString($needle, $haystack, $message = '') {}
         public function assertStringNotContains($needle, $haystack, $message = '') {}
+        public function assertStringNotContainsString($needle, $haystack, $message = '') {}
         public function assertStringStartsWith($prefix, $string, $message = '') {}
         public function assertStringEndsWith($suffix, $string, $message = '') {}
         public function assertMatchesRegularExpression($pattern, $string, $message = '') {}
@@ -131,5 +140,213 @@ if (!class_exists('WP_Ajax_UnitTestCase')) {
         protected function _handleAjax($action) {}
         protected function _setRole($role) {}
         protected function _last_response_parsed() {}
+    }
+}
+
+if (!class_exists('WP_UnitTest_Factory')) {
+    /**
+     * WordPress Test Factory stub for IntelliSense
+     */
+    class WP_UnitTest_Factory {
+        /** @var WP_UnitTest_Factory_For_User */
+        public $user;
+        
+        /** @var WP_UnitTest_Factory_For_Post */
+        public $post;
+        
+        /** @var WP_UnitTest_Factory_For_Comment */
+        public $comment;
+        
+        /** @var WP_UnitTest_Factory_For_Blog */
+        public $blog;
+        
+        /** @var WP_UnitTest_Factory_For_Network */
+        public $network;
+        
+        /** @var WP_UnitTest_Factory_For_Category */
+        public $category;
+        
+        /** @var WP_UnitTest_Factory_For_Tag */
+        public $tag;
+        
+        /** @var WP_UnitTest_Factory_For_Term */
+        public $term;
+        
+        /** @var WP_UnitTest_Factory_For_Attachment */
+        public $attachment;
+    }
+}
+
+if (!class_exists('WP_UnitTest_Factory_For_User')) {
+    /**
+     * User Factory stub for IntelliSense
+     */
+    class WP_UnitTest_Factory_For_User {
+        /**
+         * Create a user
+         * @param array $args
+         * @return int User ID
+         */
+        public function create($args = []) {
+            return 1;
+        }
+        
+        /**
+         * Create a user and return object
+         * @param array $args
+         * @return WP_User
+         */
+        public function create_and_get($args = []) {
+            return new WP_User();
+        }
+    }
+}
+
+if (!class_exists('WP_UnitTest_Factory_For_Post')) {
+    /**
+     * Post Factory stub for IntelliSense
+     */
+    class WP_UnitTest_Factory_For_Post {
+        /**
+         * Create a post
+         * @param array $args
+         * @return int Post ID
+         */
+        public function create($args = []) {
+            return 1;
+        }
+        
+        /**
+         * Create a post and return object
+         * @param array $args
+         * @return WP_Post
+         */
+        public function create_and_get($args = []) {
+            return new WP_Post();
+        }
+    }
+}
+
+if (!class_exists('WP_UnitTest_Factory_For_Comment')) {
+    /**
+     * Comment Factory stub for IntelliSense
+     */
+    class WP_UnitTest_Factory_For_Comment {
+        public function create($args = []) { return 1; }
+        public function create_and_get($args = []) { return new WP_Comment(); }
+    }
+}
+
+if (!class_exists('WP_UnitTest_Factory_For_Blog')) {
+    /**
+     * Blog Factory stub for IntelliSense
+     */
+    class WP_UnitTest_Factory_For_Blog {
+        public function create($args = []) { return 1; }
+    }
+}
+
+if (!class_exists('WP_UnitTest_Factory_For_Network')) {
+    /**
+     * Network Factory stub for IntelliSense
+     */
+    class WP_UnitTest_Factory_For_Network {
+        public function create($args = []) { return 1; }
+    }
+}
+
+if (!class_exists('WP_UnitTest_Factory_For_Category')) {
+    /**
+     * Category Factory stub for IntelliSense
+     */
+    class WP_UnitTest_Factory_For_Category {
+        public function create($args = []) { return 1; }
+    }
+}
+
+if (!class_exists('WP_UnitTest_Factory_For_Tag')) {
+    /**
+     * Tag Factory stub for IntelliSense
+     */
+    class WP_UnitTest_Factory_For_Tag {
+        public function create($args = []) { return 1; }
+    }
+}
+
+if (!class_exists('WP_UnitTest_Factory_For_Term')) {
+    /**
+     * Term Factory stub for IntelliSense
+     */
+    class WP_UnitTest_Factory_For_Term {
+        public function create($args = []) { return 1; }
+    }
+}
+
+if (!class_exists('WP_UnitTest_Factory_For_Attachment')) {
+    /**
+     * Attachment Factory stub for IntelliSense
+     */
+    class WP_UnitTest_Factory_For_Attachment {
+        public function create($args = []) { return 1; }
+    }
+}
+
+// WordPress Core Classes stubs
+if (!class_exists('WP_User')) {
+    class WP_User {
+        public $ID = 1;
+        public $user_login = 'test_user';
+        public $user_email = 'test@test.com';
+        public $roles = ['administrator'];
+        
+        public function add_cap($cap) {}
+        public function remove_cap($cap) {}
+        public function has_cap($cap) { return true; }
+    }
+}
+
+if (!class_exists('WP_Post')) {
+    class WP_Post {
+        public $ID = 1;
+        public $post_title = 'Test Post';
+        public $post_content = 'Test content';
+        public $post_status = 'publish';
+        public $post_author = 1;
+        public $post_date = '2023-01-01 00:00:00';
+        public $post_type = 'post';
+    }
+}
+
+if (!class_exists('WP_Comment')) {
+    class WP_Comment {
+        public $comment_ID = 1;
+        public $comment_post_ID = 1;
+        public $comment_author = 'Test Author';
+        public $comment_content = 'Test comment';
+        public $comment_approved = 1;
+    }
+}
+
+if (!class_exists('WP_Error')) {
+    class WP_Error {
+        protected $errors = [];
+        protected $error_data = [];
+        
+        public function __construct($code = '', $message = '', $data = '') {
+            if (!empty($code)) {
+                $this->errors[$code][] = $message;
+                if (!empty($data)) {
+                    $this->error_data[$code] = $data;
+                }
+            }
+        }
+        
+        public function get_error_codes() { return array_keys($this->errors); }
+        public function get_error_code() { return key($this->errors); }
+        public function get_error_messages($code = '') { return $this->errors; }
+        public function get_error_message($code = '') { return ''; }
+        public function get_error_data($code = '') { return null; }
+        public function has_errors() { return !empty($this->errors); }
+        public function add($code, $message, $data = '') {}
     }
 }

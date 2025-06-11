@@ -21,6 +21,12 @@ if (class_exists('WP_UnitTestCase')) {
 class DevToolsTestCase extends DevToolsTestCaseBase {
 
     /**
+     * WordPress Test Factory instance (for IntelliSense)
+     * @var WP_UnitTest_Factory
+     */
+    protected $factory;
+
+    /**
      * Configuración inicial antes de cada test
      * 
      * @since 3.0.0
