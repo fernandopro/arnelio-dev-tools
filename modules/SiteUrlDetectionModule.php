@@ -306,6 +306,22 @@ class SiteUrlDetectionModule {
     }
     
     /**
+     * Obtiene el URL del admin
+     */
+    public function get_admin_url() {
+        if ($this->wp_available && function_exists('admin_url')) {
+            return admin_url();
+        }
+        
+        // Fallback: construir admin URL basado en site URL
+        if ($this->detected_url) {
+            return rtrim($this->detected_url, '/') . '/wp-admin/';
+        }
+        
+        return null;
+    }
+    
+    /**
      * Test completo de detección
      */
     public function test_detection() {

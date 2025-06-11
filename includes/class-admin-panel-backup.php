@@ -1,7 +1,9 @@
 <?php
 /**
  * Dev-Tools Admin Panel - Bootstrap 5 Interface
- * Panel de administración agnóstico con Bootstrap 5 y sistema de pestañas
+ * 
+ * Panel de administración agnóstico con Bootstrap 5
+ * Funciona independientemente del plugin host
  * 
  * @package DevTools
  * @version 3.0
@@ -40,7 +42,7 @@ class DevToolsAdminPanel {
                                 <p class="mb-0 opacity-75">v<?php echo esc_html($this->config['version']); ?> - <?php echo esc_html($title); ?></p>
                             </div>
                             <div class="text-end">
-                                <small class="d-block">Entorno: <?php echo $this->get_environment_badge(); ?></small>
+                                <small class="d-block">Entorno: <strong><?php echo $this->get_environment_badge(); ?></strong></small>
                                 <small>WordPress <?php echo get_bloginfo('version'); ?></small>
                             </div>
                         </div>
@@ -67,7 +69,10 @@ class DevToolsAdminPanel {
                         <div class="border-top pt-3 text-muted text-center">
                             <small>
                                 <?php echo esc_html($this->config['name']); ?> - 
-                                Framework agnóstico para desarrollo WordPress
+                                Framework agnóstico para desarrollo WordPress | 
+                                <a href="<?php echo esc_url($this->config['developer']['website']); ?>" target="_blank">
+                                    Documentación
+                                </a>
                             </small>
                         </div>
                     </div>
@@ -225,39 +230,6 @@ class DevToolsAdminPanel {
     }
     
     /**
-     * Renderiza el estado del sistema
-     */
-    private function render_system_status() {
-        $db_module = $this->modules['DatabaseConnectionModule'] ?? null;
-        $site_module = $this->modules['SiteUrlDetectionModule'] ?? null;
-        
-        $checks = [
-            'WordPress' => ['success', get_bloginfo('version')],
-            'PHP' => ['success', phpversion()],
-            'Database' => $db_module ? $this->test_database_status($db_module) : ['warning', 'Módulo no cargado'],
-            'Site URL' => $site_module ? $this->test_site_url_status($site_module) : ['warning', 'Módulo no cargado'],
-            'Dev-Tools' => ['success', $this->config['version']]
-        ];
-        ?>
-        <div class="row">
-            <?php foreach ($checks as $name => $status): ?>
-                <div class="col-md-6 col-lg-4 mb-3">
-                    <div class="d-flex align-items-center">
-                        <span class="badge bg-<?php echo $status[0] === 'success' ? 'success' : ($status[0] === 'warning' ? 'warning' : 'danger'); ?> me-2">
-                            <?php echo $status[0] === 'success' ? '✅' : ($status[0] === 'warning' ? '⚠️' : '❌'); ?>
-                        </span>
-                        <div>
-                            <strong><?php echo esc_html($name); ?></strong><br>
-                            <small class="text-muted"><?php echo esc_html($status[1]); ?></small>
-                        </div>
-                    </div>
-                </div>
-            <?php endforeach; ?>
-        </div>
-        <?php
-    }
-    
-    /**
      * Renderiza el estado de los módulos
      */
     private function render_modules_status() {
@@ -287,6 +259,44 @@ class DevToolsAdminPanel {
     }
     
     /**
+     * Test del estado de la base de datos
+     */
+    private function test_database_status($db_module) {
+        try {
+            $test_result = $db_module->test_connection();
+            return $test_result['success'] ? ['success', 'Conectado'] : ['danger', 'Error de conexión'];
+        } catch (Exception $e) {
+            return ['danger', 'Error: ' . $e->getMessage()];
+        }
+    }
+    
+    /**
+     * Test del estado de detección de URL
+     */
+    private function test_site_url_status($site_module) {
+        $url = $site_module->get_site_url();
+        return $url ? ['success', $url] : ['warning', 'No detectado'];
+    }
+    
+    /**
+     * Renderiza la lista de módulos
+     */
+    private function render_modules_list() {
+        ?>
+        <div class="row">
+            <?php foreach ($this->modules as $name => $module): ?>
+                <div class="col-md-6 mb-2">
+                    <div class="d-flex align-items-center">
+                        <span class="badge bg-primary me-2">📦</span>
+                        <span><?php echo esc_html($name); ?></span>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+        <?php
+    }
+    
+    /**
      * Renderiza acciones rápidas
      */
     private function render_quick_actions() {
@@ -305,6 +315,27 @@ class DevToolsAdminPanel {
                 🗑️ Clear Cache
             </button>
         </div>
+        
+        <!-- Modal para resultados -->
+        <div class="modal fade" id="quickActionModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Resultado de la Acción</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="quickActionResult">
+                            <div class="text-center">
+                                <div class="spinner-border" role="status">
+                                    <span class="visually-hidden">Cargando...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <?php
     }
     
@@ -312,57 +343,216 @@ class DevToolsAdminPanel {
      * Renderiza información del entorno
      */
     private function render_environment_info() {
-        $site_detector = $this->modules['SiteUrlDetectionModule'] ?? null;
-        if ($site_detector) {
-            $env_info = $site_detector->get_environment_info();
-            ?>
-            <div class="mb-3">
-                <h6>🌍 Tipo de Entorno</h6>
-                <?php if ($env_info['is_local_wp']): ?>
-                    <span class="badge bg-warning text-dark">Local by WP Engine</span>
-                    <p class="small mt-1 mb-0">Socket: <?php echo esc_html($env_info['socket_path'] ?? 'N/A'); ?></p>
-                <?php elseif (defined('WP_DEBUG') && WP_DEBUG): ?>
-                    <span class="badge bg-info">Development</span>
-                <?php else: ?>
-                    <span class="badge bg-success">Production</span>
-                <?php endif; ?>
-            </div>
-            
-            <div class="mb-3">
-                <h6>🔗 URLs Detectadas</h6>
-                <p class="small mb-1"><strong>Site URL:</strong> <?php echo esc_html($site_detector->get_site_url()); ?></p>
-                <p class="small mb-0"><strong>Admin URL:</strong> <?php echo esc_html($site_detector->get_admin_url()); ?></p>
-            </div>
-            <?php
-        }
-        
+        $paths_info = $this->paths->get_debug_info();
         ?>
-        <div class="mb-3">
-            <h6>📊 Recursos</h6>
-            <p class="small mb-1"><strong>Memory Usage:</strong> <?php echo size_format(memory_get_usage(true)); ?></p>
-            <p class="small mb-0"><strong>Peak Memory:</strong> <?php echo size_format(memory_get_peak_usage(true)); ?></p>
+        <div class="small">
+            <div class="mb-2">
+                <strong>Base Path:</strong><br>
+                <code class="small"><?php echo esc_html($paths_info['base_path']); ?></code>
+            </div>
+            <div class="mb-2">
+                <strong>Base URL:</strong><br>
+                <code class="small"><?php echo esc_html($paths_info['base_url']); ?></code>
+            </div>
+            <div class="mb-2">
+                <strong>WordPress:</strong><br>
+                <span class="badge bg-<?php echo $paths_info['wordpress_available'] ? 'success' : 'warning'; ?>">
+                    <?php echo $paths_info['wordpress_available'] ? 'Disponible' : 'Limitado'; ?>
+                </span>
+            </div>
         </div>
         <?php
     }
     
     /**
-     * Test del estado de la base de datos
+     * Página de System Info
      */
-    private function test_database_status($db_module) {
-        try {
-            $test_result = $db_module->test_connection();
-            return $test_result['success'] ? ['success', 'Conectado'] : ['danger', 'Error de conexión'];
-        } catch (Exception $e) {
-            return ['danger', 'Error: ' . $e->getMessage()];
-        }
+    public function render_system_info() {
+        $this->render_header('System Info');
+        ?>
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">📋 Información Completa del Sistema</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="systemInfoContent">
+                            <div class="text-center">
+                                <div class="spinner-border" role="status">
+                                    <span class="visually-hidden">Cargando información del sistema...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            devTools.loadSystemInfo();
+        });
+        </script>
+        <?php
+        $this->render_footer();
     }
     
     /**
-     * Test del estado de detección de URL
+     * Página de Database
      */
-    private function test_site_url_status($site_module) {
-        $url = $site_module->get_site_url();
-        return $url ? ['success', $url] : ['warning', 'No detectado'];
+    public function render_database() {
+        $this->render_header('Database Connection');
+        ?>
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">🔌 Test de Conexión a Base de Datos</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="databaseTestContent">
+                            <button class="btn btn-primary" onclick="devTools.testDatabaseDetailed()">
+                                Ejecutar Test Completo
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">ℹ️ Información</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="small">Este test verifica la conexión a MySQL en entornos Local by WP Engine usando Unix socket.</p>
+                        <p class="small">También funciona con TCP/IP estándar en otros entornos.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php
+        $this->render_footer();
+    }
+    
+    /**
+     * Página de AJAX Tester
+     */
+    public function render_ajax_tester() {
+        $this->render_header('AJAX Tester');
+        ?>
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">🚀 AJAX Testing Interface</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Comandos Disponibles:</h6>
+                                <div class="list-group mb-3">
+                                    <button class="list-group-item list-group-item-action" onclick="devTools.ajaxTest('test_connection')">
+                                        test_connection - Test database connection
+                                    </button>
+                                    <button class="list-group-item list-group-item-action" onclick="devTools.ajaxTest('system_info')">
+                                        system_info - Get system information
+                                    </button>
+                                    <button class="list-group-item list-group-item-action" onclick="devTools.ajaxTest('site_url_detection')">
+                                        site_url_detection - Test URL detection
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Resultado:</h6>
+                                <div id="ajaxTestResult" class="border p-3" style="min-height: 200px; background-color: #f8f9fa;">
+                                    <em>Selecciona un comando para ver el resultado...</em>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php
+        $this->render_footer();
+    }
+    
+    /**
+     * Página de Tests (PHPUnit)
+     */
+    public function render_tests() {
+        $this->render_header('Test Suite');
+        ?>
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">🧪 PHPUnit Test Suite</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <button class="btn btn-success me-2" onclick="devTools.runTestSuite('all')">
+                                ▶️ Run All Tests
+                            </button>
+                            <button class="btn btn-primary me-2" onclick="devTools.runTestSuite('unit')">
+                                🔬 Unit Tests
+                            </button>
+                            <button class="btn btn-info me-2" onclick="devTools.runTestSuite('integration')">
+                                🔗 Integration Tests
+                            </button>
+                            <button class="btn btn-warning" onclick="devTools.runTestSuite('environment')">
+                                🌍 Environment Tests
+                            </button>
+                        </div>
+                        
+                        <div id="testResults" class="mt-4">
+                            <!-- Los resultados se cargarán aquí -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">📊 Test Coverage</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="testCoverage">
+                            <p class="small text-muted">Ejecuta los tests para ver el coverage...</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h5 class="mb-0">⚙️ Test Configuration</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="verboseOutput" checked>
+                            <label class="form-check-label" for="verboseOutput">
+                                Verbose Output
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="stopOnFailure">
+                            <label class="form-check-label" for="stopOnFailure">
+                                Stop on Failure
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="generateCoverage">
+                            <label class="form-check-label" for="generateCoverage">
+                                Generate Coverage
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php
+        $this->render_footer();
     }
     
     /**
@@ -614,28 +804,13 @@ class DevToolsAdminPanel {
             $test_result = $db_module->test_connection();
             $status_class = $test_result['success'] ? 'success' : 'danger';
             $status_icon = $test_result['success'] ? '✅' : '❌';
-            
-            // Construir mensaje basado en el resultado
-            if ($test_result['success']) {
-                $message = 'Conexión exitosa a la base de datos';
-                if (isset($test_result['server_info'])) {
-                    $message .= ' - ' . $test_result['server_info'];
-                }
-            } else {
-                $message = $test_result['error'] ?? 'Error de conexión desconocido';
-            }
             ?>
             <div class="alert alert-<?php echo $status_class; ?>">
                 <h6><?php echo $status_icon; ?> Estado de Conexión</h6>
-                <p class="mb-0"><?php echo esc_html($message); ?></p>
-                <?php if (isset($test_result['dsn_used'])): ?>
+                <p class="mb-0"><?php echo esc_html($test_result['message']); ?></p>
+                <?php if (isset($test_result['details'])): ?>
                     <small class="text-muted d-block mt-1">
-                        DSN: <?php echo esc_html($test_result['dsn_used']); ?>
-                    </small>
-                <?php endif; ?>
-                <?php if (isset($test_result['test_query'])): ?>
-                    <small class="text-muted d-block mt-1">
-                        MySQL Version: <?php echo esc_html($test_result['test_query']['version'] ?? 'N/A'); ?>
+                        <?php echo esc_html($test_result['details']); ?>
                     </small>
                 <?php endif; ?>
             </div>
@@ -648,5 +823,42 @@ class DevToolsAdminPanel {
             </div>
             <?php
         }
+    }
+    
+    /**
+     * Información del entorno
+     */
+    private function render_environment_info() {
+        $site_detector = $this->modules['SiteUrlDetectionModule'] ?? null;
+        if ($site_detector) {
+            $env_info = $site_detector->get_environment_info();
+            ?>
+            <div class="mb-3">
+                <h6>🌍 Tipo de Entorno</h6>
+                <?php if ($env_info['is_local_wp']): ?>
+                    <span class="badge bg-warning text-dark">Local by WP Engine</span>
+                    <p class="small mt-1 mb-0">Socket: <?php echo esc_html($env_info['socket_path'] ?? 'N/A'); ?></p>
+                <?php elseif (defined('WP_DEBUG') && WP_DEBUG): ?>
+                    <span class="badge bg-info">Development</span>
+                <?php else: ?>
+                    <span class="badge bg-success">Production</span>
+                <?php endif; ?>
+            </div>
+            
+            <div class="mb-3">
+                <h6>🔗 URLs Detectadas</h6>
+                <p class="small mb-1"><strong>Site URL:</strong> <?php echo esc_html($site_detector->get_site_url()); ?></p>
+                <p class="small mb-0"><strong>Admin URL:</strong> <?php echo esc_html($site_detector->get_admin_url()); ?></p>
+            </div>
+            <?php
+        }
+        
+        ?>
+        <div class="mb-3">
+            <h6>📊 Recursos</h6>
+            <p class="small mb-1"><strong>Memory Usage:</strong> <?php echo size_format(memory_get_usage(true)); ?></p>
+            <p class="small mb-0"><strong>Peak Memory:</strong> <?php echo size_format(memory_get_peak_usage(true)); ?></p>
+        </div>
+        <?php
     }
 }

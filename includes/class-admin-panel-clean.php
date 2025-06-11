@@ -331,7 +331,7 @@ class DevToolsAdminPanel {
             <div class="mb-3">
                 <h6>🔗 URLs Detectadas</h6>
                 <p class="small mb-1"><strong>Site URL:</strong> <?php echo esc_html($site_detector->get_site_url()); ?></p>
-                <p class="small mb-0"><strong>Admin URL:</strong> <?php echo esc_html($site_detector->get_admin_url()); ?></p>
+                <p class="small mb-0"><strong>Admin URL:</strong> <?php echo esc_html(admin_url()); ?></p>
             </div>
             <?php
         }
@@ -614,28 +614,13 @@ class DevToolsAdminPanel {
             $test_result = $db_module->test_connection();
             $status_class = $test_result['success'] ? 'success' : 'danger';
             $status_icon = $test_result['success'] ? '✅' : '❌';
-            
-            // Construir mensaje basado en el resultado
-            if ($test_result['success']) {
-                $message = 'Conexión exitosa a la base de datos';
-                if (isset($test_result['server_info'])) {
-                    $message .= ' - ' . $test_result['server_info'];
-                }
-            } else {
-                $message = $test_result['error'] ?? 'Error de conexión desconocido';
-            }
             ?>
             <div class="alert alert-<?php echo $status_class; ?>">
                 <h6><?php echo $status_icon; ?> Estado de Conexión</h6>
-                <p class="mb-0"><?php echo esc_html($message); ?></p>
-                <?php if (isset($test_result['dsn_used'])): ?>
+                <p class="mb-0"><?php echo esc_html($test_result['message']); ?></p>
+                <?php if (isset($test_result['details'])): ?>
                     <small class="text-muted d-block mt-1">
-                        DSN: <?php echo esc_html($test_result['dsn_used']); ?>
-                    </small>
-                <?php endif; ?>
-                <?php if (isset($test_result['test_query'])): ?>
-                    <small class="text-muted d-block mt-1">
-                        MySQL Version: <?php echo esc_html($test_result['test_query']['version'] ?? 'N/A'); ?>
+                        <?php echo esc_html($test_result['details']); ?>
                     </small>
                 <?php endif; ?>
             </div>

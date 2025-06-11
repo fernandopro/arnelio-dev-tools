@@ -57,6 +57,9 @@ class DevToolsLoader {
         // Cargar configuración principal
         $this->load_config();
         
+        // Cargar clases principales inmediatamente
+        $this->load_core_classes();
+        
         // Registrar hooks de WordPress
         add_action('init', [$this, 'init_system'], 5);
         add_action('admin_menu', [$this, 'register_admin_menu']);
@@ -72,12 +75,35 @@ class DevToolsLoader {
     }
     
     /**
+     * Carga las clases principales del sistema
+     */
+    private function load_core_classes() {
+        // Cargar clase admin panel
+        require_once __DIR__ . '/includes/class-admin-panel.php';
+        
+        // Cargar clase AJAX handler
+        require_once __DIR__ . '/includes/class-ajax-handler.php';
+        
+        // NO inicializar admin panel aquí - se hace después en init_system
+    }
+    
+    /**
      * Carga la configuración del sistema
      */
     private function load_config() {
         $config_file = __DIR__ . '/config/config.php';
         if (file_exists($config_file)) {
-            $this->config = include $config_file;
+            $config = include $config_file;
+            
+            // Aplanar estructura del menú para compatibilidad
+            if (isset($config['menu'])) {
+                $config['menu_slug'] = $config['menu']['slug'] ?? 'dev-tools';
+                $config['capability'] = $config['menu']['capability'] ?? 'manage_options';
+                $config['menu_icon'] = $config['menu']['icon'] ?? 'dashicons-admin-tools';
+                $config['menu_position'] = $config['menu']['position'] ?? 80;
+            }
+            
+            $this->config = $config;
         } else {
             $this->config = $this->get_default_config();
         }
@@ -115,8 +141,8 @@ class DevToolsLoader {
         // Inicializar AJAX handler
         $this->init_ajax_handler();
         
-        // Inicializar admin panel
-        $this->init_admin_panel();
+        // Actualizar admin panel con módulos cargados
+        $this->admin_panel = new DevToolsAdminPanel($this->config, $this->modules);
     }
     
     /**
@@ -150,67 +176,29 @@ class DevToolsLoader {
      * Inicializa el manejador AJAX
      */
     private function init_ajax_handler() {
-        require_once __DIR__ . '/includes/class-ajax-handler.php';
         $this->ajax_handler = new DevToolsAjaxHandler($this->modules);
     }
     
     /**
-     * Inicializa el panel de administración
-     */
-    private function init_admin_panel() {
-        require_once __DIR__ . '/includes/class-admin-panel.php';
-        $this->admin_panel = new DevToolsAdminPanel($this->config, $this->modules);
-    }
-    
-    /**
-     * Registra el menú de administración
+     * Registra el menú de administración en Tools
      */
     public function register_admin_menu() {
-        add_menu_page(
-            $this->config['name'],
+        // Asegurar que la configuración esté cargada
+        if ($this->config === null) {
+            $this->load_config();
+        }
+        
+        // Asegurar que el admin panel esté inicializado
+        if ($this->admin_panel === null) {
+            $this->admin_panel = new DevToolsAdminPanel($this->config, $this->modules);
+        }
+        
+        add_management_page(
+            $this->config['name'] ?? 'Dev-Tools',
             'Dev-Tools',
-            $this->config['capability'],
-            $this->config['menu_slug'],
-            [$this->admin_panel, 'render_dashboard'],
-            'dashicons-admin-tools',
-            80
-        );
-        
-        // Submenús
-        add_submenu_page(
-            $this->config['menu_slug'],
-            'System Info',
-            'System Info',
-            $this->config['capability'],
-            $this->config['menu_slug'] . '-system-info',
-            [$this->admin_panel, 'render_system_info']
-        );
-        
-        add_submenu_page(
-            $this->config['menu_slug'],
-            'Database',
-            'Database',
-            $this->config['capability'],
-            $this->config['menu_slug'] . '-database',
-            [$this->admin_panel, 'render_database']
-        );
-        
-        add_submenu_page(
-            $this->config['menu_slug'],
-            'AJAX Tester',
-            'AJAX Tester',
-            $this->config['capability'],
-            $this->config['menu_slug'] . '-ajax-tester',
-            [$this->admin_panel, 'render_ajax_tester']
-        );
-        
-        add_submenu_page(
-            $this->config['menu_slug'],
-            'Tests',
-            'Tests',
-            $this->config['capability'],
-            $this->config['menu_slug'] . '-tests',
-            [$this->admin_panel, 'render_tests']
+            $this->config['capability'] ?? 'manage_options',
+            $this->config['menu_slug'] ?? 'dev-tools',
+            [$this->admin_panel, 'render_dashboard']
         );
     }
     
@@ -218,8 +206,11 @@ class DevToolsLoader {
      * Encola assets de administración
      */
     public function enqueue_admin_assets($hook) {
+        // Obtener menu_slug con fallback
+        $menu_slug = $this->config['menu_slug'] ?? 'dev-tools';
+        
         // Solo cargar en páginas de dev-tools
-        if (strpos($hook, $this->config['menu_slug']) === false) {
+        if (strpos($hook, $menu_slug) === false) {
             return;
         }
         
@@ -254,7 +245,7 @@ class DevToolsLoader {
         wp_enqueue_script(
             'dev-tools-admin',
             $paths->get_url('assets/js/admin.js'),
-            ['jquery', 'dev-tools-bootstrap-js'],
+            ['dev-tools-bootstrap-js'], // Solo Bootstrap, sin jQuery
             DEV_TOOLS_VERSION,
             true
         );
