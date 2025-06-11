@@ -6,8 +6,8 @@
  * en Local by WP Engine
  */
 
-// Cargar WordPress
-require_once(__DIR__ . '/../../../wp-load.php');
+// Cargar WordPress - Ruta corregida para Local by WP Engine
+require_once(__DIR__ . '/../../../../../wp-load.php');
 
 // Cargar el módulo
 require_once(__DIR__ . '/DatabaseConnectionModule.php');
@@ -15,6 +15,7 @@ require_once(__DIR__ . '/DatabaseConnectionModule.php');
 echo "<h1>🔧 Test DatabaseConnectionModule</h1>";
 echo "<h2>Dev-Tools Arquitectura 3.0</h2>";
 echo "<hr>";
+
 
 try {
     // Instanciar módulo con debug activado
