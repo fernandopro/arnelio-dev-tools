@@ -1,0 +1,370 @@
+/**
+ * Dev-Tools Arquitectura 3.0 - SCSS Principal
+ * Bootstrap 5 + Custom Styles para WordPress Admin
+ */
+
+// Variables personalizadas ANTES de Bootstrap
+:root {
+  --dev-tools-primary: #0d6efd;
+  --dev-tools-success: #198754;
+  --dev-tools-warning: #ffc107;
+  --dev-tools-danger: #dc3545;
+  --dev-tools-info: #0dcaf0;
+  --dev-tools-light: #f8f9fa;
+  --dev-tools-dark: #212529;
+  
+  // WordPress Admin colors compatibility
+  --wp-admin-blue: #0073aa;
+  --wp-admin-green: #00a32a;
+  --wp-admin-orange: #ff922b;
+  --wp-admin-red: #d63638;
+}
+
+// Bootstrap 5 Import (solo lo que necesitamos)
+@import '~bootstrap/scss/functions';
+@import '~bootstrap/scss/variables';
+@import '~bootstrap/scss/variables-dark';
+@import '~bootstrap/scss/maps';
+@import '~bootstrap/scss/mixins';
+@import '~bootstrap/scss/utilities';
+
+// Layout
+@import '~bootstrap/scss/root';
+@import '~bootstrap/scss/reboot';
+@import '~bootstrap/scss/type';
+@import '~bootstrap/scss/images';
+@import '~bootstrap/scss/containers';
+@import '~bootstrap/scss/grid';
+
+// Components
+@import '~bootstrap/scss/tables';
+@import '~bootstrap/scss/forms';
+@import '~bootstrap/scss/buttons';
+@import '~bootstrap/scss/transitions';
+@import '~bootstrap/scss/dropdown';
+@import '~bootstrap/scss/button-group';
+@import '~bootstrap/scss/nav';
+@import '~bootstrap/scss/navbar';
+@import '~bootstrap/scss/card';
+@import '~bootstrap/scss/breadcrumb';
+@import '~bootstrap/scss/pagination';
+@import '~bootstrap/scss/badge';
+@import '~bootstrap/scss/alert';
+@import '~bootstrap/scss/progress';
+@import '~bootstrap/scss/list-group';
+@import '~bootstrap/scss/close';
+@import '~bootstrap/scss/toasts';
+@import '~bootstrap/scss/modal';
+@import '~bootstrap/scss/tooltip';
+@import '~bootstrap/scss/popover';
+@import '~bootstrap/scss/carousel';
+@import '~bootstrap/scss/spinners';
+@import '~bootstrap/scss/offcanvas';
+@import '~bootstrap/scss/placeholders';
+
+// Helpers
+@import '~bootstrap/scss/helpers';
+
+// Utilities
+@import '~bootstrap/scss/utilities/api';
+
+// Dev-Tools Custom Styles
+.dev-tools-container {
+  .wrap & {
+    margin: 0;
+    padding: 0;
+  }
+}
+
+// WordPress Admin Panel Integration
+.dev-tools-admin-panel {
+  background: #f0f0f1;
+  min-height: 100vh;
+  
+  .container-fluid {
+    max-width: none;
+    padding: 20px;
+  }
+}
+
+// Header styles
+.dev-tools-header {
+  background: linear-gradient(135deg, var(--dev-tools-primary), #0056b3);
+  color: white;
+  border-radius: 8px;
+  
+  h1, h2, h3 {
+    color: white;
+    margin: 0;
+  }
+  
+  .badge {
+    font-size: 0.75em;
+  }
+}
+
+// Navigation tabs
+.dev-tools-nav {
+  .nav-tabs {
+    border-bottom: 2px solid #dee2e6;
+    margin-bottom: 2rem;
+    
+    .nav-link {
+      border: none;
+      border-radius: 8px 8px 0 0;
+      padding: 12px 20px;
+      font-weight: 500;
+      color: #6c757d;
+      
+      &:hover {
+        background-color: #f8f9fa;
+        color: var(--dev-tools-primary);
+      }
+      
+      &.active {
+        background-color: var(--dev-tools-primary);
+        color: white;
+        border-bottom: 2px solid var(--dev-tools-primary);
+      }
+      
+      .dashicons {
+        margin-right: 8px;
+        vertical-align: text-top;
+      }
+    }
+  }
+}
+
+// Cards
+.dev-tools-card {
+  border: none;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border-radius: 8px;
+  
+  .card-header {
+    border-radius: 8px 8px 0 0;
+    font-weight: 600;
+    
+    h5, h6 {
+      margin: 0;
+    }
+  }
+}
+
+// Status indicators
+.dev-tools-status {
+  .status-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f1;
+    
+    &:last-child {
+      border-bottom: none;
+    }
+    
+    .status-icon {
+      width: 40px;
+      text-align: center;
+      margin-right: 12px;
+    }
+    
+    .status-content {
+      flex: 1;
+      
+      .status-title {
+        font-weight: 600;
+        margin: 0;
+      }
+      
+      .status-description {
+        color: #6c757d;
+        font-size: 0.875em;
+        margin: 0;
+      }
+    }
+  }
+}
+
+// Debug output
+.dev-tools-debug {
+  background: #2d3748;
+  color: #e2e8f0;
+  border-radius: 6px;
+  padding: 1rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.875em;
+  line-height: 1.4;
+  overflow-x: auto;
+  
+  .debug-title {
+    color: #68d391;
+    font-weight: bold;
+  }
+}
+
+// Quick actions
+.dev-tools-actions {
+  .btn {
+    margin-bottom: 8px;
+    font-weight: 500;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+// Environment info
+.dev-tools-environment {
+  .env-item {
+    margin-bottom: 1rem;
+    
+    h6 {
+      color: var(--dev-tools-dark);
+      margin-bottom: 0.5rem;
+    }
+    
+    .env-value {
+      font-family: monospace;
+      background: #f8f9fa;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.875em;
+    }
+  }
+}
+
+// AJAX Tester styles
+.dev-tools-ajax-tester {
+  .form-label {
+    font-weight: 600;
+    color: var(--dev-tools-dark);
+  }
+  
+  .ajax-result {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 1rem;
+    font-family: monospace;
+    font-size: 0.875em;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+}
+
+// Test runner styles
+.dev-tools-tests {
+  .test-option {
+    margin-bottom: 0.5rem;
+  }
+  
+  .test-results {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 1rem;
+    font-family: monospace;
+    font-size: 0.875em;
+    max-height: 500px;
+    overflow-y: auto;
+    
+    .test-success {
+      color: var(--dev-tools-success);
+    }
+    
+    .test-error {
+      color: var(--dev-tools-danger);
+    }
+    
+    .test-warning {
+      color: var(--dev-tools-warning);
+    }
+  }
+}
+
+// Database connection styles
+.dev-tools-database {
+  .connection-status {
+    padding: 1rem;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    
+    &.success {
+      background: #d1e7dd;
+      border: 1px solid #badbcc;
+      color: #0f5132;
+    }
+    
+    &.error {
+      background: #f8d7da;
+      border: 1px solid #f5c6cb;
+      color: #721c24;
+    }
+  }
+}
+
+// Loading states
+.dev-tools-loading {
+  .spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+  }
+}
+
+// Responsive improvements
+@media (max-width: 768px) {
+  .dev-tools-admin-panel {
+    .container-fluid {
+      padding: 10px;
+    }
+  }
+  
+  .dev-tools-nav .nav-tabs .nav-link {
+    padding: 8px 12px;
+    font-size: 0.875em;
+    
+    .dashicons {
+      display: none;
+    }
+  }
+  
+  .dev-tools-header {
+    text-align: center;
+    
+    .d-flex {
+      flex-direction: column;
+      align-items: center;
+      
+      .text-end {
+        text-align: center !important;
+        margin-top: 1rem;
+      }
+    }
+  }
+}
+
+// Dark mode support (if WordPress admin uses dark mode)
+@media (prefers-color-scheme: dark) {
+  .dev-tools-admin-panel {
+    background: #1e1e1e;
+    color: #e2e8f0;
+  }
+  
+  .dev-tools-card {
+    background: #2d3748;
+    color: #e2e8f0;
+    
+    .card-header {
+      background: #4a5568;
+    }
+  }
+}
+
+// WordPress admin compatibility
+.wp-admin {
+  .dev-tools-container {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  }
+}

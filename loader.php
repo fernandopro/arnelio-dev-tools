@@ -216,45 +216,40 @@ class DevToolsLoader {
         
         $paths = DevToolsPaths::getInstance();
         
-        // Bootstrap 5 CSS
+        // CSS compilado con Webpack (incluye Bootstrap 5 + estilos personalizados)
         wp_enqueue_style(
-            'dev-tools-bootstrap',
-            'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css',
+            'dev-tools-styles',
+            $paths->get_url('dist/css/dev-tools-styles.min.css'),
             [],
-            '5.3.0'
-        );
-        
-        // CSS personalizado
-        wp_enqueue_style(
-            'dev-tools-admin',
-            $paths->get_url('assets/css/admin.css'),
-            ['dev-tools-bootstrap'],
             DEV_TOOLS_VERSION
         );
         
-        // Bootstrap 5 JS
+        // Vendors JS (Bootstrap 5 y otras dependencias compiladas)
         wp_enqueue_script(
-            'dev-tools-bootstrap-js',
-            'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js',
+            'dev-tools-vendors',
+            $paths->get_url('dist/js/vendors.min.js'),
             [],
-            '5.3.0',
-            true
-        );
-        
-        // JavaScript principal
-        wp_enqueue_script(
-            'dev-tools-admin',
-            $paths->get_url('assets/js/admin.js'),
-            ['dev-tools-bootstrap-js'], // Solo Bootstrap, sin jQuery
             DEV_TOOLS_VERSION,
             true
         );
         
-        // Localizar script para AJAX
-        wp_localize_script('dev-tools-admin', 'devToolsAjax', [
+        // JavaScript principal compilado (ES6+ con módulos)
+        wp_enqueue_script(
+            'dev-tools-main',
+            $paths->get_url('dist/js/dev-tools.min.js'),
+            ['dev-tools-vendors'],
+            DEV_TOOLS_VERSION,
+            true
+        );
+        
+        // Localizar script para AJAX - pasar datos al JavaScript moderno
+        wp_localize_script('dev-tools-main', 'devToolsConfig', [
             'ajaxurl' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('dev_tools_nonce'),
-            'action' => 'dev_tools_ajax'
+            'action' => 'dev_tools_ajax',
+            'baseUrl' => $paths->get_url(''),
+            'version' => DEV_TOOLS_VERSION,
+            'debug' => defined('WP_DEBUG') && WP_DEBUG
         ]);
     }
     

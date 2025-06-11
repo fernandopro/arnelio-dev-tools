@@ -318,14 +318,6 @@ class DevToolsAdminPanel {
         
         if ($site_detector) {
             $env_info = $site_detector->get_environment_info();
-            echo '<pre style="padding:15px;background:#333;color:#fff;z-index:99999;position:relative">';
-            // print_r  -  var_dump
-            $php = $env_info;
-            $descripcion = '$env_info';
-            echo '<span style="color:#2eff2e">'.$descripcion.'</span>'.'<br>';
-            print_r($php);
-            echo '<br>';
-            echo '</pre>';
             ?>
             <div class="mb-3">
                 <h6>🌍 Tipo de Entorno</h6>
