@@ -54,8 +54,10 @@ class DevToolsPaths {
         // Generar URLs si estamos en entorno WordPress
         if (function_exists('plugin_dir_url')) {
             // Método WordPress: usar plugin_dir_url() para URLs dinámicas
-            $this->plugin_url = plugin_dir_url($this->plugin_path . 'index.php');
-            $this->base_url = $this->plugin_url . 'dev-tools/';
+            // Usar __FILE__ para obtener la URL correcta desde este archivo
+            $current_file_url = plugin_dir_url(__FILE__);
+            $this->base_url = dirname($current_file_url) . '/';
+            $this->plugin_url = dirname($this->base_url) . '/';
         } else {
             // Fallback: construir URLs manualmente
             $this->base_url = $this->construct_base_url();
@@ -156,9 +158,16 @@ class DevToolsPaths {
     public function get_url($subdir = '') {
         $url = $this->base_url;
         if ($subdir) {
-            $url .= ltrim($subdir, '/') . '/';
+            // No agregar trailing slash si es un archivo (contiene extensión)
+            $subdir = ltrim($subdir, '/');
+            $url .= $subdir;
+            
+            // Solo agregar trailing slash si es un directorio (no tiene extensión)
+            if (!pathinfo($subdir, PATHINFO_EXTENSION)) {
+                $url = rtrim($url, '/') . '/';
+            }
         }
-        return rtrim($url, '/') . '/';
+        return $url;
     }
     
     /**
