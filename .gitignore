@@ -30,6 +30,8 @@ tests/output/
 test-results/
 *.phpunit.result.cache
 
+# Nota: phpunit.xml.dist se mantiene como template oficial
+
 # WordPress testing específico - archivos temporales
 /tmp/
 wordpress/
