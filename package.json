@@ -5,7 +5,8 @@
   "main": "dist/js/dev-tools.min.js",
   "private": true,
   "scripts": {
-    "dev": "webpack --mode=development --watch",
+    "dev": "webpack --mode=development",
+    "watch": "webpack --mode=development --watch",
     "build": "webpack --mode=production",
     "build:dev": "webpack --mode=development",
     "clean": "rimraf dist",
