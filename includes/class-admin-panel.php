@@ -314,6 +314,8 @@ class DevToolsAdminPanel {
      */
     private function render_environment_info() {
         $site_detector = $this->modules['SiteUrlDetectionModule'] ?? null;
+        $db_module = $this->modules['DatabaseConnectionModule'] ?? null;
+        
         if ($site_detector) {
             $env_info = $site_detector->get_environment_info();
             echo '<pre style="padding:15px;background:#333;color:#fff;z-index:99999;position:relative">';
@@ -329,7 +331,15 @@ class DevToolsAdminPanel {
                 <h6>🌍 Tipo de Entorno</h6>
                 <?php if ($env_info['is_local_wp']): ?>
                     <span class="badge bg-warning text-dark">Local by WP Engine</span>
-                    <p class="small mt-1 mb-0">Socket: <?php echo esc_html($env_info['socket_path'] ?? 'N/A'); ?></p>
+                    <?php if ($db_module): ?>
+                        <?php 
+                        $db_env_info = $db_module->get_environment_info();
+                        $socket_path = $db_env_info['socket_path'] ?? 'N/A';
+                        ?>
+                        <p class="small mt-1 mb-0">Socket: <?php echo esc_html($socket_path); ?></p>
+                    <?php else: ?>
+                        <p class="small mt-1 mb-0">Socket: <em>DatabaseModule no disponible</em></p>
+                    <?php endif; ?>
                 <?php elseif (defined('WP_DEBUG') && WP_DEBUG): ?>
                     <span class="badge bg-info">Development</span>
                 <?php else: ?>
