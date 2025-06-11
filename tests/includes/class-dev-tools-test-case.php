@@ -10,7 +10,15 @@
  * @since 3.0.0
  */
 
-class DevToolsTestCase extends WP_UnitTestCase {
+// Determinar qué clase base usar
+if (class_exists('WP_UnitTestCase')) {
+    class DevToolsTestCaseBase extends WP_UnitTestCase {}
+} else {
+    // Fallback si WordPress Test Suite no está disponible
+    class DevToolsTestCaseBase extends PHPUnit\Framework\TestCase {}
+}
+
+class DevToolsTestCase extends DevToolsTestCaseBase {
 
     /**
      * Configuración inicial antes de cada test
@@ -18,15 +26,22 @@ class DevToolsTestCase extends WP_UnitTestCase {
      * @since 3.0.0
      */
     public function setUp(): void {
-        parent::setUp();
+        if (method_exists(parent::class, 'setUp')) {
+            parent::setUp();
+        }
         
-        // Limpiar opciones específicas de dev-tools
-        delete_option( 'dev_tools_settings' );
-        delete_option( 'dev_tools_cache' );
-        delete_transient( 'dev_tools_last_check' );
+        // Solo si WordPress está disponible
+        if (function_exists('delete_option')) {
+            // Limpiar opciones específicas de dev-tools
+            delete_option( 'dev_tools_settings' );
+            delete_option( 'dev_tools_cache' );
+            delete_transient( 'dev_tools_last_check' );
+        }
         
-        // Configurar usuario admin para tests
-        $this->setupAdminUser();
+        // Configurar usuario admin para tests (solo si WP está disponible)
+        if (method_exists($this, 'setupAdminUser')) {
+            $this->setupAdminUser();
+        }
         
         // Configurar entorno limpio
         $this->setupCleanEnvironment();
@@ -41,7 +56,9 @@ class DevToolsTestCase extends WP_UnitTestCase {
         // Limpiar configuraciones específicas
         $this->cleanupDevToolsData();
         
-        parent::tearDown();
+        if (method_exists(parent::class, 'tearDown')) {
+            parent::tearDown();
+        }
     }
 
     /**
@@ -50,6 +67,11 @@ class DevToolsTestCase extends WP_UnitTestCase {
      * @since 3.0.0
      */
     protected function setupAdminUser() {
+        // Solo si WordPress y factory están disponibles
+        if (!function_exists('wp_set_current_user') || !isset($this->factory)) {
+            return;
+        }
+        
         // Crear usuario admin si no existe
         $admin_user = $this->factory->user->create( [
             'role' => 'administrator',
