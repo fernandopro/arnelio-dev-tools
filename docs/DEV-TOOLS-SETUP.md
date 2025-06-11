@@ -86,6 +86,9 @@ $dsn = 'mysql:host=localhost;port=3306;dbname=database_name';
 ### Paso 2: ✅ DatabaseConnectionModule
 **Completado**: Módulo agnóstico para conexión MySQL con auto-detección de entorno
 
+### Paso 2.1: ✅ SiteUrlDetectionModule  
+**Completado**: Módulo agnóstico para detección de URLs con soporte Router Mode Local by WP Engine
+
 ### Paso 3: Estructura Base Agnóstica
 - Configuración descentralizada sin referencias al plugin host
 - Sistema de auto-detección de rutas y entorno
@@ -182,6 +185,7 @@ $test_result = $db->test_connection();
 ### ✅ Completado
 - **Investigación MySQL**: Socket Unix para Local by WP Engine identificado
 - **DatabaseConnectionModule**: Módulo completamente agnóstico implementado y probado
+- **SiteUrlDetectionModule**: Detección de URLs agnóstica con soporte Router Mode
 
 ### 🔄 Próximos Pasos del Sistema Agnóstico
 - **Paso 3**: Estructura base agnóstica (config, loader, core)
@@ -269,3 +273,83 @@ $override_system->migrate_to_override('modules/SystemInfoModule.php');
 $config = $override_system->load_config('config.php');           // plugin-dev-tools/ o dev-tools/
 $override_system->include_file('modules/CustomModule.php');      // prioridad plugin-dev-tools/
 ```
+
+---
+
+## 🌐 SiteUrlDetectionModule ✅ **PROBADO Y FUNCIONAL**
+
+### Ubicación
+`dev-tools/modules/SiteUrlDetectionModule.php`
+
+### 🎯 Problema Resuelto: Router Mode de Local by WP Engine
+**Local by WP Engine** tiene dos modos de routing que generan URLs completamente diferentes:
+- **Site Domains Mode**: `http://tarokina-2025.local` (dominio .local personalizado)
+- **Localhost Mode**: `http://localhost:10019` (localhost + puerto dinámico)
+
+### 🚫 Características Agnósticas Implementadas
+
+#### ⚙️ Detección Universal sin WordPress
+- **Funciona sin entorno WP**: Detecta URLs incluso ejecutando desde terminal
+- **Múltiples métodos de detección**: wp-config parsing, server vars, Local config
+- **Zero dependencies**: No requiere funciones WordPress para operar
+
+#### 🔍 Auto-detección Inteligente Local by WP Engine
+- **Router Mode detection automático**:
+  - `localhost_mode`: Detecta `localhost:10019` (o cualquier puerto) y asigna `http://`
+  - `site_domains_mode`: Detecta dominios `.local` personalizados y maneja HTTPS/HTTP
+  - `not_local`: Entornos de staging/producción estándar
+- **Puerto dinámico**: Maneja puertos como 10019, 10020, etc. automáticamente
+- **Socket path correlation**: Relaciona con DatabaseConnectionModule para consistencia
+
+#### 🔄 Métodos de Detección en Cascada
+1. **WordPress function**: `get_site_url()` si está disponible
+2. **wp-config parsing**: Lee `WP_HOME`/`WP_SITEURL` constants
+3. **Local WP detection**: Configuración específica de Local by WP Engine
+4. **Server variables**: Fallback universal con `$_SERVER`
+
+### 📊 Resultados de Testing
+
+#### ✅ Test Terminal (Agnóstico)
+```bash
+# Sin WordPress cargado - Localhost Mode
+URL detectado: http://localhost:10019
+Router Mode: localhost_mode
+Es Local WP: SÍ
+Método usado: wp_config_parsing
+```
+
+#### ✅ Test Browser - Site Domains Mode
+```php
+// Comparación automática con WordPress (Router Mode: Site Domains)
+WordPress get_site_url(): http://tarokina-2025.local
+Nuestro módulo detectó: http://tarokina-2025.local
+¿Coinciden?: ✅ SÍ
+```
+
+#### ✅ Test Browser - Localhost Mode
+```php
+// Comparación automática con WordPress (Router Mode: Localhost)
+WordPress get_site_url(): http://localhost:10019
+Nuestro módulo detectó: http://localhost:10019
+¿Coinciden?: ✅ SÍ
+```
+
+### 🚀 API de Uso
+```php
+// Uso estático rápido
+$site_url = SiteUrlDetectionModule::get_current_site_url();
+
+// Uso con debug y información completa
+$detector = new SiteUrlDetectionModule(true);
+$url = $detector->get_site_url();
+$router_mode = $detector->get_environment_info()['router_mode'];
+$all_methods = $detector->test_detection()['all_methods'];
+```
+
+### 🎪 Casos de Uso Cubiertos
+- **Local by WP Engine Site Domains**: `http://tarokina-2025.local` ✅
+- **Local by WP Engine Localhost**: `http://localhost:10019` (puerto dinámico) ✅
+- **Docker/XAMPP**: Entornos de desarrollo alternativos ✅
+- **Staging**: Dominios de prueba ✅
+- **Producción**: Dominios finales con HTTPS ✅
+- **Terminal execution**: Scripts CLI sin WordPress ✅

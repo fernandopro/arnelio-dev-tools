@@ -13,9 +13,7 @@
 
 if (!defined('ABSPATH')) {
     // Si no estamos en WordPress, definir ABSPATH temporalmente
-    if (!defined('ABSPATH')) {
-        define('ABSPATH', dirname(__FILE__, 6) . '/');
-    }
+    define('ABSPATH', dirname(__FILE__, 6) . '/');
 }
 
 class SiteUrlDetectionModule {
@@ -35,10 +33,13 @@ class SiteUrlDetectionModule {
      * Detecta el URL del sitio usando múltiples métodos
      */
     private function detect_site_url() {
+        // Inicializar información básica primero
+        $is_local_wp = $this->is_local_wp_engine();
+        
         $this->environment_info = [
             'wp_available' => $this->wp_available,
-            'is_local_wp' => $this->is_local_wp_engine(),
-            'router_mode' => $this->detect_router_mode(),
+            'is_local_wp' => $is_local_wp,
+            'router_mode' => $this->detect_router_mode($is_local_wp),
             'detection_method' => null,
             'server_info' => $this->get_server_info()
         ];
@@ -93,8 +94,12 @@ class SiteUrlDetectionModule {
     /**
      * Detecta el Router Mode de Local by WP Engine
      */
-    private function detect_router_mode() {
-        if (!$this->is_local_wp_engine()) {
+    private function detect_router_mode($is_local_wp = null) {
+        if ($is_local_wp === null) {
+            $is_local_wp = $this->is_local_wp_engine();
+        }
+        
+        if (!$is_local_wp) {
             return 'not_local';
         }
         
@@ -254,8 +259,9 @@ class SiteUrlDetectionModule {
      * Determina el esquema (http/https)
      */
     private function get_scheme() {
-        // Local by WP Engine típicamente usa HTTP en modo localhost
-        if ($this->environment_info['router_mode'] === 'localhost_mode') {
+        // Verificar si es Local by WP Engine en modo localhost
+        $host = $_SERVER['HTTP_HOST'] ?? '';
+        if (preg_match('/localhost:\d+/', $host)) {
             return 'http';
         }
         
