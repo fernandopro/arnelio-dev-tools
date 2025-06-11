@@ -1,1 +1,103 @@
-node_modules
+# ==========================================
+# Dev-Tools Arquitectura 3.0 - .gitignore
+# ==========================================
+
+# Node.js - Dependencias y archivos generados
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# Composer - Dependencias PHP
+vendor/
+composer.lock
+composer.phar
+
+# Build y distribución (mantener archivos de producción, ignorar temporales)
+coverage/
+build/
+
+# Si quieres ignorar dist/ completamente, descomenta la siguiente línea:
+# dist/
+
+# Testing y PHPUnit
+phpunit.xml
+phpunit.result.cache
+tests/coverage/
+tests/tmp/
+tests/output/
+test-results/
+*.phpunit.result.cache
+
+# WordPress testing específico
+/tmp/
+wordpress/
+wordpress-tests-lib/
+wp-tests-config.php
+/tmp-wordpress/
+/wp-tests/
+
+# Scripts de instalación que pueden generar archivos temporales
+install-wp-tests-tmp/
+
+# Webpack y herramientas de build
+.cache/
+*.tsbuildinfo
+.eslintcache
+.stylelintcache
+webpack.stats.json
+bundle-analyzer-report.html
+
+# Logs y debug
+*.log
+debug.log
+error.log
+npm-debug.log
+yarn-error.log
+
+# Archivos del sistema
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editores e IDEs
+.vscode/
+.idea/
+*.sublime-*
+*~
+*.swp
+*.swo
+
+# Archivos temporales
+*.tmp
+*.bak
+*.old
+temp/
+tmp/
+
+# Archivos sensibles y configuración local
+.env*
+!.env.example
+config-local.php
+*.key
+*.pem
+
+# Archivos de desarrollo temporal
+scratch/
+playground/
+demo/
+test-output/
+
+# Archivos específicos de módulos en desarrollo
+modules/*/temp/
+modules/*/tmp/
+modules/*/*.bak
+
+# Archivos de configuración de módulos que pueden ser sensibles
+modules/*/config-local.php
+modules/*/.env*
