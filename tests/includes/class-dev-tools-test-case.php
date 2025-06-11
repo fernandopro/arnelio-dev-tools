@@ -1,33 +1,261 @@
 <?php
 /**
- * Dev-Tools Test Case Base Class
+ * Clase base para tests de Dev-Tools
  * 
- * Clase base para todos los tests de Dev-Tools
- * Extiende WP_UnitTestCase para compatibilidad con WordPress
+ * Extiende WP_UnitTestCase siguiendo las mejores prácticas de WordPress Core
+ * @see https://make.wordpress.org/core/handbook/testing/automated-testing/writing-phpunit-tests/
  * 
  * @package DevTools
- * @version 3.0
- * @author Dev-Tools Arquitectura 3.0
+ * @subpackage Tests
+ * @since 3.0.0
  */
 
 class DevToolsTestCase extends WP_UnitTestCase {
-    
-    protected $dev_tools_loader;
-    protected $test_data_factory;
-    
+
     /**
-     * Setup común para todos los tests
+     * Configuración inicial antes de cada test
+     * 
+     * @since 3.0.0
      */
     public function setUp(): void {
         parent::setUp();
         
-        // Inicializar Dev-Tools si no está ya inicializado
-        if (class_exists('DevToolsLoader')) {
-            $this->dev_tools_loader = DevToolsLoader::getInstance();
+        // Limpiar opciones específicas de dev-tools
+        delete_option( 'dev_tools_settings' );
+        delete_option( 'dev_tools_cache' );
+        delete_transient( 'dev_tools_last_check' );
+        
+        // Configurar usuario admin para tests
+        $this->setupAdminUser();
+        
+        // Configurar entorno limpio
+        $this->setupCleanEnvironment();
+    }
+
+    /**
+     * Limpieza después de cada test
+     * 
+     * @since 3.0.0
+     */
+    public function tearDown(): void {
+        // Limpiar configuraciones específicas
+        $this->cleanupDevToolsData();
+        
+        parent::tearDown();
+    }
+
+    /**
+     * Configurar usuario administrador para tests
+     * 
+     * @since 3.0.0
+     */
+    protected function setupAdminUser() {
+        // Crear usuario admin si no existe
+        $admin_user = $this->factory->user->create( [
+            'role' => 'administrator',
+            'user_login' => 'test_admin',
+            'user_email' => 'test@localhost'
+        ] );
+        
+        // Establecer como usuario actual
+        wp_set_current_user( $admin_user );
+        
+        // Agregar capacidades específicas de dev-tools
+        $user = wp_get_current_user();
+        $user->add_cap( 'manage_dev_tools' );
+        $user->add_cap( 'edit_dev_tools' );
+    }
+
+    /**
+     * Configurar entorno limpio para tests
+     * 
+     * @since 3.0.0
+     */
+    protected function setupCleanEnvironment() {
+        // Limpiar hooks que puedan interferir
+        remove_all_actions( 'dev_tools_init' );
+        remove_all_actions( 'dev_tools_loaded' );
+        
+        // Configurar constantes de test si no están definidas
+        if ( ! defined( 'DEV_TOOLS_TEST_MODE' ) ) {
+            define( 'DEV_TOOLS_TEST_MODE', true );
+        }
+    }
+
+    /**
+     * Limpiar datos específicos de dev-tools
+     * 
+     * @since 3.0.0
+     */
+    protected function cleanupDevToolsData() {
+        global $wpdb;
+        
+        // Limpiar opciones
+        $wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE 'dev_tools_%'" );
+        
+        // Limpiar transients
+        $wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_dev_tools_%'" );
+        $wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_timeout_dev_tools_%'" );
+        
+        // Limpiar meta
+        $wpdb->query( "DELETE FROM {$wpdb->postmeta} WHERE meta_key LIKE 'dev_tools_%'" );
+        $wpdb->query( "DELETE FROM {$wpdb->usermeta} WHERE meta_key LIKE 'dev_tools_%'" );
+    }
+
+    /**
+     * Helper para crear configuración de módulo de test
+     * 
+     * @param string $module_name Nombre del módulo
+     * @param array $config Configuración del módulo
+     * @return array
+     * 
+     * @since 3.0.0
+     */
+    protected function createTestModuleConfig( $module_name, $config = [] ) {
+        $default_config = [
+            'name' => $module_name,
+            'version' => '1.0.0',
+            'description' => 'Test module for ' . $module_name,
+            'enabled' => true,
+            'settings' => []
+        ];
+        
+        return array_merge( $default_config, $config );
+    }
+
+    /**
+     * Helper para crear archivo temporal de test
+     * 
+     * @param string $content Contenido del archivo
+     * @param string $extension Extensión del archivo (default: 'php')
+     * @return string Ruta del archivo temporal
+     * 
+     * @since 3.0.0
+     */
+    protected function createTempFile( $content, $extension = 'php' ) {
+        $temp_file = tempnam( sys_get_temp_dir(), 'dev_tools_test_' ) . '.' . $extension;
+        file_put_contents( $temp_file, $content );
+        
+        // Registrar para limpieza automática
+        $this->temp_files[] = $temp_file;
+        
+        return $temp_file;
+    }
+
+    /**
+     * Helper para simular request AJAX
+     * 
+     * @param string $action Acción AJAX
+     * @param array $data Datos del request
+     * @param bool $authenticated Si requiere autenticación
+     * @return array Respuesta simulada
+     * 
+     * @since 3.0.0
+     */
+    protected function simulateAjaxRequest( $action, $data = [], $authenticated = true ) {
+        // Configurar $_POST para AJAX
+        $_POST['action'] = $action;
+        $_POST = array_merge( $_POST, $data );
+        
+        if ( $authenticated ) {
+            $_POST['_wpnonce'] = wp_create_nonce( 'dev_tools_nonce' );
         }
         
-        // Inicializar factory de datos de prueba
-        $this->test_data_factory = new DevToolsTestDataFactory();
+        // Configurar $_REQUEST (WordPress lo usa para AJAX)
+        $_REQUEST = $_POST;
+        
+        try {
+            // Capturar salida
+            ob_start();
+            
+            if ( $authenticated ) {
+                do_action( 'wp_ajax_' . $action );
+            } else {
+                do_action( 'wp_ajax_nopriv_' . $action );
+            }
+            
+            $response = ob_get_clean();
+            
+            return [
+                'success' => true,
+                'data' => $response
+            ];
+            
+        } catch ( Exception $e ) {
+            ob_end_clean();
+            
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Assert que un hook específico está registrado
+     * 
+     * @param string $hook_name Nombre del hook
+     * @param string $function_name Nombre de la función (opcional)
+     * @param int $priority Prioridad esperada (opcional)
+     * 
+     * @since 3.0.0
+     */
+    protected function assertHookRegistered( $hook_name, $function_name = null, $priority = null ) {
+        $this->assertTrue( has_action( $hook_name ), "Hook '{$hook_name}' no está registrado" );
+        
+        if ( $function_name ) {
+            $this->assertNotFalse( 
+                has_action( $hook_name, $function_name ), 
+                "Función '{$function_name}' no está registrada en hook '{$hook_name}'" 
+            );
+        }
+        
+        if ( $priority !== null && $function_name ) {
+            $registered_priority = has_action( $hook_name, $function_name );
+            $this->assertEquals( 
+                $priority, 
+                $registered_priority, 
+                "Prioridad esperada {$priority}, encontrada {$registered_priority}" 
+            );
+        }
+    }
+
+    /**
+     * Assert que una clase implementa una interfaz específica
+     * 
+     * @param string $class_name Nombre de la clase
+     * @param string $interface_name Nombre de la interfaz
+     * 
+     * @since 3.0.0
+     */
+    protected function assertImplementsInterface( $class_name, $interface_name ) {
+        $this->assertTrue( 
+            in_array( $interface_name, class_implements( $class_name ) ),
+            "Clase '{$class_name}' no implementa interfaz '{$interface_name}'"
+        );
+    }
+
+    /**
+     * Array para archivos temporales (limpieza automática)
+     * 
+     * @var array
+     * @since 3.0.0
+     */
+    protected $temp_files = [];
+
+    /**
+     * Limpiar archivos temporales
+     * 
+     * @since 3.0.0
+     */
+    public function __destruct() {
+        foreach ( $this->temp_files as $file ) {
+            if ( file_exists( $file ) ) {
+                unlink( $file );
+            }
+        }
+    }
+}
         
         // Configurar entorno de testing
         $this->setup_test_environment();

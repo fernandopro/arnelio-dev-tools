@@ -30,13 +30,14 @@ tests/output/
 test-results/
 *.phpunit.result.cache
 
-# WordPress testing específico
+# WordPress testing específico - archivos temporales
 /tmp/
 wordpress/
 wordpress-tests-lib/
-wp-tests-config.php
 /tmp-wordpress/
 /wp-tests/
+
+# Nota: wp-tests-config.php se mantiene en el repositorio como parte de la configuración
 
 # Scripts de instalación que pueden generar archivos temporales
 install-wp-tests-tmp/
