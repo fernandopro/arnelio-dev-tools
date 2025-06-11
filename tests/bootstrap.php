@@ -56,8 +56,7 @@ $test_suite_paths = [
     // Directorio específico desde variable de entorno
     getenv( 'WP_TESTS_DIR' ),
     
-    // Ubicaciones comunes para Local by WP Engine
-    ABSPATH . 'wp-content/plugins/wordpress-tests-lib',
+    // Ubicaciones comunes para Local by WP Engine y sistemas Unix
     '/tmp/wordpress-tests-lib',
     
     // Ubicaciones estándar del sistema
