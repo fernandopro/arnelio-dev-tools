@@ -1,0 +1,113 @@
+<?xml version="1.0"?>
+<phpunit
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.6/phpunit.xsd"
+    backupGlobals="false"
+    bootstrap="tests/bootstrap.php"
+    colors="true"
+    convertErrorsToExceptions="true"
+    convertNoticesToExceptions="true"
+    convertWarningsToExceptions="true"
+    stopOnFailure="false"
+    beStrictAboutTestsThatDoNotTestAnything="true"
+    beStrictAboutOutputDuringTests="true"
+    beStrictAboutChangesToGlobalState="true"
+    beStrictAboutResourceUsageDuringSmallTests="true"
+    failOnWarning="false"
+    failOnRisky="false"
+    executionOrder="random"
+    resolveDependencies="true"
+    verbose="true"
+>
+    <php>
+        <!-- WordPress Official Testing Configuration -->
+        <const name="WP_TESTS_PHPUNIT_POLYFILLS_PATH" value="vendor/yoast/phpunit-polyfills/phpunitpolyfills-autoload.php" />
+        
+        <!-- Configuración usando la misma BD de WordPress con prefijo test_ -->
+        <env name="WP_TESTS_TABLE_PREFIX" value="test_" />
+        
+        <!-- Configuración del sitio de tests -->
+        <env name="WP_TESTS_DOMAIN" value="localhost" />
+        <env name="WP_TESTS_EMAIL" value="admin@localhost" />
+        <env name="WP_TESTS_TITLE" value="Dev-Tools Test Site" />
+        
+        <!-- Configuraciones WordPress -->
+        <const name="WP_TESTS_FORCE_KNOWN_BUGS" value="false" />
+        <const name="WP_TESTS_MULTISITE" value="false" />
+        
+        <!-- Dev-Tools específico -->
+        <env name="DEV_TOOLS_TESTS_VERBOSE" value="false" />
+        <env name="DEV_TOOLS_TESTING" value="true" />
+        <const name="WP_TESTS_CONFIG_FILE_PATH" value="wp-tests-config.php" />
+        
+        <!-- Debug y logging -->
+        <const name="DEV_TOOLS_TESTS_VERBOSE" value="false" />
+        <const name="DEV_TOOLS_FORCE_DEBUG" value="false" />
+        
+        <!-- Variables de entorno para testing -->
+        <server name="SERVER_NAME" value="localhost" />
+        <server name="REQUEST_METHOD" value="GET" />
+        <server name="REQUEST_URI" value="/" />
+        <server name="HTTP_HOST" value="localhost" />
+        <server name="SCRIPT_NAME" value="/index.php" />
+    </php>
+    
+    <testsuites>
+        <testsuite name="default">
+            <directory>tests/</directory>
+        </testsuite>
+        
+        <testsuite name="unit">
+            <directory>tests/unit/</directory>
+        </testsuite>
+        
+        <testsuite name="integration">
+            <directory>tests/integration/</directory>
+        </testsuite>
+        
+        <testsuite name="modules">
+            <directory>tests/modules/</directory>
+        </testsuite>
+        
+        <testsuite name="ajax">
+            <directory>tests/ajax/</directory>
+        </testsuite>
+    </testsuites>
+    
+    <groups>
+        <include>
+            <group>dev-tools</group>
+            <group>unit</group>
+            <group>integration</group>
+            <group>modules</group>
+        </include>
+        <exclude>
+            <group>slow</group>
+            <group>external-http</group>
+            <group>multisite</group>
+        </exclude>
+    </groups>
+    
+    <coverage includeUncoveredFiles="true">
+        <include>
+            <directory suffix=".php">includes/</directory>
+            <directory suffix=".php">modules/</directory>
+            <directory suffix=".php">config/</directory>
+        </include>
+        <exclude>
+            <directory>tests/</directory>
+            <directory>vendor/</directory>
+            <directory>node_modules/</directory>
+            <file>loader.php</file>
+        </exclude>
+        <report>
+            <html outputDirectory="coverage/html" lowUpperBound="50" highLowerBound="80"/>
+            <text outputFile="coverage/coverage.txt" showUncoveredFiles="false"/>
+            <clover outputFile="coverage/clover.xml"/>
+        </report>
+    </coverage>
+    
+    <logging>
+        <junit outputFile="coverage/junit.xml"/>
+    </logging>
+</phpunit>
