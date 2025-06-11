@@ -11952,6 +11952,10 @@ textarea.form-control-lg {
     display: none !important;
   }
 }
+#wpcontent {
+  background-color: #212529;
+}
+
 .wrap .dev-tools-container {
   margin: 0;
   padding: 0;
