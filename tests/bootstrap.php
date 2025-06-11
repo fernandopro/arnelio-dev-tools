@@ -31,6 +31,14 @@ if ( ! file_exists( DEV_TOOLS_PLUGIN_FILE ) ) {
     die( 'Error: No se puede encontrar el archivo principal del plugin en: ' . DEV_TOOLS_PLUGIN_FILE );
 }
 
+// Cargar stubs para IntelliSense cuando no estemos ejecutando tests reales
+if ( ! defined( 'PHPUNIT_COMPOSER_INSTALL' ) && ! defined( 'WP_TESTS_PHPUNIT_POLYFILLS_PATH' ) ) {
+    $stubs_path = DEV_TOOLS_TESTS_DIR . '/includes/wp-test-stubs.php';
+    if ( file_exists( $stubs_path ) ) {
+        require_once $stubs_path;
+    }
+}
+
 // Cargar PHPUnit Polyfills si está disponible
 $polyfills_path = DEV_TOOLS_PLUGIN_DIR . '/vendor/yoast/phpunit-polyfills/phpunitpolyfills-autoload.php';
 if ( file_exists( $polyfills_path ) ) {
