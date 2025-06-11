@@ -1,0 +1,395 @@
+/**
+ * Dev-Tools Admin CSS - Bootstrap 5 Custom Theme
+ * Arquitectura 3.0 - Panel de administración agnóstico
+ */
+
+/* Variables CSS personalizadas */
+:root {
+    --dev-tools-primary: #0d6efd;
+    --dev-tools-success: #198754;
+    --dev-tools-warning: #ffc107;
+    --dev-tools-danger: #dc3545;
+    --dev-tools-info: #0dcaf0;
+    --dev-tools-light: #f8f9fa;
+    --dev-tools-dark: #212529;
+    --dev-tools-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    --dev-tools-border-radius: 0.375rem;
+}
+
+/* Estilos globales del panel */
+.dev-tools-panel {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.6;
+}
+
+/* Header personalizado */
+.dev-tools-header {
+    background: linear-gradient(135deg, var(--dev-tools-primary) 0%, #495057 100%);
+    border-radius: var(--dev-tools-border-radius);
+    box-shadow: var(--dev-tools-shadow);
+}
+
+.dev-tools-header h1 {
+    margin: 0;
+    font-weight: 300;
+}
+
+.dev-tools-header .version-badge {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.875rem;
+}
+
+/* Navegación mejorada */
+.dev-tools-nav {
+    background: var(--dev-tools-light);
+    border-radius: var(--dev-tools-border-radius);
+    padding: 0.5rem;
+    box-shadow: var(--dev-tools-shadow);
+}
+
+.dev-tools-nav .nav-link {
+    border-radius: var(--dev-tools-border-radius);
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.dev-tools-nav .nav-link:hover {
+    background-color: rgba(13, 110, 253, 0.1);
+    transform: translateY(-1px);
+}
+
+.dev-tools-nav .nav-link.active {
+    background: var(--dev-tools-primary);
+    color: white !important;
+    box-shadow: 0 0.25rem 0.5rem rgba(13, 110, 253, 0.3);
+}
+
+/* Cards mejoradas */
+.dev-tools-card {
+    border: none;
+    border-radius: var(--dev-tools-border-radius);
+    box-shadow: var(--dev-tools-shadow);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.dev-tools-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.dev-tools-card .card-header {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+    border-radius: var(--dev-tools-border-radius) var(--dev-tools-border-radius) 0 0 !important;
+    font-weight: 600;
+}
+
+/* Status indicators */
+.status-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: var(--dev-tools-border-radius);
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.status-indicator.success {
+    background: rgba(25, 135, 84, 0.1);
+    color: var(--dev-tools-success);
+    border: 1px solid rgba(25, 135, 84, 0.2);
+}
+
+.status-indicator.warning {
+    background: rgba(255, 193, 7, 0.1);
+    color: #b45309;
+    border: 1px solid rgba(255, 193, 7, 0.2);
+}
+
+.status-indicator.danger {
+    background: rgba(220, 53, 69, 0.1);
+    color: var(--dev-tools-danger);
+    border: 1px solid rgba(220, 53, 69, 0.2);
+}
+
+.status-indicator.info {
+    background: rgba(13, 202, 240, 0.1);
+    color: #055160;
+    border: 1px solid rgba(13, 202, 240, 0.2);
+}
+
+/* Botones mejorados */
+.btn-dev-tools {
+    border-radius: var(--dev-tools-border-radius);
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.btn-dev-tools:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.15);
+}
+
+.btn-dev-tools:active {
+    transform: translateY(0);
+}
+
+/* Código y pre-formatted text */
+.dev-tools-code {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: var(--dev-tools-border-radius);
+    padding: 0.75rem;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    overflow-x: auto;
+}
+
+.dev-tools-code.dark {
+    background: #212529;
+    color: #f8f9fa;
+    border-color: #495057;
+}
+
+/* Terminal output */
+.terminal-output {
+    background: #1e1e1e;
+    color: #d4d4d4;
+    border-radius: var(--dev-tools-border-radius);
+    padding: 1rem;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    max-height: 400px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.terminal-output .success {
+    color: #4ec9b0;
+}
+
+.terminal-output .error {
+    color: #f14c4c;
+}
+
+.terminal-output .warning {
+    color: #ffcc02;
+}
+
+.terminal-output .info {
+    color: #9cdcfe;
+}
+
+/* Loading states */
+.loading-overlay {
+    position: relative;
+}
+
+.loading-overlay::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: var(--dev-tools-border-radius);
+    z-index: 10;
+}
+
+.loading-spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 11;
+}
+
+/* Progress bars */
+.dev-tools-progress {
+    height: 0.75rem;
+    border-radius: var(--dev-tools-border-radius);
+    background: #e9ecef;
+    overflow: hidden;
+}
+
+.dev-tools-progress .progress-bar {
+    border-radius: var(--dev-tools-border-radius);
+    transition: width 0.6s ease;
+}
+
+/* Tables */
+.dev-tools-table {
+    border-radius: var(--dev-tools-border-radius);
+    overflow: hidden;
+    box-shadow: var(--dev-tools-shadow);
+}
+
+.dev-tools-table th {
+    background: var(--dev-tools-light);
+    font-weight: 600;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.dev-tools-table td {
+    vertical-align: middle;
+}
+
+.dev-tools-table tr:hover {
+    background: rgba(13, 110, 253, 0.05);
+}
+
+/* Badges personalizados */
+.badge-dev-tools {
+    border-radius: var(--dev-tools-border-radius);
+    font-weight: 500;
+    padding: 0.375rem 0.75rem;
+}
+
+/* Environment badges */
+.env-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.env-badge.local {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+.env-badge.development {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+.env-badge.production {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .dev-tools-nav .nav-link {
+        padding: 0.5rem;
+        font-size: 0.875rem;
+    }
+    
+    .dev-tools-nav .nav-link .dashicons {
+        display: none;
+    }
+    
+    .dev-tools-header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .status-indicator {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.875rem;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .dev-tools-panel {
+        --dev-tools-light: #343a40;
+        --dev-tools-dark: #f8f9fa;
+    }
+    
+    .dev-tools-card {
+        background: #2b3035;
+        color: #f8f9fa;
+    }
+    
+    .dev-tools-code {
+        background: #212529;
+        color: #f8f9fa;
+        border-color: #495057;
+    }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.pulse {
+    animation: pulse 2s infinite;
+}
+
+/* Utilities */
+.text-monospace {
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace !important;
+}
+
+.border-dashed {
+    border-style: dashed !important;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.user-select-all {
+    user-select: all;
+}
+
+/* Custom scrollbar */
+.custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #6c757d #f8f9fa;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #f8f9fa;
+    border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #6c757d;
+    border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #495057;
+}
