@@ -2,12 +2,12 @@
 /**
  * DatabaseConnection Module - Dev-Tools Arquitectura 3.0
  * 
- * Módulo especializado para conexiones MySQL en Local by WP Engine
- * Maneja automáticamente Unix sockets y fallbacks para otros entornos
+ * Módulo agnóstico para conexiones MySQL con auto-detección de entorno
+ * Compatible con Local by WP Engine, Docker, staging y producción
  * 
  * @package DevTools
  * @version 3.0
- * @author Tarokina Pro Plugin
+ * @author Dev-Tools Arquitectura 3.0
  */
 
 if (!defined('ABSPATH')) {
