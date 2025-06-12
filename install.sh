@@ -201,9 +201,9 @@ compile_assets() {
     print_info "Cleaning previous builds..."
     npm run clean
     
-    # Build for production
-    print_info "Building production assets..."
-    if npm run build; then
+    # Build for development
+    print_info "Building development assets..."
+    if npm run dev; then
         print_success "Assets compiled successfully"
     else
         print_error "Failed to compile assets"
