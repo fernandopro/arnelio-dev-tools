@@ -14,46 +14,46 @@ vendor/
 composer.lock
 composer.phar
 
-# # Build y distribución (mantener archivos de producción, ignorar temporales)
-# coverage/
-# build/
+# Build y distribución (mantener archivos de producción, ignorar temporales)
+coverage/
+build/
 
-# # Si quieres ignorar dist/ completamente, descomenta la siguiente línea:
-# # dist/
+# Si quieres ignorar dist/ completamente, descomenta la siguiente línea:
+# dist/
 
-# # Testing y PHPUnit - Solo ignorar archivos que se regeneran automáticamente
-# # Mantener todos los archivos de configuración PHPUnit en el repositorio
-# # Solo ignorar archivos temporales de configuración local personalizados
-# phpunit-local.xml
-# phpunit-dev.xml
-# phpunit-custom.xml
-# # Mantener .phpunit.result.cache en el directorio raíz para mejorar performance
-# # pero ignorar en subdirectorios
-# tests/**/.phpunit.result.cache
-# modules/**/.phpunit.result.cache
-# tests/coverage/
-# tests/tmp/
-# tests/output/
-# test-results/
+# Testing y PHPUnit - Solo ignorar archivos que se regeneran automáticamente
+# Mantener todos los archivos de configuración PHPUnit en el repositorio
+# Solo ignorar archivos temporales de configuración local personalizados
+phpunit-local.xml
+phpunit-dev.xml
+phpunit-custom.xml
+# Mantener .phpunit.result.cache en el directorio raíz para mejorar performance
+# pero ignorar en subdirectorios
+tests/**/.phpunit.result.cache
+modules/**/.phpunit.result.cache
+tests/coverage/
+tests/tmp/
+tests/output/
+test-results/
 
-# # WordPress testing específico - Solo archivos temporales, NO directorios de sistema
-# # Permitir wordpress/ y wordpress-tests-lib/ para el test suite
-# /tmp-install/
-# /install-tmp/
-# # Ignorar solo archivos temporales de instalación
-# install-wp-tests-tmp/
-# wp-tests-temp/
+# WordPress testing específico - Solo archivos temporales, NO directorios de sistema
+# Permitir wordpress/ y wordpress-tests-lib/ para el test suite
+/tmp-install/
+/install-tmp/
+# Ignorar solo archivos temporales de instalación
+install-wp-tests-tmp/
+wp-tests-temp/
 
-# # Nota: wp-tests-config.php se mantiene en el repositorio como parte de la configuración
-# # Nota: Permitimos wordpress/ y wordpress-tests-lib/ para WordPress Test Suite
+# Nota: wp-tests-config.php se mantiene en el repositorio como parte de la configuración
+# Nota: Permitimos wordpress/ y wordpress-tests-lib/ para WordPress Test Suite
 
-# # Webpack y herramientas de build
-# .cache/
-# *.tsbuildinfo
-# .eslintcache
-# .stylelintcache
-# webpack.stats.json
-# bundle-analyzer-report.html
+# Webpack y herramientas de build
+.cache/
+*.tsbuildinfo
+.eslintcache
+.stylelintcache
+webpack.stats.json
+bundle-analyzer-report.html
 
 # # Logs y debug
 # *.log

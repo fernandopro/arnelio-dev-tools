@@ -122,7 +122,7 @@ class DatabaseConnectionModule {
             if ($this->debug_mode) {
                 throw new Exception($error_msg);
             }
-            
+
             return null;
         }
     }
