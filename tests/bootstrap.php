@@ -22,6 +22,9 @@ date_default_timezone_set( 'UTC' );
 $plugin_dir = dirname( __DIR__ );
 $wp_tests_dir = getenv( 'WP_TESTS_DIR' );
 
+// Cargar autoloader de Composer
+require_once $plugin_dir . '/vendor/autoload.php';
+
 // Si WP_TESTS_DIR no está definido, intentar encontrar WordPress
 if ( ! $wp_tests_dir ) {
     // Buscar WordPress en la instalación de Local

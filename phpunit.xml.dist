@@ -12,18 +12,8 @@
 >
     <testsuites>
         <testsuite name="Dev-Tools Test Suite">
-            <directory>./tests/</directory>
-            <exclude>./tests/coverage/</exclude>
-            <exclude>./tests/tmp/</exclude>
-            <exclude>./tests/output/</exclude>
-        </testsuite>
-        <testsuite name="Core Tests">
             <directory>./tests/unit/</directory>
-        </testsuite>
-        <testsuite name="Module Tests">
             <directory>./tests/modules/</directory>
-        </testsuite>
-        <testsuite name="Integration Tests">
             <directory>./tests/integration/</directory>
         </testsuite>
     </testsuites>

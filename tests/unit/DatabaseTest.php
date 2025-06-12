@@ -4,8 +4,6 @@
  * Dev-Tools Arquitectura 3.0 - Testing Framework
  */
 
-namespace DevTools\Tests\Core;
-
 use DevTools\Tests\TestCase;
 
 class DatabaseTest extends TestCase {
