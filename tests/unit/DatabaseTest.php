@@ -4,9 +4,7 @@
  * Dev-Tools Arquitectura 3.0 - Testing Framework
  */
 
-use DevTools\Tests\TestCase;
-
-class DatabaseTest extends TestCase {
+class DatabaseTest extends DevToolsTestCase {
 
     /**
      * Test que verifica la conexión a la base de datos

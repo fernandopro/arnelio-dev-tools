@@ -1,62 +1,70 @@
 <?php
 /**
- * Test del Dashboard Module
+ * Test de los módulos Dev-Tools existentes
  * Dev-Tools Arquitectura 3.0 - Testing Framework
  */
 
-use DevTools\Tests\TestCase;
-
-class DashboardModuleTest extends TestCase {
+class DashboardModuleTest extends DevToolsTestCase {
 
     /**
-     * Test que verifica que el DashboardModule se carga correctamente
+     * Test que verifica que el DatabaseConnectionModule se carga correctamente
      */
-    public function test_dashboard_module_loaded() {
-        $this->assert_module_loaded( 'Dashboard' );
+    public function test_database_connection_module_loaded() {
+        // Los módulos existentes no usan el namespace DevTools\Modules
+        $this->assertTrue( 
+            class_exists( 'DatabaseConnectionModule' ),
+            'El módulo DatabaseConnectionModule debería estar cargado'
+        );
     }
 
     /**
-     * Test que verifica que el menú de admin se registra
+     * Test que verifica que el SiteUrlDetectionModule se carga correctamente
      */
-    public function test_admin_menu_registration() {
-        global $menu;
-        
-        // Simular que estamos en el admin
-        set_current_screen( 'dashboard' );
-        $this->assertTrue( is_admin() );
-        
-        // Verificar que existe la clase DashboardModule
-        $this->assertTrue( class_exists( 'DevTools\\Modules\\DashboardModule' ) );
+    public function test_site_url_detection_module_loaded() {
+        // Los módulos existentes no usan el namespace DevTools\Modules
+        $this->assertTrue( 
+            class_exists( 'SiteUrlDetectionModule' ),
+            'El módulo SiteUrlDetectionModule debería estar cargado'
+        );
     }
 
     /**
-     * Test que verifica la configuración por defecto del módulo
+     * Test que verifica que los módulos existen como clases
+     */
+    public function test_module_classes_exist() {
+        // Verificar que existen las clases de módulos reales
+        $this->assertTrue( class_exists( 'DatabaseConnectionModule' ) );
+        $this->assertTrue( class_exists( 'SiteUrlDetectionModule' ) );
+    }
+
+    /**
+     * Test que verifica la configuración por defecto de los módulos
      */
     public function test_module_default_config() {
-        $module_data = $this->create_module_test_data( 'Dashboard', [
+        $module_data = $this->create_module_test_data( 'DatabaseConnectionModule', [
             'config' => [
-                'show_welcome' => true,
-                'show_stats' => true,
-                'cache_enabled' => false
+                'auto_detect' => true,
+                'debug_mode' => false,
+                'fallback_enabled' => true
             ]
         ] );
         
-        $this->assertEquals( 'Dashboard', $module_data['name'] );
+        $this->assertEquals( 'DatabaseConnectionModule', $module_data['name'] );
         $this->assertEquals( 'active', $module_data['status'] );
-        $this->assertTrue( $module_data['config']['show_welcome'] );
+        $this->assertTrue( $module_data['config']['auto_detect'] );
     }
 
     /**
-     * Test que verifica que los assets se pueden cargar
+     * Test que verifica que los módulos se pueden instanciar
      */
-    public function test_module_assets_loading() {
-        // Simular página de admin de dev-tools
-        $_GET['page'] = 'dev-tools';
-        set_current_screen( 'toplevel_page_dev-tools' );
+    public function test_module_instantiation() {
+        // Test DatabaseConnectionModule
+        $db_module = new DatabaseConnectionModule();
+        $this->assertInstanceOf( 'DatabaseConnectionModule', $db_module );
         
-        // Verificar que estamos en la página correcta
-        $screen = get_current_screen();
-        $this->assertEquals( 'toplevel_page_dev-tools', $screen->id );
+        // Test SiteUrlDetectionModule  
+        $url_module = new SiteUrlDetectionModule();
+        $this->assertInstanceOf( 'SiteUrlDetectionModule', $url_module );
     }
 
     /**

@@ -4,11 +4,7 @@
  * Dev-Tools Arquitectura 3.0 - Testing Framework
  */
 
-namespace DevTools\Tests;
-
-use WP_UnitTestCase;
-
-class TestCase extends WP_UnitTestCase {
+class DevToolsTestCase extends WP_UnitTestCase {
 
     /**
      * Setup que se ejecuta antes de cada test

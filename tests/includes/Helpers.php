@@ -4,9 +4,7 @@
  * Dev-Tools Arquitectura 3.0 - Testing Framework
  */
 
-namespace DevTools\Tests;
-
-class Helpers {
+class DevToolsTestHelpers {
 
     /**
      * Generar datos de configuración de testing
