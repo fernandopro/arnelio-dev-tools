@@ -6,6 +6,7 @@
  * en Local by WP Engine
  */
 
+
 // Cargar WordPress - Ruta corregida para Local by WP Engine
 require_once(__DIR__ . '/../../../../../wp-load.php');
 
