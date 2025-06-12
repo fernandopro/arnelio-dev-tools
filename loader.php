@@ -54,6 +54,11 @@ class DevToolsLoader {
         // Cargar configuración de rutas
         require_once __DIR__ . '/config/paths.php';
         
+        // Cargar autoloader de Composer para PSR-4
+        if (file_exists(__DIR__ . '/vendor/autoload.php')) {
+            require_once __DIR__ . '/vendor/autoload.php';
+        }
+        
         // Cargar configuración principal
         $this->load_config();
         

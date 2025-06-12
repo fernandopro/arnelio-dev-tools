@@ -24,6 +24,7 @@ build/
 # Testing y PHPUnit - Solo ignorar archivos que se regeneran automáticamente
 # Mantener todos los archivos de configuración PHPUnit en el repositorio
 # Solo ignorar archivos temporales de configuración local personalizados
+phpunit.xml
 phpunit-local.xml
 phpunit-dev.xml
 phpunit-custom.xml
