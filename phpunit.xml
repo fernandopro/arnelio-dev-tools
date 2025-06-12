@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<phpunit
+    bootstrap="tests/bootstrap.php"
+    backupGlobals="false"
+    colors="true"
+    convertErrorsToExceptions="true"
+    convertNoticesToExceptions="true"
+    convertWarningsToExceptions="true"
+    stopOnFailure="false"
+    beStrictAboutTestsThatDoNotTestAnything="true"
+    beStrictAboutOutputDuringTests="true"
+>
+    <testsuites>
+        <testsuite name="Dev-Tools Test Suite">
+            <directory>./tests/unit/</directory>
+            <directory>./tests/modules/</directory>
+            <directory>./tests/integration/</directory>
+            <directory>./tests/database/</directory>
+            <directory>./tests/environment/</directory>
+        </testsuite>
+    </testsuites>
+    
+    <coverage includeUncoveredFiles="true">
+        <include>
+            <directory suffix=".php">./includes/</directory>
+            <directory suffix=".php">./modules/</directory>
+            <directory suffix=".php">./config/</directory>
+            <file>./loader.php</file>
+        </include>
+        <exclude>
+            <directory>./tests/</directory>
+            <directory>./vendor/</directory>
+            <directory>./node_modules/</directory>
+            <directory>./coverage/</directory>
+            <file>./webpack.config.js</file>
+            <file>./babel.config.js</file>
+            <file>./postcss.config.js</file>
+        </exclude>
+        <report>
+            <html outputDirectory="tests/coverage/html"/>
+            <clover outputFile="tests/coverage/clover.xml"/>
+        </report>
+    </coverage>
+    
+    <logging>
+        <junit outputFile="tests/output/junit.xml"/>
+    </logging>
+    
+    <php>
+        <!-- Environment variables for WordPress testing -->
+        <env name="WP_PHPUNIT__TESTS_CONFIG" value="tests/wp-tests-config.php"/>
+        <env name="WP_PHPUNIT__TABLE_PREFIX" value="wptests_"/>
+        
+        <!-- Dev-Tools specific constants -->
+        <const name="DEV_TOOLS_TESTING" value="true"/>
+        <const name="DEV_TOOLS_TEST_MODE" value="unit"/>
+    </php>
+</phpunit>

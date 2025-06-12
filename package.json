@@ -5,13 +5,20 @@
   "main": "dist/js/dev-tools.min.js",
   "private": true,
   "scripts": {
+    "install:full": "chmod +x install.sh && ./install.sh",
+    "install:quick": "npm install && npm run build && composer install",
+    "validate": "chmod +x validate.sh && ./validate.sh",
     "dev": "webpack --mode=development",
     "watch": "webpack --mode=development --watch",
     "build": "webpack --mode=production",
     "build:dev": "webpack --mode=development",
     "clean": "rimraf dist",
     "start": "webpack serve --mode=development --open",
-    "analyze": "webpack-bundle-analyzer dist/js/*.js"
+    "analyze": "webpack-bundle-analyzer dist/js/*.js",
+    "test": "composer test",
+    "test:unit": "./vendor/bin/phpunit tests/unit",
+    "test:integration": "./vendor/bin/phpunit tests/integration",
+    "test:coverage": "./vendor/bin/phpunit --coverage-html coverage"
   },
   "keywords": [
     "wordpress",

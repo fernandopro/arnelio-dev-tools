@@ -34,6 +34,15 @@ modules/**/.phpunit.result.cache
 tests/coverage/
 tests/tmp/
 tests/output/
+
+# Installation and validation reports
+validation-report.txt
+installation-log.txt
+
+# Local development files
+*.local.js
+*.local.php
+.env.local
 test-results/
 
 # WordPress testing específico - Solo archivos temporales, NO directorios de sistema

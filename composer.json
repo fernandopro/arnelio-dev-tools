@@ -2,9 +2,39 @@
     "name": "tarokina/dev-tools",
     "description": "Dev-Tools Arquitectura 3.0 - Testing Framework",
     "type": "wordpress-plugin",
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    },
     "require-dev": {
         "phpunit/phpunit": "^9",
         "wp-phpunit/wp-phpunit": "^6.8",
         "yoast/phpunit-polyfills": "^4.0"
+    },
+    "scripts": {
+        "install:full": "bash install.sh",
+        "install:deps": "composer install --optimize-autoloader",
+        "validate": "bash validate.sh",
+        "test": "./vendor/bin/phpunit",
+        "test:unit": "./vendor/bin/phpunit tests/unit",
+        "test:integration": "./vendor/bin/phpunit tests/integration",
+        "test:coverage": "./vendor/bin/phpunit --coverage-html coverage",
+        "test:watch": "phpunit-watcher watch",
+        "post-install-cmd": [
+            "@php -r \"if (!file_exists('phpunit.xml') && file_exists('phpunit.xml.dist')) { copy('phpunit.xml.dist', 'phpunit.xml'); echo 'Created phpunit.xml from phpunit.xml.dist\\n'; }\""
+        ]
+    },
+    "autoload": {
+        "psr-4": {
+            "DevTools\\": "includes/",
+            "DevTools\\Modules\\": "modules/",
+            "DevTools\\Tests\\": "tests/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "DevTools\\Tests\\": "tests/"
+        }
     }
 }
