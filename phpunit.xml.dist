@@ -16,6 +16,7 @@
             <directory>./tests/modules/</directory>
             <directory>./tests/integration/</directory>
             <directory>./tests/database/</directory>
+            <directory>./tests/environment/</directory>
         </testsuite>
     </testsuites>
     
