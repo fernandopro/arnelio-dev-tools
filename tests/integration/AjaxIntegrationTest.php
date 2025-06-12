@@ -35,11 +35,13 @@ class AjaxIntegrationTest extends DevToolsTestCase {
         $_POST['nonce'] = $valid_nonce;
         $_POST['action'] = 'dev_tools_test_action';
         
-        $this->assertTrue(wp_verify_nonce($valid_nonce, 'dev_tools_nonce'));
+        $nonce_check = wp_verify_nonce($valid_nonce, 'dev_tools_nonce');
+        $this->assertNotFalse($nonce_check, 'El nonce válido debería pasar la verificación');
         
         // Test con nonce inválido
         $invalid_nonce = 'invalid_nonce_12345';
-        $this->assertFalse(wp_verify_nonce($invalid_nonce, 'dev_tools_nonce'));
+        $invalid_check = wp_verify_nonce($invalid_nonce, 'dev_tools_nonce');
+        $this->assertFalse($invalid_check, 'El nonce inválido debería fallar la verificación');
         
         // Limpiar
         unset($_POST['nonce'], $_POST['action']);
