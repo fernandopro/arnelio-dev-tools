@@ -10,9 +10,6 @@
  * @author Dev-Tools Arquitectura 3.0
  */
 
-if (!defined('ABSPATH')) {
-    exit;
-}
 
 class DatabaseConnectionModule {
     

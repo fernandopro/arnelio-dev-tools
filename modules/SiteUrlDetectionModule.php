@@ -11,10 +11,6 @@
  * @author Dev-Tools Arquitectura 3.0
  */
 
-if (!defined('ABSPATH')) {
-    // Si no estamos en WordPress, definir ABSPATH temporalmente
-    define('ABSPATH', dirname(__FILE__, 6) . '/');
-}
 
 class SiteUrlDetectionModule {
     

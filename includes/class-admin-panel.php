@@ -8,9 +8,9 @@
  * @author Dev-Tools Arquitectura 3.0
  */
 
-if (!defined('ABSPATH')) {
-    exit;
-}
+// if (!defined('ABSPATH')) {
+//     exit;
+// }
 
 class DevToolsAdminPanel {
     

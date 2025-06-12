@@ -14,103 +14,103 @@ vendor/
 composer.lock
 composer.phar
 
-# Build y distribución (mantener archivos de producción, ignorar temporales)
-coverage/
-build/
+# # Build y distribución (mantener archivos de producción, ignorar temporales)
+# coverage/
+# build/
 
-# Si quieres ignorar dist/ completamente, descomenta la siguiente línea:
-# dist/
+# # Si quieres ignorar dist/ completamente, descomenta la siguiente línea:
+# # dist/
 
-# Testing y PHPUnit - Solo ignorar archivos que se regeneran automáticamente
-# Mantener todos los archivos de configuración PHPUnit en el repositorio
-# Solo ignorar archivos temporales de configuración local personalizados
-phpunit-local.xml
-phpunit-dev.xml
-phpunit-custom.xml
-# Mantener .phpunit.result.cache en el directorio raíz para mejorar performance
-# pero ignorar en subdirectorios
-tests/**/.phpunit.result.cache
-modules/**/.phpunit.result.cache
-tests/coverage/
-tests/tmp/
-tests/output/
-test-results/
+# # Testing y PHPUnit - Solo ignorar archivos que se regeneran automáticamente
+# # Mantener todos los archivos de configuración PHPUnit en el repositorio
+# # Solo ignorar archivos temporales de configuración local personalizados
+# phpunit-local.xml
+# phpunit-dev.xml
+# phpunit-custom.xml
+# # Mantener .phpunit.result.cache en el directorio raíz para mejorar performance
+# # pero ignorar en subdirectorios
+# tests/**/.phpunit.result.cache
+# modules/**/.phpunit.result.cache
+# tests/coverage/
+# tests/tmp/
+# tests/output/
+# test-results/
 
-# WordPress testing específico - Solo archivos temporales, NO directorios de sistema
-# Permitir wordpress/ y wordpress-tests-lib/ para el test suite
-/tmp-install/
-/install-tmp/
-# Ignorar solo archivos temporales de instalación
-install-wp-tests-tmp/
-wp-tests-temp/
+# # WordPress testing específico - Solo archivos temporales, NO directorios de sistema
+# # Permitir wordpress/ y wordpress-tests-lib/ para el test suite
+# /tmp-install/
+# /install-tmp/
+# # Ignorar solo archivos temporales de instalación
+# install-wp-tests-tmp/
+# wp-tests-temp/
 
-# Nota: wp-tests-config.php se mantiene en el repositorio como parte de la configuración
-# Nota: Permitimos wordpress/ y wordpress-tests-lib/ para WordPress Test Suite
+# # Nota: wp-tests-config.php se mantiene en el repositorio como parte de la configuración
+# # Nota: Permitimos wordpress/ y wordpress-tests-lib/ para WordPress Test Suite
 
-# Webpack y herramientas de build
-.cache/
-*.tsbuildinfo
-.eslintcache
-.stylelintcache
-webpack.stats.json
-bundle-analyzer-report.html
+# # Webpack y herramientas de build
+# .cache/
+# *.tsbuildinfo
+# .eslintcache
+# .stylelintcache
+# webpack.stats.json
+# bundle-analyzer-report.html
 
-# Logs y debug
-*.log
-debug.log
-error.log
-npm-debug.log
-yarn-error.log
+# # Logs y debug
+# *.log
+# debug.log
+# error.log
+# npm-debug.log
+# yarn-error.log
 
-# Archivos del sistema
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
+# # Archivos del sistema
+# .DS_Store
+# .DS_Store?
+# ._*
+# .Spotlight-V100
+# .Trashes
+# ehthumbs.db
+# Thumbs.db
 
-# Editores e IDEs
-.vscode/
-.idea/
-*.sublime-*
-*~
-*.swp
-*.swo
+# # Editores e IDEs
+# .vscode/
+# .idea/
+# *.sublime-*
+# *~
+# *.swp
+# *.swo
 
-# Archivos temporales - Ser más específico para no interferir con tests
-*.tmp
-*.bak
-*.old
-# Permitir temp/ que WordPress tests pueden necesitar
-temp/build/
-temp/cache/
-# NO ignorar temp/ completamente
-tmp/build/
-tmp/cache/
-# NO ignorar tmp/ completamente
+# # Archivos temporales - Ser más específico para no interferir con tests
+# *.tmp
+# *.bak
+# *.old
+# # Permitir temp/ que WordPress tests pueden necesitar
+# temp/build/
+# temp/cache/
+# # NO ignorar temp/ completamente
+# tmp/build/
+# tmp/cache/
+# # NO ignorar tmp/ completamente
 
-# Archivos sensibles y configuración local
-.env*
-!.env.example
-config-local.php
-*.key
-*.pem
+# # Archivos sensibles y configuración local
+# .env*
+# !.env.example
+# config-local.php
+# *.key
+# *.pem
 
-# Archivos de desarrollo temporal
-scratch/
-playground/
-demo/
-test-output/
+# # Archivos de desarrollo temporal
+# scratch/
+# playground/
+# demo/
+# test-output/
 
-# Archivos específicos de módulos en desarrollo - Ser más específico
-modules/*/temp/build/
-modules/*/temp/cache/
-modules/*/tmp/build/
-modules/*/tmp/cache/
-# Permitir directorios temp/tmp que tests pueden necesitar
+# # Archivos específicos de módulos en desarrollo - Ser más específico
+# modules/*/temp/build/
+# modules/*/temp/cache/
+# modules/*/tmp/build/
+# modules/*/tmp/cache/
+# # Permitir directorios temp/tmp que tests pueden necesitar
 
-# Archivos de configuración de módulos que pueden ser sensibles
-modules/*/config-local.php
-modules/*/.env*
+# # Archivos de configuración de módulos que pueden ser sensibles
+# modules/*/config-local.php
+# modules/*/.env*
