@@ -1,9 +1,10 @@
 <?php
 /**
- * Bootstrap para testing PHPUnit
+ * Bootstrap agnóstico para testing PHPUnit
  * Dev-Tools Arquitectura 3.0 - Testing Framework
  * 
- * Este archivo inicializa el entorno de testing para WordPress y Dev-Tools
+ * Este archivo inicializa automáticamente el entorno de testing para WordPress y Dev-Tools
+ * detectando dinámicamente la instalación de WordPress y la estructura del plugin
  */
 
 // Definir constantes de testing antes de cargar WordPress
@@ -25,12 +26,25 @@ $wp_tests_dir = getenv( 'WP_TESTS_DIR' );
 // Cargar autoloader de Composer
 require_once $plugin_dir . '/vendor/autoload.php';
 
-// Si WP_TESTS_DIR no está definido, intentar encontrar WordPress
+// Si WP_TESTS_DIR no está definido, intentar encontrar WordPress dinámicamente
 if ( ! $wp_tests_dir ) {
-    // Buscar WordPress en la instalación de Local
-    $wp_root = '/Users/fernandovazquezperez/Local Sites/tarokina-2025/app/public';
-    if ( file_exists( $wp_root . '/wp-config.php' ) ) {
-        $wp_tests_dir = $wp_root;
+    // Detectar dinámicamente la instalación de WordPress
+    $current_dir = $plugin_dir;
+    $max_depth = 10;
+    $current_depth = 0;
+    
+    while ($current_depth < $max_depth) {
+        if (file_exists($current_dir . '/wp-config.php') || file_exists($current_dir . '/wp-settings.php')) {
+            $wp_tests_dir = $current_dir;
+            break;
+        }
+        $parent = dirname($current_dir);
+        if ($parent === $current_dir) {
+            // Llegamos al directorio raíz sin encontrar WordPress
+            break;
+        }
+        $current_dir = $parent;
+        $current_depth++;
     }
 }
 
@@ -81,6 +95,19 @@ require_once __DIR__ . '/includes/TestCase.php';
 require_once __DIR__ . '/includes/Helpers.php';
 
 // Activar el plugin programáticamente para las pruebas
-activate_plugin( 'tarokina-2025/dev-tools/loader.php' );
+// Detectar dinámicamente el path del plugin principal
+$plugin_base_dir = dirname($plugin_dir);
+$plugin_name = basename($plugin_base_dir);
+$dev_tools_plugin_path = $plugin_name . '/dev-tools/loader.php';
+
+// Intentar activar el plugin de dev-tools
+if (function_exists('activate_plugin')) {
+    try {
+        activate_plugin($dev_tools_plugin_path);
+    } catch (Exception $e) {
+        // Si falla, intentar activar solo el loader directamente
+        // No es crítico para todos los tests
+    }
+}
 
 echo "✅ Bootstrap de Dev-Tools testing cargado correctamente\n";

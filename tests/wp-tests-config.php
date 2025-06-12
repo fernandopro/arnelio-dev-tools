@@ -1,10 +1,10 @@
 <?php
 /**
- * wp-tests-config.php - Configuración para testing con PHPUnit en Local by WP Engine
+ * wp-tests-config.php - Configuración agnóstica para testing con PHPUnit
  * Dev-Tools Arquitectura 3.0 - Testing Framework
  * 
- * Este archivo configura la conexión a la base de datos MySQL de Local by WP Engine
- * usando el socket específico del sitio tarokina-2025
+ * Este archivo configura automáticamente la conexión a la base de datos
+ * detectando dinámicamente el entorno de desarrollo (Local by WP Engine, XAMPP, etc.)
  */
 
 // ** Configuración de Base de Datos para Testing ** //
@@ -19,10 +19,38 @@ define( 'DB_USER', 'root' );
 define( 'DB_PASSWORD', 'root' );
 
 /** 
- * Host de la base de datos - CRÍTICO: Usar el socket específico de Local
- * Ruta encontrada: /Users/fernandovazquezperez/Library/Application Support/Local/run/6ld71Gw6d/mysql/mysqld.sock
+ * Host de la base de datos - Detección dinámica de Local by WP Engine
+ * Intentamos detectar automáticamente el socket de MySQL
  */
-define( 'DB_HOST', 'localhost:/Users/fernandovazquezperez/Library/Application Support/Local/run/6ld71Gw6d/mysql/mysqld.sock' );
+if (!defined('DB_HOST')) {
+    // Intentar detectar automáticamente el socket de Local by WP Engine
+    $possible_sockets = [
+        // Patrón típico de Local by WP Engine
+        '/Users/' . get_current_user() . '/Library/Application Support/Local/run/*/mysql/mysqld.sock',
+        // Fallback a localhost estándar
+        'localhost'
+    ];
+    
+    $db_host = 'localhost';
+    
+    // Buscar sockets existentes
+    foreach ($possible_sockets as $socket_pattern) {
+        if (strpos($socket_pattern, '*') !== false) {
+            $sockets = glob($socket_pattern);
+            if (!empty($sockets)) {
+                $db_host = 'localhost:' . $sockets[0];
+                break;
+            }
+        } else {
+            if (file_exists($socket_pattern)) {
+                $db_host = 'localhost:' . $socket_pattern;
+                break;
+            }
+        }
+    }
+    
+    define( 'DB_HOST', $db_host );
+}
 
 /** Charset de la base de datos */
 define( 'DB_CHARSET', 'utf8' );
@@ -95,8 +123,26 @@ define( 'NONCE_SALT',       'put your unique phrase here' );
 
 /**
  * Configurar la ruta absoluta a WordPress
- * Esto se ajustará automáticamente por el bootstrap de testing
+ * Detección dinámica de la instalación de WordPress
  */
 if ( ! defined( 'ABSPATH' ) ) {
-    define( 'ABSPATH', '/Users/fernandovazquezperez/Local Sites/tarokina-2025/app/public/' );
+    // Detectar dinámicamente la ruta de WordPress
+    $wp_root = __DIR__;
+    $max_depth = 10;
+    $current_depth = 0;
+    
+    while ($current_depth < $max_depth) {
+        if (file_exists($wp_root . '/wp-config.php') || file_exists($wp_root . '/wp-settings.php')) {
+            break;
+        }
+        $parent = dirname($wp_root);
+        if ($parent === $wp_root) {
+            // Llegamos al directorio raíz sin encontrar WordPress
+            throw new Exception('No se pudo encontrar la instalación de WordPress');
+        }
+        $wp_root = $parent;
+        $current_depth++;
+    }
+    
+    define( 'ABSPATH', $wp_root . '/' );
 }
