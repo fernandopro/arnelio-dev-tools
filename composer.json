@@ -22,10 +22,10 @@
             "role": "Developer"
         }
     ],
-    "homepage": "https://github.com/dev-tools/wordpress-testing-framework",
+    "homepage": "https://github.com/fernandopro/arnelio-dev-tools",
     "support": {
-        "issues": "https://github.com/dev-tools/wordpress-testing-framework/issues",
-        "source": "https://github.com/dev-tools/wordpress-testing-framework"
+        "issues": "https://github.com/fernandopro/arnelio-dev-tools/issues",
+        "source": "https://github.com/fernandopro/arnelio-dev-tools"
     },
     "require": {
         "php": ">=8.0"
