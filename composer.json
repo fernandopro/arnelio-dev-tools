@@ -1,5 +1,5 @@
 {
-    "name": "tarokina/dev-tools",
+    "name": "dev-tools/framework",
     "description": "Dev-Tools Arquitectura 3.0 - Testing Framework",
     "type": "wordpress-plugin",
     "config": {
