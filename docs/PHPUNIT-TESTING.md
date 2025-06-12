@@ -46,14 +46,11 @@ dev-tools/
     "phpunit/phpunit": "^9",
     "wp-phpunit/wp-phpunit": "^6.8",
     "yoast/phpunit-polyfills": "^4.0"
-  },
-  "autoload-dev": {
-    "psr-4": {
-      "DevTools\\Tests\\": "tests/"
-    }
   }
 }
 ```
+
+**Nota**: Se removió el autoloader PSR-4 para simplificar el sistema y usar clases globales.
 
 ### Configuración de Base de Datos (Local by WP Engine)
 
@@ -120,10 +117,11 @@ composer dump-autoload
 - ✅ Aislamiento de datos
 
 ### Tests de Módulos (DashboardModuleTest)
-- ✅ Carga de módulos Dev-Tools
+- ✅ Módulos Dev-Tools existentes (`DatabaseConnectionModule`, `SiteUrlDetectionModule`)
+- ✅ Carga de clases de módulos
+- ✅ Instanciación de módulos
 - ✅ Integración con WordPress
 - ✅ Configuración de módulos
-- ✅ Assets loading
 
 ### Resultado Actual
 ```
@@ -134,38 +132,49 @@ Database
  ✔ Create test data
  ✔ Data isolation
 
-OK (5 tests, 24 assertions)
+Dashboard Module
+ ✔ Database connection module loaded
+ ✔ Site url detection module loaded
+ ✔ Module classes exist
+ ✔ Module default config
+ ✔ Module instantiation
+ ✔ Wordpress integration
+
+OK (11 tests, 38 assertions)
 ```
 
 ## 🎨 Estructura de Clases de Testing
 
-### TestCase Base
+### DevToolsTestCase Base
 
 ```php
-namespace DevTools\Tests;
-
-use WP_UnitTestCase;
-
-class TestCase extends WP_UnitTestCase {
+class DevToolsTestCase extends WP_UnitTestCase {
+    
+    /**
+     * Almacena la última respuesta AJAX
+     */
+    protected $_last_response = '';
     
     // Setup/teardown automático
     public function setUp(): void;
     public function tearDown(): void;
     
     // Helpers para Dev-Tools
-    protected function assert_module_loaded($module_name);
     protected function create_admin_user();
-    protected function simulate_ajax_request($action, $data);
-    protected function create_module_test_data($module_name, $data);
+    protected function create_test_post($args = []);
+    protected function create_test_page($args = []);
+    protected function create_test_user($role = 'subscriber', $args = []);
+    protected function simulate_ajax_request($action, $data = []);
+    protected function get_ajax_response();
+    protected function assert_test_table_exists($table_name);
+    protected function create_module_test_data($module_name, $data = []);
 }
 ```
 
-### Helpers Disponibles
+### DevToolsTestHelpers Disponibles
 
 ```php
-namespace DevTools\Tests;
-
-class Helpers {
+class DevToolsTestHelpers {
     
     // Generación de datos de testing
     public static function generate_test_config($overrides = []);
@@ -181,6 +190,17 @@ class Helpers {
     public static function verify_directory_structure($base_path);
     public static function verify_required_files($base_path);
 }
+```
+
+### Uso de Factory (Actualizado)
+
+```php
+// ✅ CORRECTO - Método actual sin deprecaciones
+$admin_id = static::factory()->user->create(['role' => 'administrator']);
+$post_id = static::factory()->post->create(['post_title' => 'Test']);
+
+// ❌ DEPRECADO - No usar
+$admin_id = $this->factory->user->create(['role' => 'administrator']);
 ```
 
 ## ⚙️ Configuración PHPUnit (phpunit.xml.dist)
@@ -316,11 +336,13 @@ jobs:
 
 ## 📈 Métricas Actuales
 
-- **Tests**: 10 tests implementados
-- **Assertions**: 36 assertions ejecutadas
+- **Tests**: 11 tests implementados
+- **Assertions**: 38 assertions ejecutadas
 - **Coverage**: En configuración (requiere Xdebug)
 - **Performance**: ~0.3 segundos por suite completa
-- **Confiabilidad**: 100% tests passing en base
+- **Confiabilidad**: 100% tests passing
+- **Módulos**: DatabaseConnectionModule y SiteUrlDetectionModule testeados
+- **Sin Deprecaciones**: Código actualizado con `static::factory()`
 
 ## 🎯 Próximos Pasos
 

@@ -39,9 +39,11 @@ WP_TESTS_TABLE_PREFIX: 'wptests_'
 
 ```
 ✅ Database Tests: 5/5 PASSING
-✅ Module Tests: 3/5 PASSING (2 fallos esperados)
+✅ Module Tests: 6/6 PASSING  
 ✅ Framework: Completamente funcional
 ✅ Coverage: Configurado y listo
+✅ Sin Deprecaciones: Código actualizado
+Total: 11 tests, 38 assertions ✅
 ```
 
 ## 🆘 Troubleshooting Rápido
@@ -84,20 +86,32 @@ tests/
 
 ```php
 <?php
-use DevTools\Tests\TestCase;
-
-class MiNuevoTest extends TestCase {
+class MiNuevoTest extends DevToolsTestCase {
     
     public function test_mi_funcionalidad() {
-        // Setup
-        $data = $this->create_module_test_data('MiModulo');
+        // Setup - Usar métodos helper actualizados
+        $admin_id = $this->create_admin_user();
+        $post_id = $this->create_test_post(['post_title' => 'Test Post']);
         
         // Test
-        $result = mi_funcion_a_testear($data);
+        $result = mi_funcion_a_testear($post_id);
         
         // Assertions
         $this->assertTrue($result);
         $this->assertEquals('expected', $result);
+    }
+    
+    public function test_ajax_functionality() {
+        // Setup
+        $this->create_admin_user();
+        wp_set_current_user($admin_id);
+        
+        // Simulate AJAX
+        $this->simulate_ajax_request('my_action', ['data' => 'test']);
+        
+        // Verify response
+        $response = $this->get_ajax_response();
+        $this->assertStringContains('success', $response);
     }
 }
 ```

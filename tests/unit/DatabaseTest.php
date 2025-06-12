@@ -56,7 +56,7 @@ class DatabaseTest extends DevToolsTestCase {
      */
     public function test_create_test_data() {
         // Crear un post de prueba
-        $post_id = $this->factory->post->create( [
+        $post_id = static::factory()->post->create( [
             'post_title' => 'Test Post for Dev-Tools',
             'post_content' => 'Test content',
             'post_status' => 'publish'

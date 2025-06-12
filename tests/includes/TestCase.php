@@ -7,10 +7,18 @@
 class DevToolsTestCase extends WP_UnitTestCase {
 
     /**
+     * Almacena la última respuesta AJAX
+     */
+    protected $_last_response = '';
+
+    /**
      * Setup que se ejecuta antes de cada test
      */
     public function setUp(): void {
         parent::setUp();
+        
+        // Limpiar la respuesta AJAX anterior
+        $this->_last_response = '';
         
         // Limpiar cualquier configuración previa
         $this->clean_dev_tools_config();
@@ -58,12 +66,60 @@ class DevToolsTestCase extends WP_UnitTestCase {
     }
 
     /**
+     * Obtener la ruta base de Dev-Tools
+     */
+    protected function get_dev_tools_path() {
+        return dirname( dirname( __DIR__ ) );
+    }
+
+    /**
      * Crear un usuario admin para testing
      */
     protected function create_admin_user() {
-        return $this->factory->user->create( [
+        return static::factory()->user->create( [
             'role' => 'administrator'
         ] );
+    }
+
+    /**
+     * Crear un post de prueba
+     */
+    protected function create_test_post( $args = [] ) {
+        $defaults = [
+            'post_title' => 'Test Post',
+            'post_content' => 'Test content',
+            'post_status' => 'publish',
+            'post_type' => 'post'
+        ];
+        
+        return static::factory()->post->create( array_merge( $defaults, $args ) );
+    }
+
+    /**
+     * Crear una página de prueba
+     */
+    protected function create_test_page( $args = [] ) {
+        $defaults = [
+            'post_title' => 'Test Page',
+            'post_content' => 'Test page content',
+            'post_status' => 'publish',
+            'post_type' => 'page'
+        ];
+        
+        return static::factory()->post->create( array_merge( $defaults, $args ) );
+    }
+
+    /**
+     * Crear un usuario de prueba con rol específico
+     */
+    protected function create_test_user( $role = 'subscriber', $args = [] ) {
+        $defaults = [
+            'role' => $role,
+            'user_login' => 'testuser_' . wp_generate_password( 6, false ),
+            'user_email' => 'test_' . wp_generate_password( 6, false ) . '@example.com'
+        ];
+        
+        return static::factory()->user->create( array_merge( $defaults, $args ) );
     }
 
     /**
@@ -77,11 +133,16 @@ class DevToolsTestCase extends WP_UnitTestCase {
             $_POST[$key] = $value;
         }
         
+        // Capturar output buffer para la respuesta
+        ob_start();
+        
         try {
             do_action( 'wp_ajax_' . $action );
         } catch ( \WPAjaxDieContinueException $e ) {
             // Expected for AJAX tests
         }
+        
+        $this->_last_response = ob_get_clean();
     }
 
     /**
