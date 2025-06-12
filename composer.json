@@ -1,10 +1,110 @@
 {
-    "name": "tarokina/dev-tools",
-    "description": "Dev-Tools Arquitectura 3.0 - Testing Framework",
-    "type": "wordpress-plugin",
+    "name": "dev-tools/wordpress-testing-framework",
+    "description": "Dev-Tools Arquitectura 3.0 - Agnostic Core Framework with Child Theme Override System",
+    "type": "library",
+    "license": "GPL-2.0-or-later",
+    "keywords": [
+        "wordpress",
+        "testing",
+        "phpunit",
+        "agnostic",
+        "modular",
+        "dev-tools",
+        "plugin-development",
+        "submodule",
+        "override-system",
+        "child-theme-pattern"
+    ],
+    "authors": [
+        {
+            "name": "Dev-Tools Team",
+            "email": "dev@dev-tools.framework",
+            "role": "Developer"
+        }
+    ],
+    "homepage": "https://github.com/dev-tools/wordpress-testing-framework",
+    "support": {
+        "issues": "https://github.com/dev-tools/wordpress-testing-framework/issues",
+        "source": "https://github.com/dev-tools/wordpress-testing-framework"
+    },
+    "require": {
+        "php": ">=8.0"
+    },
     "require-dev": {
         "phpunit/phpunit": "^9",
         "wp-phpunit/wp-phpunit": "^6.8",
-        "yoast/phpunit-polyfills": "^4.0"
-    }
+        "yoast/phpunit-polyfills": "^4.0",
+        "brain/monkey": "^2.6",
+        "mockery/mockery": "^1.6",
+        "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+        "wp-coding-standards/wpcs": "^3.0",
+        "phpcompatibility/phpcompatibility-wp": "^2.1",
+        "roave/security-advisories": "dev-latest"
+    },
+    "autoload": {
+        "psr-4": {
+            "DevTools\\": "includes/",
+            "DevTools\\Modules\\": "modules/",
+            "DevTools\\Tests\\": "tests/"
+        },
+        "files": [
+            "loader.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "DevTools\\Tests\\": "tests/",
+            "DevTools\\Mocks\\": "tests/mocks/",
+            "DevTools\\Stubs\\": "tests/stubs/"
+        }
+    },
+    "scripts": {
+        "test": "echo 'ℹ️  Core tests only. Plugin tests: cd ../plugin-dev-tools && ../dev-tools/vendor/bin/phpunit'",
+        "test:core": "phpunit --testsuite=core",
+        "test:environment": "phpunit --testsuite=environment",
+        "test:framework": [
+            "@test:environment",
+            "@test:core"
+        ],
+        "dev-tools:create-override": "php scripts/create-override-structure.php",
+        "dev-tools:migrate": "php scripts/migrate-to-override-system.php",
+        "post-install-cmd": [
+            "echo '✅ Dev-Tools Core installed. Setup override system: composer run dev-tools:create-override'"
+        ],
+        "cs:check": "phpcs --standard=WordPress --extensions=php includes/ modules/ tests/",
+        "cs:fix": "phpcbf --standard=WordPress --extensions=php includes/ modules/ tests/",
+        "setup-phpcs": [
+            "phpcs --config-set installed_paths vendor/wp-coding-standards/wpcs,vendor/phpcompatibility/phpcompatibility-wp"
+        ],
+        "post-update-cmd": [
+            "@setup-phpcs"
+        ]
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "phpstan/extension-installer": true
+        },
+        "optimize-autoloader": true,
+        "sort-packages": true,
+        "platform": {
+            "php": "8.0"
+        }
+    },
+    "extra": {
+        "dev-tools": {
+            "version": "3.0",
+            "agnostic": true,
+            "framework-type": "wordpress-plugin-submodule",
+            "override-system": {
+                "enabled": true,
+                "parent-dir": "dev-tools",
+                "child-dir": "plugin-dev-tools",
+                "pattern": "child-theme-hierarchy",
+                "auto-setup": true
+            }
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
 }
