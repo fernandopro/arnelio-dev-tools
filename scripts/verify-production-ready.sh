@@ -138,12 +138,19 @@ SENSITIVE_PATTERNS=(
     "*secret*"
     "*private*"
     "wp-tests-config.php"
+    "ai-submodule-helper.sh"
+    "install-dev-tools.sh"
+    "test-override-function.sh"
 )
 
 for pattern in "${SENSITIVE_PATTERNS[@]}"; do
-    if find "$PLUGIN_ROOT" -name "$pattern" -not -path "*/plugin-dev-tools/*" | grep -q .; then
-        report_warning "Archivos sensibles encontrados: $pattern"
-    fi
+    # Buscar archivos que coinciden con el patrón
+    while IFS= read -r -d '' file; do
+        # Verificar si el archivo está siendo trackeado por git
+        if git ls-files --error-unmatch "$file" >/dev/null 2>&1; then
+            report_warning "Archivos sensibles encontrados en git: $(basename "$file")"
+        fi
+    done < <(find "$PLUGIN_ROOT" -name "$pattern" -not -path "*/plugin-dev-tools/*" -print0 2>/dev/null)
 done
 
 # 7. Resumen final
