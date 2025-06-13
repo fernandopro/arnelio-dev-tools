@@ -25,7 +25,7 @@ class DevToolsAdminPanel {
     public function __construct($config, $modules) {
         $this->config = $config;
         $this->modules = $modules;
-        $this->paths = DevToolsPaths::getInstance();
+        $this->paths = \DevToolsPaths::getInstance();
     }
     
     /**

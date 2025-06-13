@@ -151,7 +151,7 @@ class DevToolsLoader {
         $this->init_ajax_handler();
         
         // Actualizar admin panel con módulos cargados
-        $this->admin_panel = new DevToolsAdminPanel($this->config, $this->modules);
+        $this->admin_panel = new \DevTools\DevToolsAdminPanel($this->config, $this->modules);
     }
     
     /**
@@ -199,7 +199,7 @@ class DevToolsLoader {
         
         // Asegurar que el admin panel esté inicializado
         if ($this->admin_panel === null) {
-            $this->admin_panel = new DevToolsAdminPanel($this->config, $this->modules);
+            $this->admin_panel = new \DevTools\DevToolsAdminPanel($this->config, $this->modules);
         }
         
         add_management_page(
