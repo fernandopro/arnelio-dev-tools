@@ -7,7 +7,7 @@
 import { Tab } from 'bootstrap';
 
 // Import módulos específicos de dev-tools
-import './test-runner.js';
+import TestRunner from './test-runner.js';
 
 /**
  * Clase principal DevTools para manejo global
@@ -55,6 +55,9 @@ class DevTools {
         this.initializeTabs();
         this.bindEvents();
         this.setupErrorHandling();
+        
+        // Inicializar test runner
+        this.testRunner = new TestRunner(this);
         
         // Log de inicialización
         this.log('🔧 Dev-Tools Arquitectura 3.0 initialized');
@@ -486,6 +489,23 @@ const devTools = new DevTools();
 
 // Exportar para uso global
 window.devTools = devTools;
+
+// Funciones globales para compatibilidad con onclick en HTML
+window.runTests = function() {
+    if (window.devTools && window.devTools.testRunner) {
+        window.devTools.testRunner.runTests();
+    } else {
+        console.error('TestRunner no está disponible');
+    }
+};
+
+window.runQuickTest = function() {
+    if (window.devTools && window.devTools.testRunner) {
+        window.devTools.testRunner.runQuickTest();
+    } else {
+        console.error('TestRunner no está disponible');
+    }
+};
 
 // Export para módulos ES6
 export default DevTools;

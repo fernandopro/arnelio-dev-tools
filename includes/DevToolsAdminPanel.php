@@ -10,11 +10,12 @@
 
 namespace DevTools;
 
-use Exception;
+// Prevenir acceso directo
+if (!defined('ABSPATH')) {
+    exit;
+}
 
-// if (!defined('ABSPATH')) {
-//     exit;
-// }
+use Exception;
 
 class DevToolsAdminPanel {
     
@@ -29,46 +30,52 @@ class DevToolsAdminPanel {
         
         // Registrar handlers AJAX para tests
         add_action('wp_ajax_dev_tools_run_tests', [$this, 'ajax_run_tests']);
+        add_action('wp_ajax_dev_tools_run_quick_test', [$this, 'ajax_run_quick_test']);
     }
     
     /**
      * Handler AJAX para ejecutar tests
      */
     public function ajax_run_tests() {
+        // Debug del nonce recibido
+        $received_nonce = $_POST['nonce'] ?? '';
+        $expected_action = 'dev_tools_nonce';
+        
+        // Log de debugging (remover en producción)
+        error_log("DEBUG NONCE - Received: {$received_nonce}");
+        error_log("DEBUG NONCE - Expected action: {$expected_action}");
+        error_log("DEBUG NONCE - Verification result: " . (wp_verify_nonce($received_nonce, $expected_action) ? 'VALID' : 'INVALID'));
+        
         // Verificar nonce de seguridad
-        if (!wp_verify_nonce($_POST['nonce'] ?? '', 'dev_tools_nonce')) {
-            wp_die('Security check failed');
+        if (!wp_verify_nonce($received_nonce, $expected_action)) {
+            wp_send_json_error(['message' => 'Security check failed - Invalid nonce']);
+            return;
         }
         
         // Verificar permisos
         if (!current_user_can('manage_options')) {
-            wp_die('Insufficient permissions');
+            wp_send_json_error(['message' => 'Insufficient permissions']);
+            return;
         }
         
-        $test_type = sanitize_text_field($_POST['test_type'] ?? 'basic');
-        $test_file = sanitize_text_field($_POST['test_file'] ?? '');
+        // Obtener parámetros del POST
+        $test_types = $_POST['test_types'] ?? ['unit'];
+        $verbose = filter_var($_POST['verbose'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        $coverage = filter_var($_POST['coverage'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        
+        // Asegurar que test_types sea un array
+        if (!is_array($test_types)) {
+            $test_types = [$test_types];
+        }
         
         try {
-            // Usar las nuevas funciones extraídas del TestRunnerModule
-            if ($test_type === 'basic' || $test_type === 'quick') {
-                $result = $this->run_quick_test();
-            } else {
-                // Mapear tipos de test
-                $test_types = ['unit'];
-                if ($test_type === 'dashboard') {
-                    $test_types = ['dashboard'];
-                } elseif ($test_type === 'all') {
-                    $test_types = ['unit', 'dashboard'];
-                }
-                
-                $result = $this->run_tests_with_options($test_types, true, false);
-            }
+            $result = $this->run_tests_with_options($test_types, $verbose, $coverage);
             
             if ($result['success']) {
                 wp_send_json_success($result['data']);
             } else {
                 wp_send_json_error([
-                    'message' => $result['error']
+                    'message' => $result['error'] ?? 'Error desconocido ejecutando tests'
                 ]);
             }
             
@@ -161,11 +168,14 @@ class DevToolsAdminPanel {
                 </div>
                 
                 <!-- Navegación -->
+                <!-- DEBUG: Navegación deshabilitada temporalmente -->
+                <!--
                 <div class="row mb-4">
                     <div class="col-12">
                         <?php $this->render_navigation(); ?>
                     </div>
                 </div>
+                -->
         <?php
     }
     
@@ -245,37 +255,47 @@ class DevToolsAdminPanel {
      * Renderiza la página principal con pestañas
      */
     public function render_dashboard() {
-        $this->render_header('Dev-Tools Console');
+        $this->render_header('Dev-Tools Console - Test Runner Debug');
         ?>
         
-        <!-- Contenido con pestañas -->
-        <div class="tab-content" id="devToolsTabContent">
-            
-            <!-- Dashboard Tab -->
-            <div class="tab-pane fade show active" id="dashboard" role="tabpanel" aria-labelledby="dashboard-tab">
-                <?php $this->render_dashboard_content(); ?>
+        <!-- DEBUG: Test Runner fuera de pestañas -->
+        <div class="container-fluid">
+            <div class="alert alert-warning" role="alert">
+                <strong>🔧 DEBUG MODE:</strong> Test Runner mostrado directamente sin pestañas para depurar problemas de AJAX.
             </div>
             
-            <!-- System Info Tab -->
-            <div class="tab-pane fade" id="system-info" role="tabpanel" aria-labelledby="system-info-tab">
-                <?php $this->render_system_info_content(); ?>
-            </div>
+            <?php $this->render_tests_content(); ?>
             
-            <!-- Database Tab -->
-            <div class="tab-pane fade" id="database" role="tabpanel" aria-labelledby="database-tab">
-                <?php $this->render_database_content(); ?>
+            <hr class="my-4">
+            <h4>Información de Debug</h4>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">🔍 JavaScript Debug</div>
+                        <div class="card-body">
+                            <button class="btn btn-outline-primary btn-sm" onclick="console.log('devTools:', window.devTools)">
+                                Log devTools Object
+                            </button>
+                            <button class="btn btn-outline-primary btn-sm" onclick="console.log('devToolsConfig:', window.devToolsConfig)">
+                                Log devToolsConfig
+                            </button>
+                            <button class="btn btn-outline-info btn-sm" onclick="console.log('Nonce:', window.devTools?.getNonce())">
+                                Log Nonce
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">📊 PHP Info</div>
+                        <div class="card-body">
+                            <p><strong>AJAX URL:</strong> <?php echo admin_url('admin-ajax.php'); ?></p>
+                            <p><strong>Nonce generado:</strong> <?php echo wp_create_nonce('dev_tools_nonce'); ?></p>
+                            <p><strong>User can manage:</strong> <?php echo current_user_can('manage_options') ? 'YES' : 'NO'; ?></p>
+                        </div>
+                    </div>
+                </div>
             </div>
-            
-            <!-- AJAX Tester Tab -->
-            <div class="tab-pane fade" id="ajax-tester" role="tabpanel" aria-labelledby="ajax-tester-tab">
-                <?php $this->render_ajax_tester_content(); ?>
-            </div>
-            
-            <!-- Tests Tab -->
-            <div class="tab-pane fade" id="tests" role="tabpanel" aria-labelledby="tests-tab">
-                <?php $this->render_tests_content(); ?>
-            </div>
-            
         </div>
         
         <?php
@@ -620,9 +640,9 @@ class DevToolsAdminPanel {
                                         </label>
                                     </div>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="environmentTests">
-                                        <label class="form-check-label" for="environmentTests">
-                                            Environment Tests
+                                        <input class="form-check-input" type="checkbox" id="database">
+                                        <label class="form-check-label" for="database">
+                                            database Tests
                                         </label>
                                     </div>
                                 </div>
@@ -646,10 +666,10 @@ class DevToolsAdminPanel {
                             </div>
                         </div>
                         <div class="d-grid gap-2 d-md-flex">
-                            <button class="btn btn-success" onclick="devTools.runTests()">
+                            <button id="runTest" class="btn btn-success" onclick="devTools.testRunner.runTests()">
                                 🚀 Run Selected Tests
                             </button>
-                            <button class="btn btn-outline-info" onclick="devTools.runQuickTest()">
+                            <button id="runQuickTest" class="btn btn-outline-info" onclick="devTools.testRunner.runQuickTest()">
                                 ⚡ Quick Test
                             </button>
                         </div>
@@ -782,7 +802,11 @@ class DevToolsAdminPanel {
      * Construir comando PHPUnit
      */
     private function build_phpunit_command($test_types, $verbose = false, $coverage = false) {
-        $base_command = '../dev-tools/vendor/bin/phpunit';
+        // Obtener la ruta correcta de PHP
+        $php_binary = $this->get_php_binary_path();
+        
+        // Construir comando con ruta completa de PHP
+        $base_command = $php_binary . ' ../dev-tools/vendor/bin/phpunit';
         $options = [];
         
         // Agregar verbosidad
@@ -913,8 +937,9 @@ class DevToolsAdminPanel {
      */
     private function run_quick_test() {
         try {
-            // Ejecutar solo el test básico de Tarokina
-            $command = '../dev-tools/vendor/bin/phpunit tests/unit/dashboard/TarokinaBasicTest.php --verbose';
+            // Obtener la ruta correcta de PHP y ejecutar solo el test básico
+            $php_binary = $this->get_php_binary_path();
+            $command = $php_binary . ' ../dev-tools/vendor/bin/phpunit tests/unit/dashboard/TarokinaBasicTest.php --verbose';
             $result = $this->execute_phpunit($command);
             
             return [
@@ -964,5 +989,154 @@ class DevToolsAdminPanel {
                 'error' => 'Error ejecutando tests: ' . $e->getMessage()
             ];
         }
+    }
+    
+    /**
+     * Handler AJAX para ejecutar test rápido
+     */
+    public function ajax_run_quick_test() {
+        // Debug del nonce recibido
+        $received_nonce = $_POST['nonce'] ?? '';
+        $expected_action = 'dev_tools_nonce';
+        
+        // Log de debugging (remover en producción)
+        error_log("DEBUG QUICK TEST NONCE - Received: {$received_nonce}");
+        error_log("DEBUG QUICK TEST NONCE - Expected action: {$expected_action}");
+        error_log("DEBUG QUICK TEST NONCE - Verification result: " . (wp_verify_nonce($received_nonce, $expected_action) ? 'VALID' : 'INVALID'));
+        
+        // Verificar nonce de seguridad
+        if (!wp_verify_nonce($received_nonce, $expected_action)) {
+            wp_send_json_error(['message' => 'Security check failed - Invalid nonce']);
+            return;
+        }
+        
+        // Verificar permisos
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(['message' => 'Insufficient permissions']);
+            return;
+        }
+        
+        try {
+            $result = $this->run_quick_test();
+            
+            if ($result['success']) {
+                wp_send_json_success($result['data']);
+            } else {
+                wp_send_json_error([
+                    'message' => $result['error'] ?? 'Error desconocido ejecutando quick test'
+                ]);
+            }
+            
+        } catch (Exception $e) {
+            wp_send_json_error([
+                'message' => 'Error ejecutando quick test: ' . $e->getMessage()
+            ]);
+        }
+    }
+    
+    /**
+     * Obtener la ruta al ejecutable PHP
+     */
+    private function get_php_path() {
+        // Rutas comunes para Local by WP Engine
+        $possible_paths = [
+            '/opt/homebrew/bin/php',           // Local by WP Engine (Apple Silicon)
+            '/usr/local/bin/php',              // Local by WP Engine (Intel)
+            '/usr/bin/php',                    // Sistema estándar
+            '/usr/bin/php8.1',                 // PHP 8.1 específico
+            '/usr/bin/php8.0',                 // PHP 8.0 específico
+            '/usr/bin/php7.4',                 // PHP 7.4 específico
+        ];
+        
+        // Probar cada ruta
+        foreach ($possible_paths as $path) {
+            if (file_exists($path) && is_executable($path)) {
+                return $path;
+            }
+        }
+        
+        // Si no encontramos ninguna, intentar usar which
+        $which_result = shell_exec('which php 2>/dev/null');
+        if (!empty($which_result)) {
+            $php_path = trim($which_result);
+            if (file_exists($php_path) && is_executable($php_path)) {
+                return $php_path;
+            }
+        }
+        
+        // Fallback a php genérico (puede fallar)
+        return 'php';
+    }
+    
+    /**
+     * Detecta la ruta del binario PHP según el entorno
+     */
+    private function get_php_binary_path() {
+        // Detectar si estamos en Local by WP Engine
+        $is_local_wp = isset($_SERVER['LOCAL_WP']) || 
+                       isset($_ENV['LOCAL_WP']) ||
+                       strpos($_SERVER['HTTP_HOST'] ?? '', '.local') !== false ||
+                       strpos($_SERVER['DOCUMENT_ROOT'] ?? '', '/Local Sites/') !== false;
+        
+        // Log para debugging
+        error_log("DEBUG PHP DETECTION - Is Local WP: " . ($is_local_wp ? 'YES' : 'NO'));
+        error_log("DEBUG PHP DETECTION - DOCUMENT_ROOT: " . ($_SERVER['DOCUMENT_ROOT'] ?? 'UNDEFINED'));
+        
+        if ($is_local_wp) {
+            $document_root = $_SERVER['DOCUMENT_ROOT'] ?? '';
+            
+            // Patrones típicos de Local by WP Engine más amplios
+            $local_patterns = [
+                // Buscar en directorios parent
+                dirname(dirname($document_root)) . '/lightning-services/*/bin/php*',
+                dirname(dirname(dirname($document_root))) . '/lightning-services/*/bin/php*',
+                // Patrones específicos de versiones
+                dirname(dirname($document_root)) . '/lightning-services/php-8.0.30+0/bin/php8.0',
+                dirname(dirname($document_root)) . '/lightning-services/php-8.1.27+2/bin/php8.1', 
+                dirname(dirname($document_root)) . '/lightning-services/php-8.2.15+1/bin/php8.2',
+            ];
+            
+            foreach ($local_patterns as $pattern) {
+                error_log("DEBUG PHP DETECTION - Checking pattern: " . $pattern);
+                if (strpos($pattern, '*') !== false) {
+                    // Usar glob para patrones con wildcards
+                    $matches = glob($pattern);
+                    if (!empty($matches)) {
+                        error_log("DEBUG PHP DETECTION - Found via glob: " . $matches[0]);
+                        return $matches[0];
+                    }
+                } elseif (file_exists($pattern)) {
+                    error_log("DEBUG PHP DETECTION - Found exact match: " . $pattern);
+                    return $pattern;
+                }
+            }
+        }
+        
+        // Rutas estándar del sistema
+        $standard_paths = [
+            '/usr/bin/php',
+            '/usr/local/bin/php',
+            '/opt/homebrew/bin/php',
+            '/Applications/XAMPP/xamppfiles/bin/php'
+        ];
+        
+        foreach ($standard_paths as $path) {
+            if (file_exists($path) && is_executable($path)) {
+                error_log("DEBUG PHP DETECTION - Found standard path: " . $path);
+                return $path;
+            }
+        }
+        
+        // Usar which php si está disponible
+        $which_php = shell_exec('which php 2>/dev/null');
+        if ($which_php && trim($which_php)) {
+            $php_path = trim($which_php);
+            error_log("DEBUG PHP DETECTION - Found via which: " . $php_path);
+            return $php_path;
+        }
+        
+        // Último recurso: usar 'php' y esperar que esté en el PATH
+        error_log("DEBUG PHP DETECTION - Fallback to 'php' command");
+        return 'php';
     }
 }

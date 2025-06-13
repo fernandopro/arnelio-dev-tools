@@ -10,6 +10,11 @@
  * @author Dev-Tools Arquitectura 3.0
  */
 
+// Prevenir acceso directo
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 // Seguridad - No acceso directo
 if (!defined('ABSPATH')) {
     exit('Direct access not allowed');

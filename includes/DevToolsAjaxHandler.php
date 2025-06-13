@@ -14,9 +14,10 @@ namespace DevTools;
 
 use Exception;
 
-// if (!defined('ABSPATH')) {
-//     exit;
-// }
+// Prevenir acceso directo
+if (!defined('ABSPATH')) {
+    exit;
+}
 
 class DevToolsAjaxHandler {
     
