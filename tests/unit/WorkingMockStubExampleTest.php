@@ -3,10 +3,11 @@
  * Ejemplo corregido de Mocks y Stubs funcional
  * Dev-Tools Arquitectura 3.0 - Testing Framework
  */
+namespace DevTools\Tests\Unit;
+
 
 class WorkingMockStubExampleTest extends DevToolsTestCase {
 
-namespace DevTools\Tests\Unit;
 
     
     private $db_mock;

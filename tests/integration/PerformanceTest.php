@@ -8,10 +8,11 @@
  * @subpackage Tests\Performance
  * @group performance
  */
+namespace DevTools\Tests\Integration;
+
 
 require_once dirname(__DIR__) . '/includes/TestCase.php';
 
-namespace DevTools\Tests\Integration;
 
 
 class PerformanceTest extends DevToolsTestCase {

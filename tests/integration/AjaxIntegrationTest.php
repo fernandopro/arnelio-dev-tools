@@ -8,10 +8,11 @@
  * @subpackage Tests\Integration
  * @group ajax
  */
+namespace DevTools\Tests\Integration;
+
 
 require_once dirname(__DIR__) . '/includes/TestCase.php';
 
-namespace DevTools\Tests\Integration;
 
 
 class AjaxIntegrationTest extends DevToolsTestCase {

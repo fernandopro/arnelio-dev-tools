@@ -6,10 +6,11 @@
  * Este test demuestra que NO hay limitaciones en WordPress.
  * ¡TODO el sistema funciona perfectamente para testing de plugins!
  */
+namespace DevTools\Tests\Unit;
+
 
 class WordPressFullyOperationalTest extends DevToolsTestCase {
 
-namespace DevTools\Tests\Unit;
 
     
     /**

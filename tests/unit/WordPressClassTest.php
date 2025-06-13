@@ -2,10 +2,11 @@
 /**
  * Test para verificar qué clases de WordPress están disponibles
  */
+namespace DevTools\Tests\Unit;
+
 
 class WordPressClassTest extends DevToolsTestCase {
 
-namespace DevTools\Tests\Unit;
 
     
     /**

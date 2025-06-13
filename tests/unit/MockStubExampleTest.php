@@ -5,10 +5,11 @@
  * Este archivo demuestra casos de uso reales de testing con
  * Stubs para datos y Mocks para verificar comportamiento
  */
+namespace DevTools\Tests\Unit;
+
 
 class MockStubExampleTest extends DevToolsTestCase {
 
-namespace DevTools\Tests\Unit;
 
     
     private $db_mock;

@@ -7,10 +7,11 @@
  * @package DevTools
  * @subpackage Tests\Modules
  */
+namespace DevTools\Tests\Modules;
+
 
 require_once dirname(__DIR__) . '/includes/TestCase.php';
 
-namespace DevTools\Tests\Modules;
 
 
 class DatabaseConnectionModuleTest extends DevToolsTestCase {

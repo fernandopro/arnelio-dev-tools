@@ -5,10 +5,11 @@
  * Demuestra que WordPress Test Suite está COMPLETAMENTE OPERATIVO
  * para testing profesional de plugins con capacidades avanzadas.
  */
+namespace DevTools\Tests\Unit;
+
 
 class WordPressAdvancedTestSuite extends DevToolsTestCase {
 
-namespace DevTools\Tests\Unit;
 
     
     private $test_user_id;

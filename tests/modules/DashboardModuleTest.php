@@ -3,10 +3,11 @@
  * Test de los módulos Dev-Tools existentes
  * Dev-Tools Arquitectura 3.0 - Testing Framework
  */
+namespace DevTools\Tests\Modules;
+
 
 class DashboardModuleTest extends DevToolsTestCase {
 
-namespace DevTools\Tests\Modules;
 
 
     /**

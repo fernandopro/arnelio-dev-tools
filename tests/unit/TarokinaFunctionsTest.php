@@ -7,12 +7,13 @@
  * 
  * @package DevTools\Tests
  */
+namespace DevTools\Tests\Unit;
+
 
 use PHPUnit\Framework\TestCase;
 
 class TarokinaFunctionsTest extends TestCase {
 
-namespace DevTools\Tests\Unit;
 
 
     /**
