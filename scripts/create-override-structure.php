@@ -109,11 +109,15 @@ return [
             <directory>../dev-tools/tests/unit/</directory>
             <directory>../dev-tools/tests/modules/</directory>
         </testsuite>
-        <testsuite name="Environment Tests">
-            <directory>../dev-tools/tests/environment/</directory>
+        <testsuite name="Database Tests">
+            <directory>./tests/database/</directory>
+            <directory>../dev-tools/tests/database/</directory>
         </testsuite>
         <testsuite name="Integration Tests">
             <directory>../dev-tools/tests/integration/</directory>
+        </testsuite>
+        <testsuite name="Output Tests">
+            <directory>../dev-tools/tests/output/</directory>
         </testsuite>
     </testsuites>
     
@@ -239,7 +243,7 @@ class ' . $class_name . 'PluginTest extends DevToolsTestCase {
 # config/config-sensitive.php
 
 # Datos de testing temporales
-/tests/fixtures/temp/*
+/tests/temp/*
 
 # Coverage reports
 /reports/coverage/*
@@ -276,7 +280,9 @@ plugin-dev-tools/
 ├── tests/               # Tests específicos del plugin
 │   ├── unit/           # Tests unitarios
 │   ├── integration/    # Tests de integración
-│   └── fixtures/       # Datos de prueba
+│   ├── database/       # Tests de base de datos
+│   ├── modules/        # Tests de módulos
+│   └── includes/       # Clases helper
 ├── modules/            # Módulos personalizados
 ├── templates/          # Templates específicos
 ├── logs/               # Logs del plugin
