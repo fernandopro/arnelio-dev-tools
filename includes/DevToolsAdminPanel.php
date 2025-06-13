@@ -90,6 +90,7 @@ class DevToolsAdminPanel {
      * Ejecuta el comando de test
      */
     private function execute_test_command($test_type, $test_file = '') {
+        error_log("DEBUG - execute_test_command() called with type: " . $test_type);
         $start_time = microtime(true);
         
         // Cambiar al directorio plugin-dev-tools
@@ -102,8 +103,9 @@ class DevToolsAdminPanel {
         
         chdir($plugin_dev_tools_dir);
         
-        // Construir comando según el tipo
-        $phpunit_path = '../dev-tools/vendor/bin/phpunit';
+        // Construir comando según el tipo (con ruta completa de PHP y archivo PHPUnit real)
+        $php_binary = $this->get_php_binary_path();
+        $phpunit_path = '"' . $php_binary . '" ../dev-tools/vendor/phpunit/phpunit/phpunit';
         
         switch ($test_type) {
             case 'basic':
@@ -806,8 +808,8 @@ class DevToolsAdminPanel {
         $php_binary = $this->get_php_binary_path();
         
         // Construir comando con ruta completa de PHP (usar quotes manuales para espacios)
-        // Usar PHPUnit de dev-tools desde plugin-dev-tools
-        $base_command = '"' . $php_binary . '" ../dev-tools/vendor/bin/phpunit';
+        // Usar el archivo PHPUnit real, no el wrapper que busca php en PATH
+        $base_command = '"' . $php_binary . '" ../dev-tools/vendor/phpunit/phpunit/phpunit';
         $options = [];
         
         // Agregar verbosidad
@@ -855,63 +857,60 @@ class DevToolsAdminPanel {
         chdir($plugin_dev_tools_dir);
         
         try {
-            // Crear un script temporal para evitar problemas de parsing del shell
-            $temp_script = tempnam(sys_get_temp_dir(), 'phpunit_') . '.sh';
+            // Usar exec() con comando correctamente escapado para macOS
+            $start_time = microtime(true);
             
-            // Crear contenido del script con la ruta completa
-            $script_content = "#!/bin/sh\ncd " . escapeshellarg(getcwd()) . "\n" . $command . "\n";
+            error_log("DEBUG PHPUNIT EXECUTION - Original command: " . $command);
             
-            error_log("DEBUG PHPUNIT EXECUTION - Command to execute: " . $command);
-            error_log("DEBUG PHPUNIT EXECUTION - Script content: " . $script_content);
-            error_log("DEBUG PHPUNIT EXECUTION - Temp script: " . $temp_script);
+            // Construir comando completamente escapado
+            $php_binary = $this->get_php_binary_path();
+            $phpunit_path = '../dev-tools/vendor/phpunit/phpunit/phpunit';
             
-            // Escribir el script
-            if (file_put_contents($temp_script, $script_content) === false) {
-                throw new \Exception("Failed to create temporary script");
-            }
-            
-            // Hacer el script ejecutable
-            chmod($temp_script, 0755);
-            
-            // Ejecutar el script
-            $descriptorspec = [
-                0 => ["pipe", "r"],  // stdin
-                1 => ["pipe", "w"],  // stdout
-                2 => ["pipe", "w"]   // stderr
-            ];
-            
-            $process = proc_open("/bin/sh " . escapeshellarg($temp_script), $descriptorspec, $pipes, getcwd());
-            
-            if (is_resource($process)) {
-                // Cerrar stdin
-                fclose($pipes[0]);
-                
-                // Leer stdout y stderr
-                $stdout = stream_get_contents($pipes[1]);
-                $stderr = stream_get_contents($pipes[2]);
-                fclose($pipes[1]);
-                fclose($pipes[2]);
-                
-                // Obtener el código de salida
-                $exit_code = proc_close($process);
-                
-                // Combinar stdout y stderr
-                $output = trim($stdout . "\n" . $stderr);
-                
-                error_log("DEBUG PHPUNIT EXECUTION - Exit code: " . $exit_code);
-                error_log("DEBUG PHPUNIT EXECUTION - Output: " . substr($output, 0, 500) . "...");
-                
+            // Extraer el archivo de test del comando
+            if (preg_match('/phpunit\s+([^\s]+\.php)/', $command, $matches)) {
+                $test_file = $matches[1];
             } else {
-                throw new \Exception("Failed to create process for script: " . $temp_script);
+                $test_file = 'tests/unit/dashboard/TarokinaBasicTest.php';
             }
             
-            // Limpiar el script temporal
-            unlink($temp_script);
+            // Construir comando con todas las partes escapadas individualmente
+            $escaped_command = escapeshellarg($php_binary) . ' ' . 
+                              escapeshellarg($phpunit_path) . ' ' . 
+                              escapeshellarg($test_file);
             
-            $execution_time = round((microtime(true) - $start_time) * 1000); // en milisegundos
+            // Agregar --verbose si está en el comando original
+            if (strpos($command, '--verbose') !== false) {
+                $escaped_command .= ' --verbose';
+            }
+            
+            error_log("DEBUG PHPUNIT EXECUTION - Escaped command: " . $escaped_command);
+            
+            // Configurar el PATH para incluir el directorio del PHP binary
+            $php_binary = $this->get_php_binary_path();
+            $php_dir = dirname($php_binary);
+            $current_path = getenv('PATH');
+            $new_path = $php_dir . ':' . $current_path;
+            
+            // Ejecutar con PATH configurado
+            $output = [];
+            $exit_code = 0;
+            
+            // Configurar el entorno para la ejecución
+            $env_command = "export PATH=\"{$new_path}\" && " . $escaped_command . ' 2>&1';
+            
+            error_log("DEBUG PHPUNIT EXECUTION - Final command with PATH: " . $env_command);
+            
+            exec($env_command, $output, $exit_code);
+            
+            $execution_time = round((microtime(true) - $start_time) * 1000);
+            
+            $output_string = implode("\n", $output);
+            
+            error_log("DEBUG PHPUNIT EXECUTION - Exit code: " . $exit_code);
+            error_log("DEBUG PHPUNIT EXECUTION - Output length: " . strlen($output_string));
             
             return [
-                'output' => $output,
+                'output' => $output_string,
                 'exit_code' => $exit_code,
                 'execution_time' => $execution_time
             ];
@@ -988,7 +987,7 @@ class DevToolsAdminPanel {
         try {
             // Obtener la ruta correcta de PHP y ejecutar solo el test básico
             $php_binary = $this->get_php_binary_path();
-            $command = '"' . $php_binary . '" ../dev-tools/vendor/bin/phpunit tests/unit/dashboard/TarokinaBasicTest.php --verbose';
+            $command = '"' . $php_binary . '" ../dev-tools/vendor/phpunit/phpunit/phpunit tests/unit/dashboard/TarokinaBasicTest.php --verbose';
             
             error_log("DEBUG TEST EXECUTION - Final command: " . $command);
             
@@ -1124,68 +1123,36 @@ class DevToolsAdminPanel {
      * Detecta la ruta del binario PHP según el entorno
      */
     private function get_php_binary_path() {
-        // Detectar si estamos en Local by WP Engine
-        $is_local_wp = isset($_SERVER['LOCAL_WP']) || 
-                       isset($_ENV['LOCAL_WP']) ||
-                       strpos($_SERVER['HTTP_HOST'] ?? '', '.local') !== false ||
-                       strpos($_SERVER['DOCUMENT_ROOT'] ?? '', '/Local Sites/') !== false;
+        // SIMPLIFICADO: Usar PHP del sistema macOS
+        // Priorizar el PHP instalado por Homebrew que está en PATH
         
-        error_log("DEBUG PHP DETECTION - Is Local WP: " . ($is_local_wp ? 'YES' : 'NO'));
-        
-        if ($is_local_wp) {
-            // Buscar PHP en el directorio estándar de Local by WP Engine
-            $user_home = $_SERVER['HOME'] ?? ('/Users/' . get_current_user());
-            $local_services_dir = $user_home . '/Library/Application Support/Local/lightning-services';
-            
-            error_log("DEBUG PHP DETECTION - Searching in: " . $local_services_dir);
-            
-            if (is_dir($local_services_dir)) {
-                // Buscar directorios PHP en lightning-services
-                $php_dirs = glob($local_services_dir . '/php-*');
-                
-                foreach ($php_dirs as $php_dir) {
-                    // Buscar el ejecutable PHP en darwin-arm64 (Apple Silicon) o darwin-x64 (Intel)
-                    $possible_paths = [
-                        $php_dir . '/bin/darwin-arm64/bin/php',
-                        $php_dir . '/bin/darwin-x64/bin/php',
-                        $php_dir . '/bin/php'
-                    ];
-                    
-                    foreach ($possible_paths as $php_path) {
-                        if (file_exists($php_path) && is_executable($php_path)) {
-                            error_log("DEBUG PHP DETECTION - Found Local PHP: " . $php_path);
-                            return $php_path;
-                        }
-                    }
-                }
+        // Primero, intentar con which php para obtener el PHP activo del sistema
+        $which_php = shell_exec('which php 2>/dev/null');
+        if ($which_php && trim($which_php)) {
+            $php_path = trim($which_php);
+            if (file_exists($php_path) && is_executable($php_path)) {
+                error_log("DEBUG PHP DETECTION - Found system PHP via 'which': " . $php_path);
+                return $php_path;
             }
         }
         
-        // Rutas estándar del sistema
+        // Rutas estándar del sistema macOS (orden de prioridad)
         $standard_paths = [
-            '/usr/bin/php',
-            '/usr/local/bin/php',
-            '/opt/homebrew/bin/php',
-            '/Applications/XAMPP/xamppfiles/bin/php'
+            '/opt/homebrew/bin/php',      // Homebrew Apple Silicon
+            '/usr/local/bin/php',         // Homebrew Intel
+            '/usr/bin/php',               // PHP nativo de macOS
+            '/Applications/XAMPP/xamppfiles/bin/php'  // XAMPP
         ];
         
         foreach ($standard_paths as $path) {
             if (file_exists($path) && is_executable($path)) {
-                error_log("DEBUG PHP DETECTION - Found standard path: " . $path);
+                error_log("DEBUG PHP DETECTION - Found system PHP at: " . $path);
                 return $path;
             }
         }
         
-        // Usar which php si está disponible
-        $which_php = shell_exec('which php 2>/dev/null');
-        if ($which_php && trim($which_php)) {
-            $php_path = trim($which_php);
-            error_log("DEBUG PHP DETECTION - Found via which: " . $php_path);
-            return $php_path;
-        }
-        
-        // Último recurso: usar 'php' y esperar que esté en el PATH
-        error_log("DEBUG PHP DETECTION - Fallback to 'php' command");
+        // Último recurso: usar 'php' y esperar que esté en el PATH del sistema
+        error_log("DEBUG PHP DETECTION - Using fallback 'php' command (should work with system PATH)");
         return 'php';
     }
 }
