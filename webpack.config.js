@@ -1,5 +1,4 @@
 const path = require('path');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
@@ -143,14 +142,7 @@ module.exports = (env, argv) => {
             new MiniCssExtractPlugin({
                 filename: 'css/[name].min.css',
                 chunkFilename: 'css/[id].css'
-            }),
-
-            // Limpiar directorio de salida en producción
-            ...(isDevelopment ? [] : [
-                new CleanWebpackPlugin({
-                    cleanOnceBeforeBuildPatterns: ['**/*.map']
-                })
-            ])
+            })
         ],
 
         optimization: {

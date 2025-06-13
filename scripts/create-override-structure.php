@@ -152,7 +152,67 @@ return [
 </phpunit>';
     
     file_put_contents($info['child_dir'] . '/phpunit.xml', $phpunit_content);
-    echo "✅ Configuración PHPUnit creada\n\n";
+    echo "✅ Configuración PHPUnit creada\n";
+    
+    // 3.1. Crear phpunit-plugin-only.xml (sin conflictos)
+    echo "🧪 Creando configuración PHPUnit específica (sin conflictos)...\n";
+    $phpunit_only_content = '<?xml version="1.0"?>
+<phpunit
+    bootstrap="../dev-tools/tests/bootstrap.php"
+    backupGlobals="false"
+    colors="true"
+    convertErrorsToExceptions="true"
+    convertNoticesToExceptions="true"
+    convertWarningsToExceptions="true"
+    stopOnFailure="false"
+    beStrictAboutTestsThatDoNotTestAnything="true"
+    beStrictAboutOutputDuringTests="true"
+>
+    <testsuites>
+        <testsuite name="Plugin Specific Tests Only">
+            <directory>./tests/unit/</directory>
+            <directory>./tests/integration/</directory>
+        </testsuite>
+    </testsuites>
+
+    <php>
+        <const name="WP_TESTS_DOMAIN" value="example.org" />
+        <const name="WP_TESTS_EMAIL" value="admin@example.org" />
+        <const name="WP_TESTS_TITLE" value="Test Blog" />
+        <const name="WP_PHP_BINARY" value="php" />
+        <const name="WP_TESTS_FORCE_KNOWN_BUGS" value="true" />
+        <env name="WP_PHPUNIT__TESTS_CONFIG" value="../dev-tools/tests/wp-tests-config.php" />
+        <env name="PLUGIN_TEST_MODE" value="true"/>
+        <env name="WP_TESTS_MULTISITE" value="0"/>
+    </php>
+
+    <groups>
+        <exclude>
+            <group>ajax</group>
+            <group>ms-files</group>
+            <group>external-http</group>
+        </exclude>
+    </groups>
+
+    <logging>
+        <log type="junit" target="./reports/junit.xml"/>
+        <log type="coverage-text" target="php://stdout" showUncoveredFiles="false"/>
+    </logging>
+
+    <filter>
+        <whitelist processUncoveredFilesFromWhitelist="true">
+            <directory suffix=".php">./</directory>
+            <exclude>
+                <directory>./tests/</directory>
+                <directory>./vendor/</directory>
+                <directory>../dev-tools/</directory>
+            </exclude>
+        </whitelist>
+    </filter>
+</phpunit>';
+    
+    file_put_contents($info['child_dir'] . '/phpunit-plugin-only.xml', $phpunit_only_content);
+    echo "✅ Configuración PHPUnit específica creada\n\n";
     
     // 4. Crear test de ejemplo
     echo "🧪 Creando tests de ejemplo...\n";
@@ -294,13 +354,16 @@ plugin-dev-tools/
 ### Ejecutar Tests Específicos del Plugin
 ```bash
 # Desde la raíz del plugin
-dev-tools/vendor/bin/phpunit -c plugin-dev-tools/tests/phpunit.xml
+dev-tools/vendor/bin/phpunit -c plugin-dev-tools/phpunit.xml
 
 # Solo tests unitarios específicos
-dev-tools/vendor/bin/phpunit -c plugin-dev-tools/tests/phpunit.xml --testsuite="Plugin Specific Tests"
+dev-tools/vendor/bin/phpunit -c plugin-dev-tools/phpunit.xml --testsuite="Plugin Specific Tests"
+
+# Tests solo del plugin (sin framework - recomendado)
+dev-tools/vendor/bin/phpunit -c plugin-dev-tools/phpunit-plugin-only.xml
 
 # Con coverage
-dev-tools/vendor/bin/phpunit -c plugin-dev-tools/tests/phpunit.xml --coverage-html plugin-dev-tools/reports/coverage
+dev-tools/vendor/bin/phpunit -c plugin-dev-tools/phpunit.xml --coverage-html plugin-dev-tools/reports/coverage
 ```
 
 ### Ejecutar Tests del Framework Core
@@ -377,10 +440,11 @@ print_r($info);
     echo "   - Documentación: ✅ Generada\n\n";
     
     echo "🚀 Próximos pasos:\n";
-    echo "   1. Ejecutar tests: dev-tools/vendor/bin/phpunit -c plugin-dev-tools/phpunit.xml\n";
-    echo "   2. Personalizar: plugin-dev-tools/config/config-local.php\n";
-    echo "   3. Añadir tests: plugin-dev-tools/tests/unit/\n";
-    echo "   4. Crear overrides: FileOverrideSystem::getInstance()->create_override('archivo.php')\n\n";
+    echo "   1. Ejecutar tests: dev-tools/vendor/bin/phpunit -c plugin-dev-tools/phpunit-plugin-only.xml\n";
+    echo "   2. Tests con framework: dev-tools/vendor/bin/phpunit -c plugin-dev-tools/phpunit.xml\n";
+    echo "   3. Personalizar: plugin-dev-tools/config/config-local.php\n";
+    echo "   4. Añadir tests: plugin-dev-tools/tests/unit/\n";
+    echo "   5. Crear overrides: FileOverrideSystem::getInstance()->create_override('archivo.php')\n\n";
     
 } catch (Exception $e) {
     echo "❌ Error: " . $e->getMessage() . "\n";
