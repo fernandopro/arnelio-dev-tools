@@ -10,10 +10,10 @@
  * @author Dev-Tools Arquitectura 3.0
  */
 
-// // Seguridad - No acceso directo
-// if (!defined('ABSPATH')) {
-//     exit('Direct access not allowed');
-// }
+// Seguridad - No acceso directo
+if (!defined('ABSPATH')) {
+    exit('Direct access not allowed');
+}
 
 // Constante para identificar dev-tools
 if (!defined('DEV_TOOLS_LOADED')) {
