@@ -30,6 +30,7 @@ phpunit-dev.xml
 phpunit-custom.xml
 # Mantener .phpunit.result.cache en el directorio raíz para mejorar performance
 # pero ignorar en subdirectorios
+.phpunit.result.cache
 tests/**/.phpunit.result.cache
 modules/**/.phpunit.result.cache
 tests/coverage/
