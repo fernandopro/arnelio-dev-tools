@@ -8,6 +8,9 @@
  */
 
 class WordPressFullyOperationalTest extends DevToolsTestCase {
+
+namespace DevTools\Tests\Unit;
+
     
     /**
      * Test que demuestra que TODAS las clases de WordPress funcionan

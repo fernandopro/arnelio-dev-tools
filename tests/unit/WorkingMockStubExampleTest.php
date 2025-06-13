@@ -5,6 +5,9 @@
  */
 
 class WorkingMockStubExampleTest extends DevToolsTestCase {
+
+namespace DevTools\Tests\Unit;
+
     
     private $db_mock;
     private $user_service_stub;
@@ -183,7 +186,7 @@ interface LoggerInterface {
 /**
  * Servicio que usa database (ejemplo)
  */
-class DatabaseUserService {
+class WorkingMockStubExampleTest {
     private $db;
     
     public function __construct($db) {
@@ -199,7 +202,7 @@ class DatabaseUserService {
 /**
  * Servicio de autenticación (ejemplo)
  */
-class AuthService {
+class WorkingMockStubExampleTest {
     private $logger;
     
     public function __construct($logger) {
@@ -220,7 +223,7 @@ class AuthService {
 /**
  * Manager completo de usuarios (ejemplo)
  */
-class UserManager {
+class WorkingMockStubExampleTest {
     private $user_service;
     private $db;
     private $logger;

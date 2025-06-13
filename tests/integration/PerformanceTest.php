@@ -11,6 +11,9 @@
 
 require_once dirname(__DIR__) . '/includes/TestCase.php';
 
+namespace DevTools\Tests\Integration;
+
+
 class PerformanceTest extends DevToolsTestCase {
 
     private $performance_thresholds = [

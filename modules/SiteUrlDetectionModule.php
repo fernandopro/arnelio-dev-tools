@@ -11,6 +11,7 @@
  * @author Dev-Tools Arquitectura 3.0
  */
 
+namespace DevTools\Modules;
 
 class SiteUrlDetectionModule {
     

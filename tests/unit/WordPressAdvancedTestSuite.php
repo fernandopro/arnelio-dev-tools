@@ -7,6 +7,9 @@
  */
 
 class WordPressAdvancedTestSuite extends DevToolsTestCase {
+
+namespace DevTools\Tests\Unit;
+
     
     private $test_user_id;
     private $test_post_id;

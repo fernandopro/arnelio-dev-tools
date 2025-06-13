@@ -10,6 +10,11 @@
  * @author Dev-Tools Arquitectura 3.0
  */
 
+namespace DevTools\Modules;
+
+use PDO;
+use PDOException;
+use Exception;
 
 class DatabaseConnectionModule {
     

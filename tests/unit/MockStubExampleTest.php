@@ -7,6 +7,9 @@
  */
 
 class MockStubExampleTest extends DevToolsTestCase {
+
+namespace DevTools\Tests\Unit;
+
     
     private $db_mock;
     private $wp_mock;
@@ -172,7 +175,7 @@ class MockStubExampleTest extends DevToolsTestCase {
 /**
  * Clase simulada para funciones de WordPress que necesitamos mockear
  */
-class WordPressFunctions {
+class MockStubExampleTest {
     public function wp_cache_set($key, $data, $group = '', $expire = 0) {
         return true;
     }
@@ -193,7 +196,7 @@ class WordPressFunctions {
 /**
  * Clase de ejemplo para procesar database
  */
-class DatabaseProcessor {
+class MockStubExampleTest {
     private $db;
     
     public function __construct($db) {
@@ -208,7 +211,7 @@ class DatabaseProcessor {
 /**
  * Clase de ejemplo para procesar WordPress
  */
-class WordPressProcessor {
+class MockStubExampleTest {
     private $wp;
     
     public function __construct($wp) {

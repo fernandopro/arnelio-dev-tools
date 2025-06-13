@@ -4,6 +4,9 @@
  */
 
 class WordPressClassTest extends DevToolsTestCase {
+
+namespace DevTools\Tests\Unit;
+
     
     /**
      * Verificar disponibilidad de clases de WordPress

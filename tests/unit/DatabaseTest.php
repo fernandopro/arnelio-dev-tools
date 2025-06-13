@@ -4,7 +4,9 @@
  * Dev-Tools Arquitectura 3.0 - Testing Framework
  */
 
-class DatabaseTest extends DevToolsTestCase {
+namespace DevTools\Tests\Unit;
+
+class DatabaseTest extends \DevToolsTestCase {
 
     /**
      * Test que verifica la conexión a la base de datos

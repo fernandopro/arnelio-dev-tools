@@ -9,6 +9,9 @@ use PHPUnit\Framework\TestCase;
 
 class TarokinaBugFixTest extends TestCase {
 
+namespace DevTools\Tests\Unit;
+
+
     /**
      * Test que reproduce un bug: función de validación de slug de tarot
      * 

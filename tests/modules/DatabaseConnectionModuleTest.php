@@ -10,6 +10,9 @@
 
 require_once dirname(__DIR__) . '/includes/TestCase.php';
 
+namespace DevTools\Tests\Modules;
+
+
 class DatabaseConnectionModuleTest extends DevToolsTestCase {
 
     private $module;

@@ -15,7 +15,7 @@
     "scripts": {
         "install:full": "bash install.sh",
         "install:deps": "composer install --optimize-autoloader",
-        "validate": "bash validate.sh",
+        "validate:installation": "bash validate.sh",
         "test": "./vendor/bin/phpunit",
         "test:unit": "./vendor/bin/phpunit tests/unit",
         "test:integration": "./vendor/bin/phpunit tests/integration",
@@ -33,7 +33,11 @@
         "psr-4": {
             "DevTools\\": "includes/",
             "DevTools\\Modules\\": "modules/",
-            "DevTools\\Tests\\": "tests/"
+            "DevTools\\Tests\\": "tests/",
+            "DevTools\\Tests\\Database\\": "tests/database/",
+            "DevTools\\Tests\\Unit\\": "tests/unit/", 
+            "DevTools\\Tests\\Integration\\": "tests/integration/",
+            "DevTools\\Tests\\Modules\\": "tests/modules/"
         }
     },
     "autoload-dev": {

@@ -5,6 +5,9 @@
 
 require_once dirname(__DIR__) . '/includes/TestCase.php';
 
+namespace DevTools\Tests\Integration;
+
+
 class SimplePerformanceTest extends DevToolsTestCase {
 
     /**

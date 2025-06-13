@@ -6,6 +6,9 @@
 
 class DashboardModuleTest extends DevToolsTestCase {
 
+namespace DevTools\Tests\Modules;
+
+
     /**
      * Test que verifica que el DatabaseConnectionModule se carga correctamente
      */

@@ -8,9 +8,11 @@
  * @subpackage Tests\Database
  */
 
+namespace DevTools\Tests\Database;
+
 require_once dirname(__DIR__) . '/includes/TestCase.php';
 
-class DatabaseSchemaTest extends DevToolsTestCase {
+class DatabaseSchemaTest extends \DevToolsTestCase {
 
     /**
      * Test: Verificar estructura de tablas WordPress core

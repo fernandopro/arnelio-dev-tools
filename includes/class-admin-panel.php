@@ -8,6 +8,10 @@
  * @author Dev-Tools Arquitectura 3.0
  */
 
+namespace DevTools;
+
+use Exception;
+
 // if (!defined('ABSPATH')) {
 //     exit;
 // }

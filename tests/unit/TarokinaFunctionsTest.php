@@ -12,6 +12,9 @@ use PHPUnit\Framework\TestCase;
 
 class TarokinaFunctionsTest extends TestCase {
 
+namespace DevTools\Tests\Unit;
+
+
     /**
      * Setup ejecutado antes de cada test
      */
