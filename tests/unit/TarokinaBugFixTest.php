@@ -5,12 +5,28 @@
  * @package DevTools\Tests
  */
 
+namespace DevTools\Tests\Unit;
+
 use PHPUnit\Framework\TestCase;
+use Exception;
 
 class TarokinaBugFixTest extends TestCase {
 
-namespace DevTools\Tests\Unit;
-
+    protected function setUp(): void {
+        parent::setUp();
+        
+        // Mock para sanitize_title() (función de WordPress)
+        if (!function_exists('sanitize_title')) {
+            function sanitize_title($title) {
+                // Simulación básica de sanitize_title de WordPress
+                $title = strip_tags($title);
+                $title = preg_replace('/[^a-z0-9\s\-_]/i', '', $title);
+                $title = preg_replace('/\s+/', '-', $title);
+                $title = trim($title, '-');
+                return strtolower($title);
+            }
+        }
+    }
 
     /**
      * Test que reproduce un bug: función de validación de slug de tarot
