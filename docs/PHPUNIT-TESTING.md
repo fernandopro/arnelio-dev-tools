@@ -13,6 +13,95 @@ Este documento describe la configuración completa de PHPUnit para testing autom
 - **✅ Autoloader** - PSR-4 configurado para clases de testing
 - **✅ Coverage** - Reportes HTML y Clover configurados
 
+## 📦 Componentes de la WordPress Test Suite
+
+### 🔧 **Dependencias Instaladas Automáticamente**
+
+La instalación de Dev-Tools incluye automáticamente **todos los componentes necesarios** para testing de WordPress:
+
+#### **1. PHPUnit Framework**
+```json
+"phpunit/phpunit": "^9"
+```
+- ✅ Framework principal de testing
+- ✅ Versión 9.x (estable y moderna)
+- ✅ Motor de ejecución de tests
+
+#### **2. WordPress Test Suite Completa**
+```json
+"wp-phpunit/wp-phpunit": "^6.8"
+```
+- ✅ **WordPress Core PHPUnit Library** oficial
+- ✅ **Bootstrap completo** para WordPress testing
+- ✅ **Factory classes** para crear datos de prueba
+- ✅ **TestCase classes** especializadas:
+  - `WP_UnitTestCase` - Clase base para tests unitarios
+  - `WP_Ajax_UnitTestCase` - Testing de AJAX
+  - `WP_REST_TestCase` - Testing de REST API
+  - `WP_XML_TestCase` - Testing de XML/RSS
+  - `WP_Canonical_UnitTestCase` - Testing de URLs canónicas
+
+#### **3. WordPress Test Data & Fixtures**
+- ✅ **Mock objects** para WordPress classes
+- ✅ **Factory system** para crear usuarios, posts, terms, etc.
+- ✅ **WordPress database schema** para testing
+- ✅ **Formatting test data** (XSS attacks, feeds, etc.)
+
+#### **4. Polyfills y Compatibilidad**
+```json
+"yoast/phpunit-polyfills": "^4.0"
+```
+- ✅ Compatibilidad con versiones de PHPUnit
+- ✅ Polyfills para funciones modernas
+
+### 📁 **Estructura de la WordPress Test Suite**
+
+```bash
+vendor/wp-phpunit/wp-phpunit/
+├── includes/
+│   ├── bootstrap.php          # Bootstrap principal de WordPress
+│   ├── testcase.php          # WP_UnitTestCase base
+│   ├── testcase-ajax.php     # Testing AJAX WordPress
+│   ├── testcase-rest-api.php # Testing REST API
+│   ├── factory/              # Factory para crear datos
+│   │   ├── class-wp-unittest-factory.php
+│   │   ├── class-wp-unittest-factory-for-user.php
+│   │   ├── class-wp-unittest-factory-for-post.php
+│   │   └── class-wp-unittest-factory-for-term.php
+│   ├── mock-*.php           # Mock objects de WordPress
+│   └── utils.php            # Utilidades de testing
+├── data/                    # Datos de prueba
+│   ├── formatting/          # Tests de formateo
+│   ├── feed/               # Tests de feeds RSS
+│   └── images/             # Imágenes para tests
+└── wp-tests-config.php     # Configuración de tests
+```
+
+### 🎯 **Capacidades de Testing Disponibles**
+
+Con la instalación completa tienes acceso a:
+
+- ✅ **WordPress Core Classes**: `WP_User`, `WP_Post`, `WP_Query`, `wpdb`, etc.
+- ✅ **WordPress Functions**: `wp_insert_user()`, `get_user_by()`, `add_action()`, etc.
+- ✅ **Database Testing**: Creación/manipulación de posts, usuarios, taxonomías
+- ✅ **AJAX Testing**: Simulación de peticiones AJAX de WordPress
+- ✅ **REST API Testing**: Testing de endpoints personalizados
+- ✅ **Hook Testing**: Testing de actions y filters
+- ✅ **Mock/Stub Patterns**: Patrones avanzados de testing
+
+### ✨ **Instalación Autosuficiente**
+
+**Una sola instalación incluye todo**:
+```bash
+composer install  # Instala automáticamente:
+                  # ✅ PHPUnit ^9
+                  # ✅ WordPress Test Suite completa
+                  # ✅ Polyfills y compatibilidad
+                  # ✅ Autoloading configurado
+```
+
+**No necesitas instalar nada adicional** - el framework es completamente autosuficiente.
+
 ## 🏗️ Arquitectura del Sistema de Testing
 
 ```
