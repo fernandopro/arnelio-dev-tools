@@ -49,15 +49,32 @@ class DevToolsAdminPanel {
         $test_file = sanitize_text_field($_POST['test_file'] ?? '');
         
         try {
-            $result = $this->execute_test_command($test_type, $test_file);
-            wp_send_json_success([
-                'output' => $result['output'],
-                'success' => $result['success'],
-                'execution_time' => $result['execution_time']
-            ]);
+            // Usar las nuevas funciones extraídas del TestRunnerModule
+            if ($test_type === 'basic' || $test_type === 'quick') {
+                $result = $this->run_quick_test();
+            } else {
+                // Mapear tipos de test
+                $test_types = ['unit'];
+                if ($test_type === 'dashboard') {
+                    $test_types = ['dashboard'];
+                } elseif ($test_type === 'all') {
+                    $test_types = ['unit', 'dashboard'];
+                }
+                
+                $result = $this->run_tests_with_options($test_types, true, false);
+            }
+            
+            if ($result['success']) {
+                wp_send_json_success($result['data']);
+            } else {
+                wp_send_json_error([
+                    'message' => $result['error']
+                ]);
+            }
+            
         } catch (Exception $e) {
             wp_send_json_error([
-                'message' => $e->getMessage()
+                'message' => 'Error ejecutando tests: ' . $e->getMessage()
             ]);
         }
     }
@@ -753,6 +770,199 @@ class DevToolsAdminPanel {
                 <p class="mb-0"><?php echo esc_html($e->getMessage()); ?></p>
             </div>
             <?php
+        }
+    }
+
+    // =============================================================
+    //               FUNCIONES DE TEST RUNNER 
+    //               (Extraídas del TestRunnerModule)
+    // =============================================================
+
+    /**
+     * Construir comando PHPUnit
+     */
+    private function build_phpunit_command($test_types, $verbose = false, $coverage = false) {
+        $base_command = '../dev-tools/vendor/bin/phpunit';
+        $options = [];
+        
+        // Agregar verbosidad
+        if ($verbose) {
+            $options[] = '--verbose';
+        }
+        
+        // Agregar cobertura
+        if ($coverage) {
+            $options[] = '--coverage-text';
+        }
+        
+        // Determinar qué tests ejecutar
+        $test_path = 'tests/';
+        if (in_array('unit', $test_types) && count($test_types) == 1) {
+            $test_path = 'tests/unit/dashboard/TarokinaBasicTest.php';
+        } elseif (in_array('dashboard', $test_types)) {
+            $test_path = 'tests/unit/dashboard/';
+        }
+        
+        $command = $base_command . ' ' . $test_path;
+        
+        if (!empty($options)) {
+            $command .= ' ' . implode(' ', $options);
+        }
+        
+        return $command;
+    }
+
+    /**
+     * Ejecutar comando PHPUnit
+     */
+    private function execute_phpunit($command) {
+        $start_time = microtime(true);
+        
+        // Cambiar al directorio correcto
+        $original_dir = getcwd();
+        $plugin_dev_tools_dir = dirname(dirname(__DIR__)) . '/plugin-dev-tools';
+        
+        if (!is_dir($plugin_dev_tools_dir)) {
+            throw new \Exception("Directorio plugin-dev-tools no encontrado: {$plugin_dev_tools_dir}");
+        }
+        
+        chdir($plugin_dev_tools_dir);
+        
+        try {
+            // Ejecutar comando y capturar salida
+            $output = [];
+            $exit_code = 0;
+            
+            exec($command . ' 2>&1', $output, $exit_code);
+            
+            $execution_time = round((microtime(true) - $start_time) * 1000); // en milisegundos
+            
+            return [
+                'output' => implode("\n", $output),
+                'exit_code' => $exit_code,
+                'execution_time' => $execution_time
+            ];
+            
+        } finally {
+            // Restaurar directorio original
+            chdir($original_dir);
+        }
+    }
+
+    /**
+     * Parsear salida de tests para extraer resumen
+     */
+    private function parse_test_output($output) {
+        $summary = [
+            'total_tests' => 0,
+            'passed' => 0,
+            'failed' => 0,
+            'skipped' => 0,
+            'errors' => 0,
+            'assertions' => 0,
+            'time' => null,
+            'memory' => null,
+            'status' => 'unknown'
+        ];
+        
+        // Buscar línea de resumen tipo: "Tests: 7, Assertions: 17, Risky: 4."
+        if (preg_match('/Tests: (\d+), Assertions: (\d+)/', $output, $matches)) {
+            $summary['total_tests'] = (int)$matches[1];
+            $summary['assertions'] = (int)$matches[2];
+        }
+        
+        // Buscar tiempo y memoria: "Time: 00:00.808, Memory: 42.50 MB"
+        if (preg_match('/Time: ([\d:\.]+), Memory: ([\d\.]+ \w+)/', $output, $matches)) {
+            $summary['time'] = $matches[1];
+            $summary['memory'] = $matches[2];
+        }
+        
+        // Determinar estado general
+        if (strpos($output, 'OK (') !== false) {
+            $summary['status'] = 'success';
+            $summary['passed'] = $summary['total_tests'];
+        } elseif (strpos($output, 'ERRORS!') !== false || strpos($output, 'FAILURES!') !== false) {
+            $summary['status'] = 'error';
+            
+            // Contar errores y fallos
+            if (preg_match('/(\d+) error/', $output, $matches)) {
+                $summary['errors'] = (int)$matches[1];
+            }
+            if (preg_match('/(\d+) failure/', $output, $matches)) {
+                $summary['failed'] = (int)$matches[1];
+            }
+            if (preg_match('/(\d+) skipped/', $output, $matches)) {
+                $summary['skipped'] = (int)$matches[1];
+            }
+            
+            $summary['passed'] = $summary['total_tests'] - $summary['errors'] - $summary['failed'] - $summary['skipped'];
+        } elseif (strpos($output, 'OK, but incomplete, skipped, or risky tests!') !== false) {
+            $summary['status'] = 'warning';
+            $summary['passed'] = $summary['total_tests'];
+            
+            if (preg_match('/(\d+) risky/', $output, $matches)) {
+                $summary['skipped'] = (int)$matches[1];
+            }
+        }
+        
+        return $summary;
+    }
+
+    /**
+     * Ejecutar test rápido (solo básicos)
+     */
+    private function run_quick_test() {
+        try {
+            // Ejecutar solo el test básico de Tarokina
+            $command = '../dev-tools/vendor/bin/phpunit tests/unit/dashboard/TarokinaBasicTest.php --verbose';
+            $result = $this->execute_phpunit($command);
+            
+            return [
+                'success' => true,
+                'data' => [
+                    'command' => $command,
+                    'output' => $result['output'],
+                    'return_code' => $result['exit_code'],
+                    'execution_time' => $result['execution_time'],
+                    'summary' => $this->parse_test_output($result['output'])
+                ]
+            ];
+            
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => 'Error ejecutando quick test: ' . $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Ejecutar tests completos con opciones
+     */
+    private function run_tests_with_options($test_types = ['unit'], $verbose = false, $coverage = false) {
+        try {
+            // Construir comando PHPUnit
+            $command = $this->build_phpunit_command($test_types, $verbose, $coverage);
+            
+            // Ejecutar tests
+            $result = $this->execute_phpunit($command);
+            
+            return [
+                'success' => true,
+                'data' => [
+                    'command' => $command,
+                    'output' => $result['output'],
+                    'return_code' => $result['exit_code'],
+                    'execution_time' => $result['execution_time'],
+                    'summary' => $this->parse_test_output($result['output'])
+                ]
+            ];
+            
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => 'Error ejecutando tests: ' . $e->getMessage()
+            ];
         }
     }
 }
