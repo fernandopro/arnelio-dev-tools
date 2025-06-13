@@ -21,6 +21,9 @@
         "test:integration": "./vendor/bin/phpunit tests/integration",
         "test:coverage": "./vendor/bin/phpunit --coverage-html coverage",
         "test:watch": "phpunit-watcher watch",
+        "override:create": "php scripts/create-override-structure.php",
+        "override:migrate": "php scripts/migrate-to-override-system.php",
+        "test:plugin": "./vendor/bin/phpunit -c ../plugin-dev-tools/phpunit.xml",
         "post-install-cmd": [
             "@php -r \"if (!file_exists('phpunit.xml') && file_exists('phpunit.xml.dist')) { copy('phpunit.xml.dist', 'phpunit.xml'); echo 'Created phpunit.xml from phpunit.xml.dist\\n'; }\""
         ]

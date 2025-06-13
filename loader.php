@@ -32,6 +32,7 @@ class DevToolsLoader {
     private $modules = [];
     private $ajax_handler = null;
     private $admin_panel = null;
+    private $override_system = null;
     
     private function __construct() {
         $this->init();
@@ -58,6 +59,9 @@ class DevToolsLoader {
         if (file_exists(__DIR__ . '/vendor/autoload.php')) {
             require_once __DIR__ . '/vendor/autoload.php';
         }
+        
+        // Inicializar sistema de override (Child Theme)
+        $this->init_override_system();
         
         // Cargar configuración principal
         $this->load_config();
@@ -286,6 +290,74 @@ class DevToolsLoader {
      */
     public function get_config() {
         return $this->config;
+    }
+    
+    /**
+     * Inicializa el sistema de override (Child Theme)
+     */
+    private function init_override_system() {
+        try {
+            // Cargar el sistema de override
+            require_once __DIR__ . '/includes/Core/FileOverrideSystem.php';
+            
+            // Inicializar la instancia
+            $this->override_system = FileOverrideSystem::getInstance();
+            
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                $info = $this->override_system->get_system_info();
+                error_log('🔧 Override System initialized - Child dir: ' . ($info['child_exists'] ? 'EXISTS' : 'NOT_EXISTS'));
+            }
+            
+        } catch (Exception $e) {
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log('🔧 Override System error: ' . $e->getMessage());
+            }
+            // No fallar si el sistema de override tiene problemas
+            $this->override_system = null;
+        }
+    }
+    
+    /**
+     * Obtiene el sistema de override
+     */
+    public function get_override_system() {
+        return $this->override_system;
+    }
+    
+    /**
+     * Incluye un archivo con sistema de override
+     * Wrapper para facilitar el uso desde otros módulos
+     */
+    public function include_file($relative_path, $vars = []) {
+        if ($this->override_system) {
+            return $this->override_system->include_file($relative_path, $vars);
+        } else {
+            // Fallback al sistema tradicional
+            $file_path = __DIR__ . '/' . ltrim($relative_path, '/');
+            if (file_exists($file_path)) {
+                if (!empty($vars)) {
+                    extract($vars, EXTR_SKIP);
+                }
+                return include $file_path;
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * Carga configuración con merge automático (override system)
+     */
+    public function load_override_config($config_file) {
+        if ($this->override_system) {
+            return $this->override_system->load_config($config_file);
+        } else {
+            // Fallback
+            $file_path = __DIR__ . '/' . ltrim($config_file, '/');
+            if (file_exists($file_path)) {
+                return include $file_path;
+            }
+        }
+        return [];
     }
 }
 
