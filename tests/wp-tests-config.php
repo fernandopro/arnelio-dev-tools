@@ -62,8 +62,11 @@ define( 'DB_COLLATE', '' );
  * Prefijo de tablas para las pruebas
  * IMPORTANTE: Esto crea un conjunto separado de tablas en la misma BD
  * Las tablas de prueba usarán el prefijo 'wptests_' para aislamiento
+ * 
+ * NOTA: Esta constante se define automáticamente por wp-phpunit
+ * a través de la variable WP_PHPUNIT__TABLE_PREFIX en phpunit.xml.dist
  */
-define( 'WP_TESTS_TABLE_PREFIX', 'wptests_' );
+// La constante WP_TESTS_TABLE_PREFIX se define automáticamente por wp-phpunit
 
 /**
  * Variable global requerida por WordPress
