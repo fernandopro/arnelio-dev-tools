@@ -88,10 +88,10 @@ class DevToolsLoader {
      */
     private function load_core_classes() {
         // Cargar clase admin panel
-        require_once __DIR__ . '/includes/class-admin-panel.php';
+        require_once __DIR__ . '/includes/DevToolsAdminPanel.php';
         
         // Cargar clase AJAX handler
-        require_once __DIR__ . '/includes/class-ajax-handler.php';
+        require_once __DIR__ . '/includes/DevToolsAjaxHandler.php';
         
         // NO inicializar admin panel aquí - se hace después en init_system
     }
@@ -185,7 +185,7 @@ class DevToolsLoader {
      * Inicializa el manejador AJAX
      */
     private function init_ajax_handler() {
-        $this->ajax_handler = new DevToolsAjaxHandler($this->modules);
+        $this->ajax_handler = new \DevTools\DevToolsAjaxHandler($this->modules);
     }
     
     /**

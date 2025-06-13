@@ -10,6 +10,10 @@
  * @author Dev-Tools Arquitectura 3.0
  */
 
+namespace DevTools;
+
+use Exception;
+
 // if (!defined('ABSPATH')) {
 //     exit;
 // }
@@ -257,7 +261,7 @@ class DevToolsAjaxHandler {
      * Obtiene información del entorno
      */
     private function get_environment_info() {
-        $paths = DevToolsPaths::getInstance();
+        $paths = \DevToolsPaths::getInstance();
         $env_info = $paths->get_debug_info();
         
         // Detectar entorno
