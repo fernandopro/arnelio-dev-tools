@@ -24,6 +24,7 @@
         "override:create": "php scripts/create-override-structure.php",
         "override:migrate": "php scripts/migrate-to-override-system.php",
         "test:plugin": "./vendor/bin/phpunit -c ../plugin-dev-tools/phpunit.xml",
+        "verify:production": "bash scripts/verify-production-ready.sh",
         "post-install-cmd": [
             "@php -r \"if (!file_exists('phpunit.xml') && file_exists('phpunit.xml.dist')) { copy('phpunit.xml.dist', 'phpunit.xml'); echo 'Created phpunit.xml from phpunit.xml.dist\\n'; }\""
         ]

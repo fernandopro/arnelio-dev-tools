@@ -12,6 +12,31 @@
 
 ---
 
+## ⚠️ **IMPORTANTE: Exclusión de Producción**
+
+### 🚨 **CRÍTICO - NO incluir en producción**
+La carpeta `plugin-dev-tools/` es **EXCLUSIVAMENTE para desarrollo** y **NUNCA debe incluirse** en el plugin final de producción.
+
+#### Medidas de Seguridad Implementadas:
+1. ✅ **Agregado al .gitignore principal** del plugin
+2. ✅ **Documentación explícita** sobre su exclusión
+3. ✅ **README específico** con advertencias
+
+#### Verificar antes de Deploy:
+```bash
+# Verificar que plugin-dev-tools NO esté incluido
+git status
+git ls-files | grep plugin-dev-tools  # Debe retornar vacío
+```
+
+#### Consecuencias de incluir en producción:
+- ❌ **Exposición de tests** y configuraciones internas
+- ❌ **Aumento innecesario** del tamaño del plugin
+- ❌ **Posibles conflictos** con otros plugins
+- ❌ **Archivos sensibles** expuestos al público
+
+---
+
 ## 🎯 Resumen Ejecutivo
 
 El **Sistema de Override para Testing** es una implementación robusta que permite a cada plugin WordPress tener su propia configuración de testing específica, similar al concepto de **child themes** de WordPress.
