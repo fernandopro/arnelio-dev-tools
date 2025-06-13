@@ -3,8 +3,8 @@
  * Ejemplo corregido de Mocks y Stubs funcional
  * Dev-Tools Arquitectura 3.0 - Testing Framework
  */
-namespace DevTools\Tests\Unit;
 
+require_once dirname(__DIR__) . '/includes/TestCase.php';
 
 class WorkingMockStubExampleTest extends DevToolsTestCase {
 
@@ -187,7 +187,7 @@ interface LoggerInterface {
 /**
  * Servicio que usa database (ejemplo)
  */
-class WorkingMockStubExampleTest {
+class DatabaseUserService {
     private $db;
     
     public function __construct($db) {
@@ -203,7 +203,7 @@ class WorkingMockStubExampleTest {
 /**
  * Servicio de autenticación (ejemplo)
  */
-class WorkingMockStubExampleTest {
+class AuthService {
     private $logger;
     
     public function __construct($logger) {
@@ -224,7 +224,7 @@ class WorkingMockStubExampleTest {
 /**
  * Manager completo de usuarios (ejemplo)
  */
-class WorkingMockStubExampleTest {
+class UserManager {
     private $user_service;
     private $db;
     private $logger;

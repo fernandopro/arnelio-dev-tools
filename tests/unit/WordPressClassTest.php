@@ -2,8 +2,8 @@
 /**
  * Test para verificar qué clases de WordPress están disponibles
  */
-namespace DevTools\Tests\Unit;
 
+require_once dirname(__DIR__) . '/includes/TestCase.php';
 
 class WordPressClassTest extends DevToolsTestCase {
 

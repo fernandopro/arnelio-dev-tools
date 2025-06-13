@@ -7,12 +7,8 @@
  * @package DevTools
  * @subpackage Tests\Database
  */
-namespace DevTools\Tests\Database;
-
 
 require_once dirname(__DIR__) . '/includes/TestCase.php';
-
-
 
 class DatabaseCrudTest extends DevToolsTestCase {
 

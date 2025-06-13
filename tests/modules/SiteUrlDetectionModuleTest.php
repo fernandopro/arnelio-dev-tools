@@ -7,12 +7,8 @@
  * @package DevTools
  * @subpackage Tests\Modules
  */
-namespace DevTools\Tests\Modules;
-
 
 require_once dirname(__DIR__) . '/includes/TestCase.php';
-
-
 
 class SiteUrlDetectionModuleTest extends DevToolsTestCase {
 
@@ -23,14 +19,14 @@ class SiteUrlDetectionModuleTest extends DevToolsTestCase {
         
         // Cargar el módulo
         require_once $this->get_dev_tools_path() . '/modules/SiteUrlDetectionModule.php';
-        $this->module = new SiteUrlDetectionModule();
+        $this->module = new \DevTools\Modules\SiteUrlDetectionModule();
     }
 
     /**
      * Test: Módulo se instancia correctamente
      */
     public function test_module_instantiation() {
-        $this->assertInstanceOf(SiteUrlDetectionModule::class, $this->module);
+        $this->assertInstanceOf(\DevTools\Modules\SiteUrlDetectionModule::class, $this->module);
     }
 
     /**
@@ -41,8 +37,8 @@ class SiteUrlDetectionModuleTest extends DevToolsTestCase {
         $this->assertNotNull($this->module);
         
         // Test que el módulo se puede construir con diferentes parámetros
-        $debug_module = new SiteUrlDetectionModule(true);
-        $this->assertInstanceOf(SiteUrlDetectionModule::class, $debug_module);
+        $debug_module = new \DevTools\Modules\SiteUrlDetectionModule(true);
+        $this->assertInstanceOf(\DevTools\Modules\SiteUrlDetectionModule::class, $debug_module);
     }
 
     /**

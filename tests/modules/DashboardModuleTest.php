@@ -3,8 +3,8 @@
  * Test de los módulos Dev-Tools existentes
  * Dev-Tools Arquitectura 3.0 - Testing Framework
  */
-namespace DevTools\Tests\Modules;
 
+require_once dirname(__DIR__) . '/includes/TestCase.php';
 
 class DashboardModuleTest extends DevToolsTestCase {
 
@@ -14,9 +14,12 @@ class DashboardModuleTest extends DevToolsTestCase {
      * Test que verifica que el DatabaseConnectionModule se carga correctamente
      */
     public function test_database_connection_module_loaded() {
-        // Los módulos existentes no usan el namespace DevTools\Modules
+        // Cargar módulo primero
+        require_once $this->get_dev_tools_path() . '/modules/DatabaseConnectionModule.php';
+        
+        // Los módulos existentes usan el namespace DevTools\Modules
         $this->assertTrue( 
-            class_exists( 'DatabaseConnectionModule' ),
+            class_exists( 'DevTools\Modules\DatabaseConnectionModule' ),
             'El módulo DatabaseConnectionModule debería estar cargado'
         );
     }
@@ -25,9 +28,12 @@ class DashboardModuleTest extends DevToolsTestCase {
      * Test que verifica que el SiteUrlDetectionModule se carga correctamente
      */
     public function test_site_url_detection_module_loaded() {
-        // Los módulos existentes no usan el namespace DevTools\Modules
+        // Cargar módulo primero
+        require_once $this->get_dev_tools_path() . '/modules/SiteUrlDetectionModule.php';
+        
+        // Los módulos existentes usan el namespace DevTools\Modules
         $this->assertTrue( 
-            class_exists( 'SiteUrlDetectionModule' ),
+            class_exists( 'DevTools\Modules\SiteUrlDetectionModule' ),
             'El módulo SiteUrlDetectionModule debería estar cargado'
         );
     }
@@ -36,9 +42,13 @@ class DashboardModuleTest extends DevToolsTestCase {
      * Test que verifica que los módulos existen como clases
      */
     public function test_module_classes_exist() {
+        // Cargar módulos primero
+        require_once $this->get_dev_tools_path() . '/modules/DatabaseConnectionModule.php';
+        require_once $this->get_dev_tools_path() . '/modules/SiteUrlDetectionModule.php';
+        
         // Verificar que existen las clases de módulos reales
-        $this->assertTrue( class_exists( 'DatabaseConnectionModule' ) );
-        $this->assertTrue( class_exists( 'SiteUrlDetectionModule' ) );
+        $this->assertTrue( class_exists( 'DevTools\Modules\DatabaseConnectionModule' ) );
+        $this->assertTrue( class_exists( 'DevTools\Modules\SiteUrlDetectionModule' ) );
     }
 
     /**
@@ -62,13 +72,17 @@ class DashboardModuleTest extends DevToolsTestCase {
      * Test que verifica que los módulos se pueden instanciar
      */
     public function test_module_instantiation() {
+        // Cargar módulos primero
+        require_once $this->get_dev_tools_path() . '/modules/DatabaseConnectionModule.php';
+        require_once $this->get_dev_tools_path() . '/modules/SiteUrlDetectionModule.php';
+        
         // Test DatabaseConnectionModule
-        $db_module = new DatabaseConnectionModule();
-        $this->assertInstanceOf( 'DatabaseConnectionModule', $db_module );
+        $db_module = new \DevTools\Modules\DatabaseConnectionModule();
+        $this->assertInstanceOf( \DevTools\Modules\DatabaseConnectionModule::class, $db_module );
         
         // Test SiteUrlDetectionModule  
-        $url_module = new SiteUrlDetectionModule();
-        $this->assertInstanceOf( 'SiteUrlDetectionModule', $url_module );
+        $url_module = new \DevTools\Modules\SiteUrlDetectionModule();
+        $this->assertInstanceOf( \DevTools\Modules\SiteUrlDetectionModule::class, $url_module );
     }
 
     /**

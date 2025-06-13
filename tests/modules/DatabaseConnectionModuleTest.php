@@ -7,12 +7,8 @@
  * @package DevTools
  * @subpackage Tests\Modules
  */
-namespace DevTools\Tests\Modules;
-
 
 require_once dirname(__DIR__) . '/includes/TestCase.php';
-
-
 
 class DatabaseConnectionModuleTest extends DevToolsTestCase {
 
@@ -23,14 +19,14 @@ class DatabaseConnectionModuleTest extends DevToolsTestCase {
         
         // Cargar el módulo
         require_once $this->get_dev_tools_path() . '/modules/DatabaseConnectionModule.php';
-        $this->module = new DatabaseConnectionModule();
+        $this->module = new \DevTools\Modules\DatabaseConnectionModule();
     }
 
     /**
      * Test: Módulo se instancia correctamente
      */
     public function test_module_instantiation() {
-        $this->assertInstanceOf(DatabaseConnectionModule::class, $this->module);
+        $this->assertInstanceOf(\DevTools\Modules\DatabaseConnectionModule::class, $this->module);
     }
 
     /**
@@ -41,8 +37,8 @@ class DatabaseConnectionModuleTest extends DevToolsTestCase {
         $this->assertNotNull($this->module);
         
         // Test que el módulo se puede construir con diferentes parámetros
-        $debug_module = new DatabaseConnectionModule(true);
-        $this->assertInstanceOf(DatabaseConnectionModule::class, $debug_module);
+        $debug_module = new \DevTools\Modules\DatabaseConnectionModule(true);
+        $this->assertInstanceOf(\DevTools\Modules\DatabaseConnectionModule::class, $debug_module);
     }
 
     /**
@@ -99,7 +95,7 @@ class DatabaseConnectionModuleTest extends DevToolsTestCase {
      */
     public function test_connection_error_handling() {
         // Test simplificado - verificar que el módulo actual funciona
-        $this->assertInstanceOf(DatabaseConnectionModule::class, $this->module);
+        $this->assertInstanceOf(\DevTools\Modules\DatabaseConnectionModule::class, $this->module);
         
         // Verificar que podemos manejar errores sin romper el test
         try {

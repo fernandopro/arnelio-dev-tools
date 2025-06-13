@@ -8,12 +8,8 @@
  * @subpackage Tests\Performance
  * @group performance
  */
-namespace DevTools\Tests\Integration;
-
 
 require_once dirname(__DIR__) . '/includes/TestCase.php';
-
-
 
 class PerformanceTest extends DevToolsTestCase {
 
@@ -46,8 +42,8 @@ class PerformanceTest extends DevToolsTestCase {
         require_once $this->get_dev_tools_path() . '/modules/DatabaseConnectionModule.php';
         require_once $this->get_dev_tools_path() . '/modules/SiteUrlDetectionModule.php';
         
-        $db_module = new DatabaseConnectionModule();
-        $url_module = new SiteUrlDetectionModule();
+        $db_module = new \DevTools\Modules\DatabaseConnectionModule();
+        $url_module = new \DevTools\Modules\SiteUrlDetectionModule();
         
         $end_time = microtime(true);
         $end_memory = memory_get_usage();

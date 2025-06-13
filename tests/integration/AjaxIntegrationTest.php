@@ -8,8 +8,6 @@
  * @subpackage Tests\Integration
  * @group ajax
  */
-namespace DevTools\Tests\Integration;
-
 
 require_once dirname(__DIR__) . '/includes/TestCase.php';
 
@@ -186,16 +184,20 @@ class AjaxIntegrationTest extends DevToolsTestCase {
      * Test: Module loading via AJAX context
      */
     public function test_ajax_module_loading() {
+        // Cargar los módulos primero
+        require_once $this->get_dev_tools_path() . '/modules/DatabaseConnectionModule.php';
+        require_once $this->get_dev_tools_path() . '/modules/SiteUrlDetectionModule.php';
+        
         // Verificar que los módulos están disponibles en contexto AJAX
-        $this->assertTrue(class_exists('DatabaseConnectionModule'));
-        $this->assertTrue(class_exists('SiteUrlDetectionModule'));
+        $this->assertTrue(class_exists('DevTools\Modules\DatabaseConnectionModule'));
+        $this->assertTrue(class_exists('DevTools\Modules\SiteUrlDetectionModule'));
         
-        // Test instanciación de módulos
-        $db_module = new DatabaseConnectionModule();
-        $url_module = new SiteUrlDetectionModule();
+        // Test instanciación de módulos con namespace correcto
+        $db_module = new \DevTools\Modules\DatabaseConnectionModule();
+        $url_module = new \DevTools\Modules\SiteUrlDetectionModule();
         
-        $this->assertInstanceOf(DatabaseConnectionModule::class, $db_module);
-        $this->assertInstanceOf(SiteUrlDetectionModule::class, $url_module);
+        $this->assertInstanceOf(\DevTools\Modules\DatabaseConnectionModule::class, $db_module);
+        $this->assertInstanceOf(\DevTools\Modules\SiteUrlDetectionModule::class, $url_module);
         
         // Test que los módulos pueden ejecutarse en contexto AJAX
         $this->assertNotNull($db_module);

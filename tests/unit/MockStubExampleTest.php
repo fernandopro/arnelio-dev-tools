@@ -5,8 +5,8 @@
  * Este archivo demuestra casos de uso reales de testing con
  * Stubs para datos y Mocks para verificar comportamiento
  */
-namespace DevTools\Tests\Unit;
 
+require_once dirname(__DIR__) . '/includes/TestCase.php';
 
 class MockStubExampleTest extends DevToolsTestCase {
 
@@ -104,19 +104,23 @@ class MockStubExampleTest extends DevToolsTestCase {
      * Test con módulos reales de Dev-Tools
      */
     public function test_real_dev_tools_modules() {
+        // Cargar módulos reales
+        require_once $this->get_dev_tools_path() . '/modules/DatabaseConnectionModule.php';
+        require_once $this->get_dev_tools_path() . '/modules/SiteUrlDetectionModule.php';
+        
         // Verificar que los módulos reales están cargados
-        $this->assertTrue(class_exists('DatabaseConnectionModule'), 
+        $this->assertTrue(class_exists('\DevTools\Modules\DatabaseConnectionModule'), 
             'DatabaseConnectionModule should be loaded');
-        $this->assertTrue(class_exists('SiteUrlDetectionModule'), 
+        $this->assertTrue(class_exists('\DevTools\Modules\SiteUrlDetectionModule'), 
             'SiteUrlDetectionModule should be loaded');
         
         // Crear instancias reales
-        $db_module = new DatabaseConnectionModule();
-        $url_module = new SiteUrlDetectionModule();
+        $db_module = new \DevTools\Modules\DatabaseConnectionModule();
+        $url_module = new \DevTools\Modules\SiteUrlDetectionModule();
         
         // Tests básicos de funcionalidad
-        $this->assertInstanceOf('DatabaseConnectionModule', $db_module);
-        $this->assertInstanceOf('SiteUrlDetectionModule', $url_module);
+        $this->assertInstanceOf('\DevTools\Modules\DatabaseConnectionModule', $db_module);
+        $this->assertInstanceOf('\DevTools\Modules\SiteUrlDetectionModule', $url_module);
         
         // Test funciones de WordPress reales (sin mock)
         $test_data = ['module_test' => 'data'];
@@ -176,7 +180,7 @@ class MockStubExampleTest extends DevToolsTestCase {
 /**
  * Clase simulada para funciones de WordPress que necesitamos mockear
  */
-class MockStubExampleTest {
+class WordPressFunctions {
     public function wp_cache_set($key, $data, $group = '', $expire = 0) {
         return true;
     }
@@ -197,7 +201,7 @@ class MockStubExampleTest {
 /**
  * Clase de ejemplo para procesar database
  */
-class MockStubExampleTest {
+class DatabaseProcessor {
     private $db;
     
     public function __construct($db) {
@@ -212,7 +216,7 @@ class MockStubExampleTest {
 /**
  * Clase de ejemplo para procesar WordPress
  */
-class MockStubExampleTest {
+class WordPressProcessor {
     private $wp;
     
     public function __construct($wp) {

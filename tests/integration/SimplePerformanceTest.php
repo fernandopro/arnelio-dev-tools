@@ -2,12 +2,8 @@
 /**
  * Test Simple de Performance
  */
-namespace DevTools\Tests\Integration;
-
 
 require_once dirname(__DIR__) . '/includes/TestCase.php';
-
-
 
 class SimplePerformanceTest extends DevToolsTestCase {
 
