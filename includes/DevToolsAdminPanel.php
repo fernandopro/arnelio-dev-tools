@@ -805,8 +805,9 @@ class DevToolsAdminPanel {
         // Obtener la ruta correcta de PHP
         $php_binary = $this->get_php_binary_path();
         
-        // Construir comando con ruta completa de PHP
-        $base_command = $php_binary . ' ../dev-tools/vendor/bin/phpunit';
+        // Construir comando con ruta completa de PHP (usar quotes manuales para espacios)
+        // Usar PHPUnit de dev-tools desde plugin-dev-tools
+        $base_command = '"' . $php_binary . '" ../dev-tools/vendor/bin/phpunit';
         $options = [];
         
         // Agregar verbosidad
@@ -819,12 +820,12 @@ class DevToolsAdminPanel {
             $options[] = '--coverage-text';
         }
         
-        // Determinar qué tests ejecutar
+        // Determinar qué tests ejecutar (rutas del sistema override plugin-dev-tools)
         $test_path = 'tests/';
         if (in_array('unit', $test_types) && count($test_types) == 1) {
-            $test_path = 'tests/unit/dashboard/TarokinaBasicTest.php';
+            $test_path = 'tests/unit/dashboard/TarokinaBasicTest.php'; // Test básico del plugin
         } elseif (in_array('dashboard', $test_types)) {
-            $test_path = 'tests/unit/dashboard/';
+            $test_path = 'tests/unit/dashboard/'; // Tests de dashboard del plugin
         }
         
         $command = $base_command . ' ' . $test_path;
@@ -842,7 +843,7 @@ class DevToolsAdminPanel {
     private function execute_phpunit($command) {
         $start_time = microtime(true);
         
-        // Cambiar al directorio correcto
+        // Cambiar al directorio plugin-dev-tools (sistema override para tests específicos del plugin)
         $original_dir = getcwd();
         $plugin_dev_tools_dir = dirname(dirname(__DIR__)) . '/plugin-dev-tools';
         
@@ -850,19 +851,67 @@ class DevToolsAdminPanel {
             throw new \Exception("Directorio plugin-dev-tools no encontrado: {$plugin_dev_tools_dir}");
         }
         
+        error_log("DEBUG PHPUNIT EXECUTION - Changing to override directory: " . $plugin_dev_tools_dir);
         chdir($plugin_dev_tools_dir);
         
         try {
-            // Ejecutar comando y capturar salida
-            $output = [];
-            $exit_code = 0;
+            // Crear un script temporal para evitar problemas de parsing del shell
+            $temp_script = tempnam(sys_get_temp_dir(), 'phpunit_') . '.sh';
             
-            exec($command . ' 2>&1', $output, $exit_code);
+            // Crear contenido del script con la ruta completa
+            $script_content = "#!/bin/sh\ncd " . escapeshellarg(getcwd()) . "\n" . $command . "\n";
+            
+            error_log("DEBUG PHPUNIT EXECUTION - Command to execute: " . $command);
+            error_log("DEBUG PHPUNIT EXECUTION - Script content: " . $script_content);
+            error_log("DEBUG PHPUNIT EXECUTION - Temp script: " . $temp_script);
+            
+            // Escribir el script
+            if (file_put_contents($temp_script, $script_content) === false) {
+                throw new \Exception("Failed to create temporary script");
+            }
+            
+            // Hacer el script ejecutable
+            chmod($temp_script, 0755);
+            
+            // Ejecutar el script
+            $descriptorspec = [
+                0 => ["pipe", "r"],  // stdin
+                1 => ["pipe", "w"],  // stdout
+                2 => ["pipe", "w"]   // stderr
+            ];
+            
+            $process = proc_open("/bin/sh " . escapeshellarg($temp_script), $descriptorspec, $pipes, getcwd());
+            
+            if (is_resource($process)) {
+                // Cerrar stdin
+                fclose($pipes[0]);
+                
+                // Leer stdout y stderr
+                $stdout = stream_get_contents($pipes[1]);
+                $stderr = stream_get_contents($pipes[2]);
+                fclose($pipes[1]);
+                fclose($pipes[2]);
+                
+                // Obtener el código de salida
+                $exit_code = proc_close($process);
+                
+                // Combinar stdout y stderr
+                $output = trim($stdout . "\n" . $stderr);
+                
+                error_log("DEBUG PHPUNIT EXECUTION - Exit code: " . $exit_code);
+                error_log("DEBUG PHPUNIT EXECUTION - Output: " . substr($output, 0, 500) . "...");
+                
+            } else {
+                throw new \Exception("Failed to create process for script: " . $temp_script);
+            }
+            
+            // Limpiar el script temporal
+            unlink($temp_script);
             
             $execution_time = round((microtime(true) - $start_time) * 1000); // en milisegundos
             
             return [
-                'output' => implode("\n", $output),
+                'output' => $output,
                 'exit_code' => $exit_code,
                 'execution_time' => $execution_time
             ];
@@ -939,7 +988,10 @@ class DevToolsAdminPanel {
         try {
             // Obtener la ruta correcta de PHP y ejecutar solo el test básico
             $php_binary = $this->get_php_binary_path();
-            $command = $php_binary . ' ../dev-tools/vendor/bin/phpunit tests/unit/dashboard/TarokinaBasicTest.php --verbose';
+            $command = '"' . $php_binary . '" ../dev-tools/vendor/bin/phpunit tests/unit/dashboard/TarokinaBasicTest.php --verbose';
+            
+            error_log("DEBUG TEST EXECUTION - Final command: " . $command);
+            
             $result = $this->execute_phpunit($command);
             
             return [
@@ -1078,36 +1130,33 @@ class DevToolsAdminPanel {
                        strpos($_SERVER['HTTP_HOST'] ?? '', '.local') !== false ||
                        strpos($_SERVER['DOCUMENT_ROOT'] ?? '', '/Local Sites/') !== false;
         
-        // Log para debugging
         error_log("DEBUG PHP DETECTION - Is Local WP: " . ($is_local_wp ? 'YES' : 'NO'));
-        error_log("DEBUG PHP DETECTION - DOCUMENT_ROOT: " . ($_SERVER['DOCUMENT_ROOT'] ?? 'UNDEFINED'));
         
         if ($is_local_wp) {
-            $document_root = $_SERVER['DOCUMENT_ROOT'] ?? '';
+            // Buscar PHP en el directorio estándar de Local by WP Engine
+            $user_home = $_SERVER['HOME'] ?? ('/Users/' . get_current_user());
+            $local_services_dir = $user_home . '/Library/Application Support/Local/lightning-services';
             
-            // Patrones típicos de Local by WP Engine más amplios
-            $local_patterns = [
-                // Buscar en directorios parent
-                dirname(dirname($document_root)) . '/lightning-services/*/bin/php*',
-                dirname(dirname(dirname($document_root))) . '/lightning-services/*/bin/php*',
-                // Patrones específicos de versiones
-                dirname(dirname($document_root)) . '/lightning-services/php-8.0.30+0/bin/php8.0',
-                dirname(dirname($document_root)) . '/lightning-services/php-8.1.27+2/bin/php8.1', 
-                dirname(dirname($document_root)) . '/lightning-services/php-8.2.15+1/bin/php8.2',
-            ];
+            error_log("DEBUG PHP DETECTION - Searching in: " . $local_services_dir);
             
-            foreach ($local_patterns as $pattern) {
-                error_log("DEBUG PHP DETECTION - Checking pattern: " . $pattern);
-                if (strpos($pattern, '*') !== false) {
-                    // Usar glob para patrones con wildcards
-                    $matches = glob($pattern);
-                    if (!empty($matches)) {
-                        error_log("DEBUG PHP DETECTION - Found via glob: " . $matches[0]);
-                        return $matches[0];
+            if (is_dir($local_services_dir)) {
+                // Buscar directorios PHP en lightning-services
+                $php_dirs = glob($local_services_dir . '/php-*');
+                
+                foreach ($php_dirs as $php_dir) {
+                    // Buscar el ejecutable PHP en darwin-arm64 (Apple Silicon) o darwin-x64 (Intel)
+                    $possible_paths = [
+                        $php_dir . '/bin/darwin-arm64/bin/php',
+                        $php_dir . '/bin/darwin-x64/bin/php',
+                        $php_dir . '/bin/php'
+                    ];
+                    
+                    foreach ($possible_paths as $php_path) {
+                        if (file_exists($php_path) && is_executable($php_path)) {
+                            error_log("DEBUG PHP DETECTION - Found Local PHP: " . $php_path);
+                            return $php_path;
+                        }
                     }
-                } elseif (file_exists($pattern)) {
-                    error_log("DEBUG PHP DETECTION - Found exact match: " . $pattern);
-                    return $pattern;
                 }
             }
         }
