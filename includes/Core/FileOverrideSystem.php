@@ -290,6 +290,9 @@ class FileOverrideSystem {
             }
         }
         
+        // Copiar archivos esenciales para el sistema de testing
+        $this->copy_essential_files();
+        
         return true;
     }
     
@@ -328,6 +331,45 @@ class FileOverrideSystem {
         return $tests_dirs;
     }
     
+    /**
+     * Copia archivos esenciales para el funcionamiento del sistema de testing
+     */
+    private function copy_essential_files() {
+        $essential_files = [
+            'tests/bootstrap.php',
+            'tests/wp-tests-config.php'
+        ];
+        
+        foreach ($essential_files as $file) {
+            $source = $this->parent_dir . '/' . $file;
+            $destination = $this->child_dir . '/' . $file;
+            
+            if (file_exists($source) && !file_exists($destination)) {
+                // Asegurar que el directorio de destino existe
+                $dir = dirname($destination);
+                if (!is_dir($dir)) {
+                    mkdir($dir, 0755, true);
+                }
+                
+                // Copiar archivo con header de override
+                $content = file_get_contents($source);
+                $header = "<?php\n/**\n * OVERRIDE FILE - Específico del Plugin\n";
+                $header .= " * Copiado desde: {$file}\n";
+                $header .= " * Fecha: " . date('Y-m-d H:i:s') . "\n";
+                $header .= " */\n\n";
+                
+                // Si es un archivo PHP, agregar header después de la etiqueta de apertura
+                if (pathinfo($file, PATHINFO_EXTENSION) === 'php') {
+                    $content = preg_replace('/^<\?php\s*/', $header, $content, 1);
+                } else {
+                    $content = $header . $content;
+                }
+                
+                file_put_contents($destination, $content);
+            }
+        }
+    }
+
     /**
      * Getters para las rutas del sistema
      */
