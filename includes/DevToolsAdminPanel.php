@@ -26,6 +26,97 @@ class DevToolsAdminPanel {
         $this->config = $config;
         $this->modules = $modules;
         $this->paths = \DevToolsPaths::getInstance();
+        
+        // Registrar handlers AJAX para tests
+        add_action('wp_ajax_dev_tools_run_tests', [$this, 'ajax_run_tests']);
+    }
+    
+    /**
+     * Handler AJAX para ejecutar tests
+     */
+    public function ajax_run_tests() {
+        // Verificar nonce de seguridad
+        if (!wp_verify_nonce($_POST['nonce'] ?? '', 'dev_tools_nonce')) {
+            wp_die('Security check failed');
+        }
+        
+        // Verificar permisos
+        if (!current_user_can('manage_options')) {
+            wp_die('Insufficient permissions');
+        }
+        
+        $test_type = sanitize_text_field($_POST['test_type'] ?? 'basic');
+        $test_file = sanitize_text_field($_POST['test_file'] ?? '');
+        
+        try {
+            $result = $this->execute_test_command($test_type, $test_file);
+            wp_send_json_success([
+                'output' => $result['output'],
+                'success' => $result['success'],
+                'execution_time' => $result['execution_time']
+            ]);
+        } catch (Exception $e) {
+            wp_send_json_error([
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
+    
+    /**
+     * Ejecuta el comando de test
+     */
+    private function execute_test_command($test_type, $test_file = '') {
+        $start_time = microtime(true);
+        
+        // Cambiar al directorio plugin-dev-tools
+        $original_dir = getcwd();
+        $plugin_dev_tools_dir = dirname($this->paths->get('base_path')) . '/plugin-dev-tools';
+        
+        if (!is_dir($plugin_dev_tools_dir)) {
+            throw new Exception('Plugin-dev-tools directory not found');
+        }
+        
+        chdir($plugin_dev_tools_dir);
+        
+        // Construir comando según el tipo
+        $phpunit_path = '../dev-tools/vendor/bin/phpunit';
+        
+        switch ($test_type) {
+            case 'basic':
+                $command = $phpunit_path . ' tests/unit/dashboard/TarokinaBasicTest.php --verbose';
+                break;
+            case 'dashboard':
+                $command = $phpunit_path . ' tests/unit/dashboard/ --verbose';
+                break;
+            case 'all':
+                $command = $phpunit_path . ' tests/ --verbose';
+                break;
+            case 'specific':
+                if (empty($test_file)) {
+                    throw new Exception('Test file not specified');
+                }
+                $command = $phpunit_path . ' ' . escapeshellarg($test_file) . ' --verbose';
+                break;
+            default:
+                throw new Exception('Invalid test type');
+        }
+        
+        // Ejecutar comando con captura de salida
+        $output = [];
+        $return_code = 0;
+        exec($command . ' 2>&1', $output, $return_code);
+        
+        // Restaurar directorio
+        chdir($original_dir);
+        
+        $execution_time = round((microtime(true) - $start_time) * 1000, 2);
+        
+        return [
+            'output' => implode("\n", $output),
+            'success' => $return_code === 0,
+            'execution_time' => $execution_time,
+            'command' => $command
+        ];
     }
     
     /**
@@ -489,7 +580,7 @@ class DevToolsAdminPanel {
     private function render_tests_content() {
         ?>
         <div class="row">
-            <div class="col-lg-8">
+            <div class="col-lg-4">
                 <div class="card">
                     <div class="card-header bg-warning text-dark">
                         <h5 class="mb-0">🧪 Test Runner</h5>
@@ -548,7 +639,7 @@ class DevToolsAdminPanel {
                     </div>
                 </div>
             </div>
-            <div class="col-lg-4">
+            <div class="col-lg-8">
                 <div class="card">
                     <div class="card-header bg-info text-white">
                         <h5 class="mb-0">📈 Test Results</h5>

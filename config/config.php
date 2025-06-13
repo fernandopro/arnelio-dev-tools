@@ -40,6 +40,7 @@ return [
         'LogsModule',
         'PerformanceModule',
         'TestSuiteModule'
+        // 'TestRunnerModule' // Temporalmente deshabilitado para testing
     ],
     
     // Configuración de assets

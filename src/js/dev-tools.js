@@ -6,6 +6,9 @@
 // Import Bootstrap JS components que necesitamos
 import { Tab } from 'bootstrap';
 
+// Import módulos específicos de dev-tools
+import './test-runner.js';
+
 /**
  * Clase principal DevTools para manejo global
  */
