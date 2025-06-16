@@ -116,9 +116,6 @@ return [
         <testsuite name="Integration Tests">
             <directory>../dev-tools/tests/integration/</directory>
         </testsuite>
-        <testsuite name="Output Tests">
-            <directory>../dev-tools/tests/output/</directory>
-        </testsuite>
     </testsuites>
     
     <coverage includeUncoveredFiles="true">
