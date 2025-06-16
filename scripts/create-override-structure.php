@@ -214,15 +214,143 @@ return [
     file_put_contents($info['child_dir'] . '/phpunit-plugin-only.xml', $phpunit_only_content);
     echo "✅ Configuración PHPUnit específica creada\n\n";
     
-    // 4. Verificar tests básicos
+    // 4. Crear test básico dinámico
     echo "🧪 Verificando tests básicos...\n";
     
-    // El TarokinaBasicTest.php ya se creó automáticamente en FileOverrideSystem
-    $basic_test_file = $info['child_dir'] . '/tests/unit/TarokinaBasicTest.php';
+    // Generar nombre dinámico del test básico (misma lógica que DevToolsAdminPanel.php)
+    $plugin_name = basename($info['plugin_root']);
+    $safe_plugin_name = preg_replace('/[^a-zA-Z0-9_]/', '', ucwords(str_replace(['-', '_'], ' ', $plugin_name)));
+    $safe_plugin_name = str_replace(' ', '', $safe_plugin_name);
+    $basic_test_filename = $safe_plugin_name . 'BasicTest.php';
+    $basic_test_file = $info['child_dir'] . '/tests/unit/' . $basic_test_filename;
+    
     if (file_exists($basic_test_file)) {
-        echo "✅ TarokinaBasicTest.php ya está disponible para Quick Test\n\n";
+        echo "✅ {$basic_test_filename} ya está disponible para Quick Test\n\n";
     } else {
-        echo "⚠️ TarokinaBasicTest.php no encontrado - debería haberse creado automáticamente\n\n";
+        echo "📝 Creando {$basic_test_filename} para Quick Test...\n";
+        
+        // Crear el test básico dinámico
+        $basic_test_content = '<?php
+/**
+ * Test Básico para Quick Test - Generado Automáticamente
+ * 
+ * Este test básico se usa para el botón "Quick Test" del panel de administración.
+ * Verifica funcionalidades básicas del sistema sin requerir configuraciones complejas.
+ * 
+ * Plugin: ' . $plugin_name . '
+ * Generado: ' . date('Y-m-d H:i:s') . '
+ * 
+ * @package DevTools
+ * @subpackage Tests
+ */
+
+use PHPUnit\Framework\TestCase;
+
+class ' . $safe_plugin_name . 'BasicTest extends TestCase {
+    
+    /**
+     * Test básico - verificar que PHPUnit funciona
+     */
+    public function test_phpunit_works() {
+        $this->assertTrue(true, "PHPUnit está funcionando correctamente");
+        $this->assertNotEmpty("test", "Las aserciones básicas funcionan");
+    }
+    
+    /**
+     * Test básico - verificar variables PHP básicas
+     */
+    public function test_php_environment() {
+        $this->assertNotEmpty(PHP_VERSION, "PHP_VERSION debe estar definida");
+        $this->assertTrue(function_exists("strlen"), "Funciones PHP básicas deben estar disponibles");
+        $this->assertTrue(class_exists("stdClass"), "Clases PHP básicas deben estar disponibles");
+    }
+    
+    /**
+     * Test básico - verificar matemáticas simples
+     */
+    public function test_basic_math() {
+        $this->assertEquals(4, 2 + 2, "Suma básica debe funcionar");
+        $this->assertEquals(10, 5 * 2, "Multiplicación básica debe funcionar");
+        $this->assertTrue(10 > 5, "Comparaciones deben funcionar");
+    }
+    
+    /**
+     * Test básico - verificar arrays y strings
+     */
+    public function test_basic_data_types() {
+        $array = [1, 2, 3];
+        $this->assertCount(3, $array, "Conteo de arrays debe funcionar");
+        $this->assertContains(2, $array, "Arrays deben contener elementos esperados");
+        
+        $string = "Hello World";
+        $this->assertStringContainsString("World", $string, "Strings deben contener subcadenas esperadas");
+        $this->assertEquals(11, strlen($string), "Longitud de strings debe ser correcta");
+    }
+    
+    /**
+     * Test básico - verificar fechas y tiempo
+     */
+    public function test_basic_datetime() {
+        $timestamp = time();
+        $this->assertIsInt($timestamp, "time() debe retornar un entero");
+        $this->assertGreaterThan(0, $timestamp, "timestamp debe ser positivo");
+        
+        $date = date("Y-m-d");
+        $this->assertMatchesRegularExpression("/^\d{4}-\d{2}-\d{2}$/", $date, "Formato de fecha debe ser YYYY-MM-DD");
+    }
+    
+    /**
+     * Test básico - verificar constantes del plugin
+     */
+    public function test_plugin_environment() {
+        // Test que no requiere WordPress pero verifica el entorno
+        $this->assertTrue(true, "El entorno de testing está funcionando");
+        
+        // Verificar que podemos usar assertions avanzadas
+        $data = [
+            "plugin" => "' . $plugin_name . '",
+            "test_type" => "basic",
+            "timestamp" => time()
+        ];
+        
+        $this->assertArrayHasKey("plugin", $data, "Array debe contener key plugin");
+        $this->assertEquals("' . $plugin_name . '", $data["plugin"], "Plugin name debe coincidir");
+        $this->assertArrayHasKey("test_type", $data, "Array debe contener key test_type");
+        $this->assertEquals("basic", $data["test_type"], "Test type debe ser basic");
+    }
+    
+    /**
+     * Test básico - verificar manejo de excepciones
+     */
+    public function test_exception_handling() {
+        $this->expectException(InvalidArgumentException::class);
+        
+        // Provocar una excepción para verificar que el manejo funciona
+        throw new InvalidArgumentException("Test exception");
+    }
+    
+    /**
+     * Test básico - verificar assertions de contenido
+     */
+    public function test_content_assertions() {
+        $html = "<div class=\"test\">Content</div>";
+        $json = \'{"key": "value", "number": 42}\';
+        
+        // Test HTML
+        $this->assertStringContainsString("test", $html, "HTML debe contener class test");
+        $this->assertStringContainsString("Content", $html, "HTML debe contener contenido esperado");
+        
+        // Test JSON
+        $decoded = json_decode($json, true);
+        $this->assertNotNull($decoded, "JSON debe ser decodificable");
+        $this->assertArrayHasKey("key", $decoded, "JSON debe contener key esperada");
+        $this->assertEquals("value", $decoded["key"], "JSON debe contener valor esperado");
+        $this->assertEquals(42, $decoded["number"], "JSON debe contener número esperado");
+    }
+}';
+        
+        file_put_contents($basic_test_file, $basic_test_content);
+        echo "✅ {$basic_test_filename} creado exitosamente\n\n";
     }
     
     // 5. Crear .gitignore específico
