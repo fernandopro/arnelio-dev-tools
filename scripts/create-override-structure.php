@@ -214,72 +214,16 @@ return [
     file_put_contents($info['child_dir'] . '/phpunit-plugin-only.xml', $phpunit_only_content);
     echo "✅ Configuración PHPUnit específica creada\n\n";
     
-    // 4. Crear test de ejemplo
-    echo "🧪 Creando tests de ejemplo...\n";
-    $plugin_name = basename($info['plugin_root']);
-    $class_name = str_replace(['-', '_'], '', ucwords($plugin_name, '-_'));
+    // 4. Verificar tests básicos
+    echo "🧪 Verificando tests básicos...\n";
     
-    $test_content = '<?php
-/**
- * Tests específicos del plugin ' . $plugin_name . '
- * 
- * Estos tests son específicos para la funcionalidad del plugin.
- * No afectan ni dependen de tests de otros plugins.
- */
-
-class ' . $class_name . 'PluginTest extends DevToolsTestCase {
-    
-    public function setUp(): void {
-        parent::setUp();
-        
-        // Setup específico del plugin
-        $this->plugin_setup();
+    // El TarokinaBasicTest.php ya se creó automáticamente en FileOverrideSystem
+    $basic_test_file = $info['child_dir'] . '/tests/unit/TarokinaBasicTest.php';
+    if (file_exists($basic_test_file)) {
+        echo "✅ TarokinaBasicTest.php ya está disponible para Quick Test\n\n";
+    } else {
+        echo "⚠️ TarokinaBasicTest.php no encontrado - debería haberse creado automáticamente\n\n";
     }
-    
-    /**
-     * Test básico de activación del plugin
-     */
-    public function test_plugin_activation() {
-        // Verificar que el plugin principal está cargado
-        $this->assertTrue(function_exists(\'get_plugin_data\'), \'WordPress plugin functions should be available\');
-        
-        // Agregar aquí tests específicos de activación del plugin
-        $this->assertTrue(true, \'Plugin activation test placeholder\');
-    }
-    
-    /**
-     * Test de funcionalidad específica del plugin
-     */
-    public function test_plugin_specific_functionality() {
-        // Ejemplo: Test de custom post types, taxonomías, etc.
-        $this->assertTrue(true, \'Plugin specific functionality test placeholder\');
-    }
-    
-    /**
-     * Test de integración con WordPress
-     */
-    public function test_wordpress_integration() {
-        // Verificar que las integraciones con WordPress funcionan
-        $this->assertTrue(is_user_logged_in() || !is_user_logged_in(), \'WordPress user system should be available\');
-        $this->assertTrue(function_exists(\'wp_insert_post\'), \'WordPress post functions should be available\');
-    }
-    
-    /**
-     * Setup específico del plugin
-     */
-    private function plugin_setup() {
-        // Configuración específica para tests de este plugin
-        // Crear datos de prueba, configurar mocks, etc.
-    }
-    
-    public function tearDown(): void {
-        // Limpieza específica del plugin
-        parent::tearDown();
-    }
-}';
-    
-    file_put_contents($info['child_dir'] . '/tests/unit/' . $class_name . 'PluginTest.php', $test_content);
-    echo "✅ Test de ejemplo creado\n\n";
     
     // 5. Crear .gitignore específico
     echo "📄 Creando .gitignore específico...\n";

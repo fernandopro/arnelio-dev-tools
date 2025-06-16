@@ -109,7 +109,8 @@ class DevToolsAdminPanel {
         
         switch ($test_type) {
             case 'basic':
-                $command = $phpunit_path . ' tests/unit/TarokinaBasicTest.php --verbose';
+                $basic_test_file = $this->get_basic_test_filename();
+                $command = $phpunit_path . ' ' . $basic_test_file . ' --verbose';
                 break;
             case 'dashboard':
                 $command = $phpunit_path . ' tests/unit/dashboard/ --verbose';
@@ -1032,7 +1033,8 @@ class DevToolsAdminPanel {
         try {
             // Obtener la ruta correcta de PHP y ejecutar solo el test básico
             $php_binary = $this->get_php_binary_path();
-            $command = '"' . $php_binary . '" ../dev-tools/vendor/phpunit/phpunit/phpunit tests/unit/TarokinaBasicTest.php --verbose';
+            $basic_test_file = $this->get_basic_test_filename();
+            $command = '"' . $php_binary . '" ../dev-tools/vendor/phpunit/phpunit/phpunit ' . $basic_test_file . ' --verbose';
             
             error_log("DEBUG TEST EXECUTION - Final command: " . $command);
             
@@ -1225,5 +1227,19 @@ class DevToolsAdminPanel {
         }
         
         return $has_files;
+    }
+    
+    /**
+     * Obtiene el nombre del archivo de test básico dinámico basado en el nombre del plugin
+     */
+    private function get_basic_test_filename() {
+        // Obtener el nombre del plugin desde la ruta del directorio
+        $plugin_name = basename(dirname(dirname(dirname(__FILE__))));
+        
+        // Convertir a formato seguro para nombre de clase (similar a FileOverrideSystem.php)
+        $safe_plugin_name = preg_replace('/[^a-zA-Z0-9_]/', '', ucwords(str_replace(['-', '_'], ' ', $plugin_name)));
+        $safe_plugin_name = str_replace(' ', '', $safe_plugin_name);
+        
+        return "tests/unit/{$safe_plugin_name}BasicTest.php";
     }
 }
