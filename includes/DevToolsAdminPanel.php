@@ -968,45 +968,59 @@ class DevToolsAdminPanel {
             'status' => 'unknown'
         ];
         
-        // Buscar línea de resumen tipo: "Tests: 7, Assertions: 17, Risky: 4."
+        error_log("DEBUG PARSE - Raw output length: " . strlen($output));
+        
+        // Buscar línea de resumen tipo: "Tests: 7, Assertions: 17, Failures: 1, Skipped: 1, Risky: 1."
         if (preg_match('/Tests: (\d+), Assertions: (\d+)/', $output, $matches)) {
             $summary['total_tests'] = (int)$matches[1];
             $summary['assertions'] = (int)$matches[2];
+            error_log("DEBUG PARSE - Found total_tests: {$summary['total_tests']}, assertions: {$summary['assertions']}");
         }
         
         // Buscar tiempo y memoria: "Time: 00:00.808, Memory: 42.50 MB"
         if (preg_match('/Time: ([\d:\.]+), Memory: ([\d\.]+ \w+)/', $output, $matches)) {
             $summary['time'] = $matches[1];
             $summary['memory'] = $matches[2];
+            error_log("DEBUG PARSE - Found time: {$summary['time']}, memory: {$summary['memory']}");
         }
         
-        // Determinar estado general
-        if (strpos($output, 'OK (') !== false) {
+        // Buscar específicamente errores, fallos y omitidos en cualquier parte del output
+        if (preg_match('/Errors?: (\d+)/', $output, $matches)) {
+            $summary['errors'] = (int)$matches[1];
+            error_log("DEBUG PARSE - Found errors: {$summary['errors']}");
+        }
+        
+        if (preg_match('/Failures?: (\d+)/', $output, $matches)) {
+            $summary['failed'] = (int)$matches[1];
+            error_log("DEBUG PARSE - Found failures: {$summary['failed']}");
+        }
+        
+        if (preg_match('/Skipped: (\d+)/', $output, $matches)) {
+            $summary['skipped'] = (int)$matches[1];
+            error_log("DEBUG PARSE - Found skipped: {$summary['skipped']}");
+        }
+        
+        // Determinar estado general basado en la salida
+        if (strpos($output, 'OK (') !== false && $summary['errors'] === 0 && $summary['failed'] === 0) {
             $summary['status'] = 'success';
-            $summary['passed'] = $summary['total_tests'];
+            $summary['passed'] = $summary['total_tests'] - $summary['skipped'];
+            error_log("DEBUG PARSE - Status: success, passed: {$summary['passed']}");
         } elseif (strpos($output, 'ERRORS!') !== false || strpos($output, 'FAILURES!') !== false) {
             $summary['status'] = 'error';
-            
-            // Contar errores y fallos
-            if (preg_match('/(\d+) error/', $output, $matches)) {
-                $summary['errors'] = (int)$matches[1];
-            }
-            if (preg_match('/(\d+) failure/', $output, $matches)) {
-                $summary['failed'] = (int)$matches[1];
-            }
-            if (preg_match('/(\d+) skipped/', $output, $matches)) {
-                $summary['skipped'] = (int)$matches[1];
-            }
-            
             $summary['passed'] = $summary['total_tests'] - $summary['errors'] - $summary['failed'] - $summary['skipped'];
+            error_log("DEBUG PARSE - Status: error, passed: {$summary['passed']}");
         } elseif (strpos($output, 'OK, but incomplete, skipped, or risky tests!') !== false) {
             $summary['status'] = 'warning';
-            $summary['passed'] = $summary['total_tests'];
-            
-            if (preg_match('/(\d+) risky/', $output, $matches)) {
-                $summary['skipped'] = (int)$matches[1];
-            }
+            $summary['passed'] = $summary['total_tests'] - $summary['errors'] - $summary['failed'] - $summary['skipped'];
+            error_log("DEBUG PARSE - Status: warning, passed: {$summary['passed']}");
+        } else {
+            // Fallback: calcular basado en lo que tenemos
+            $summary['passed'] = max(0, $summary['total_tests'] - $summary['errors'] - $summary['failed'] - $summary['skipped']);
+            error_log("DEBUG PARSE - Status: fallback, passed: {$summary['passed']}");
         }
+        
+        // Log final del resumen
+        error_log("DEBUG PARSE - Final summary: " . json_encode($summary));
         
         return $summary;
     }
