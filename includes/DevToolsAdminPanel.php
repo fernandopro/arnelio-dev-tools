@@ -109,7 +109,7 @@ class DevToolsAdminPanel {
         
         switch ($test_type) {
             case 'basic':
-                $command = $phpunit_path . ' tests/unit/dashboard/TarokinaBasicTest.php --verbose';
+                $command = $phpunit_path . ' tests/unit/TarokinaBasicTest.php --verbose';
                 break;
             case 'dashboard':
                 $command = $phpunit_path . ' tests/unit/dashboard/ --verbose';
@@ -1018,7 +1018,7 @@ class DevToolsAdminPanel {
         try {
             // Obtener la ruta correcta de PHP y ejecutar solo el test básico
             $php_binary = $this->get_php_binary_path();
-            $command = '"' . $php_binary . '" ../dev-tools/vendor/phpunit/phpunit/phpunit tests/unit/dashboard/TarokinaBasicTest.php --verbose';
+            $command = '"' . $php_binary . '" ../dev-tools/vendor/phpunit/phpunit/phpunit tests/unit/TarokinaBasicTest.php --verbose';
             
             error_log("DEBUG TEST EXECUTION - Final command: " . $command);
             

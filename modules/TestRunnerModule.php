@@ -73,7 +73,7 @@ class TestRunnerModule extends DevToolsModuleBase {
     public function run_quick_test($data = []) {
         try {
             // Ejecutar solo el test básico de Tarokina
-            $command = '../dev-tools/vendor/bin/phpunit tests/unit/dashboard/TarokinaBasicTest.php --verbose';
+            $command = '../dev-tools/vendor/bin/phpunit tests/unit/TarokinaBasicTest.php --verbose';
             $result = $this->execute_phpunit($command);
             
             return [
@@ -130,7 +130,7 @@ class TestRunnerModule extends DevToolsModuleBase {
         // Determinar qué tests ejecutar
         $test_path = 'tests/';
         if (in_array('unit', $test_types) && count($test_types) == 1) {
-            $test_path = 'tests/unit/dashboard/TarokinaBasicTest.php';
+            $test_path = 'tests/unit/TarokinaBasicTest.php';
         } elseif (in_array('dashboard', $test_types)) {
             $test_path = 'tests/unit/dashboard/';
         }
