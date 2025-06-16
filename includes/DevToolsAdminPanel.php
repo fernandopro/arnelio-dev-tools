@@ -820,14 +820,68 @@ class DevToolsAdminPanel {
         // Agregar cobertura
         if ($coverage) {
             $options[] = '--coverage-text';
+            error_log("DEBUG BUILD COMMAND - Added --coverage-text option");
         }
         
-        // Determinar qué tests ejecutar (rutas del sistema override plugin-dev-tools)
-        $test_path = 'tests/';
-        if (in_array('unit', $test_types) && count($test_types) == 1) {
-            $test_path = 'tests/unit/dashboard/TarokinaBasicTest.php'; // Test básico del plugin
-        } elseif (in_array('dashboard', $test_types)) {
-            $test_path = 'tests/unit/dashboard/'; // Tests de dashboard del plugin
+        error_log("DEBUG BUILD COMMAND - All options: " . print_r($options, true));
+        
+        // Determinar qué tests ejecutar según los tipos seleccionados
+        $test_paths = [];
+        $available_test_dirs = ['unit', 'integration', 'database'];
+        
+        // Mapear tipos de test a rutas específicas y verificar que existan tests
+        foreach ($test_types as $type) {
+            $test_dir = "tests/{$type}/";
+            
+            switch ($type) {
+                case 'unit':
+                    // Siempre disponible
+                    $test_paths[] = $test_dir;
+                    error_log("DEBUG BUILD COMMAND - Added unit test path: " . $test_dir);
+                    break;
+                case 'integration':
+                    // Verificar si hay tests de integración (no solo .gitkeep)
+                    $plugin_dev_tools_dir = dirname(dirname(__DIR__)) . '/plugin-dev-tools/';
+                    $integration_dir = $plugin_dev_tools_dir . 'tests/integration/';
+                    if ($this->has_test_files($integration_dir)) {
+                        $test_paths[] = $test_dir;
+                        error_log("DEBUG BUILD COMMAND - Added integration test path: " . $test_dir);
+                    } else {
+                        error_log("DEBUG BUILD COMMAND - No integration tests found, skipping");
+                    }
+                    break;
+                case 'database':
+                    // Verificar si hay tests de base de datos (no solo .gitkeep)
+                    $plugin_dev_tools_dir = dirname(dirname(__DIR__)) . '/plugin-dev-tools/';
+                    $database_dir = $plugin_dev_tools_dir . 'tests/database/';
+                    if ($this->has_test_files($database_dir)) {
+                        $test_paths[] = $test_dir;
+                        error_log("DEBUG BUILD COMMAND - Added database test path: " . $test_dir);
+                    } else {
+                        error_log("DEBUG BUILD COMMAND - No database tests found, skipping");
+                    }
+                    break;
+                default:
+                    // Tipo no reconocido, usar como ruta directa si existe
+                    $test_paths[] = $test_dir;
+                    break;
+            }
+        }
+        
+        // Si no hay rutas válidas de test, usar solo unit tests
+        if (empty($test_paths)) {
+            $test_path = 'tests/unit/';
+            error_log("DEBUG BUILD COMMAND - No valid test paths found, using unit tests");
+        } elseif (count($test_paths) == 1) {
+            // Un solo tipo de test válido
+            $test_path = $test_paths[0];
+            error_log("DEBUG BUILD COMMAND - Single test path selected: " . $test_path);
+        } else {
+            // Múltiples tipos específicos válidos, ejecutar solo esos
+            // Para simplificar, ejecutar todos los tests cuando hay múltiples tipos
+            $test_path = 'tests/';
+            error_log("DEBUG BUILD COMMAND - Multiple test paths, using all tests: " . $test_path);
+            error_log("DEBUG BUILD COMMAND - Selected paths were: " . print_r($test_paths, true));
         }
         
         $command = $base_command . ' ' . $test_path;
@@ -857,33 +911,10 @@ class DevToolsAdminPanel {
         chdir($plugin_dev_tools_dir);
         
         try {
-            // Usar exec() con comando correctamente escapado para macOS
+            // Ejecutar el comando tal como viene de build_phpunit_command
             $start_time = microtime(true);
             
             error_log("DEBUG PHPUNIT EXECUTION - Original command: " . $command);
-            
-            // Construir comando completamente escapado
-            $php_binary = $this->get_php_binary_path();
-            $phpunit_path = '../dev-tools/vendor/phpunit/phpunit/phpunit';
-            
-            // Extraer el archivo de test del comando
-            if (preg_match('/phpunit\s+([^\s]+\.php)/', $command, $matches)) {
-                $test_file = $matches[1];
-            } else {
-                $test_file = 'tests/unit/dashboard/TarokinaBasicTest.php';
-            }
-            
-            // Construir comando con todas las partes escapadas individualmente
-            $escaped_command = escapeshellarg($php_binary) . ' ' . 
-                              escapeshellarg($phpunit_path) . ' ' . 
-                              escapeshellarg($test_file);
-            
-            // Agregar --verbose si está en el comando original
-            if (strpos($command, '--verbose') !== false) {
-                $escaped_command .= ' --verbose';
-            }
-            
-            error_log("DEBUG PHPUNIT EXECUTION - Escaped command: " . $escaped_command);
             
             // Configurar el PATH para incluir el directorio del PHP binary
             $php_binary = $this->get_php_binary_path();
@@ -891,12 +922,12 @@ class DevToolsAdminPanel {
             $current_path = getenv('PATH');
             $new_path = $php_dir . ':' . $current_path;
             
-            // Ejecutar con PATH configurado
+            // Ejecutar con PATH configurado - USAR EL COMANDO ORIGINAL
             $output = [];
             $exit_code = 0;
             
             // Configurar el entorno para la ejecución
-            $env_command = "export PATH=\"{$new_path}\" && " . $escaped_command . ' 2>&1';
+            $env_command = "export PATH=\"{$new_path}\" && " . $command . ' 2>&1';
             
             error_log("DEBUG PHPUNIT EXECUTION - Final command with PATH: " . $env_command);
             
@@ -1154,5 +1185,31 @@ class DevToolsAdminPanel {
         // Último recurso: usar 'php' y esperar que esté en el PATH del sistema
         error_log("DEBUG PHP DETECTION - Using fallback 'php' command (should work with system PATH)");
         return 'php';
+    }
+
+    /**
+     * Check if a test directory has test files
+     *
+     * @param string $test_dir Absolute path to the test directory
+     * @return bool True if test files exist, false otherwise
+     */
+    private function has_test_files($test_dir) {
+        error_log("DEBUG TEST FILES CHECK - Checking directory: " . $test_dir);
+        
+        if (!is_dir($test_dir)) {
+            error_log("DEBUG TEST FILES CHECK - Directory does not exist");
+            return false;
+        }
+        
+        // Search for PHP test files
+        $test_files = glob($test_dir . '/*Test.php');
+        $has_files = !empty($test_files);
+        
+        error_log("DEBUG TEST FILES CHECK - Found " . count($test_files) . " test files");
+        if ($has_files) {
+            error_log("DEBUG TEST FILES CHECK - Test files: " . implode(', ', array_map('basename', $test_files)));
+        }
+        
+        return $has_files;
     }
 }
