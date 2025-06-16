@@ -984,11 +984,17 @@ class DevToolsAdminPanel {
         
         error_log("DEBUG PARSE - Raw output length: " . strlen($output));
         
-        // Buscar línea de resumen tipo: "Tests: 7, Assertions: 17, Failures: 1, Skipped: 1, Risky: 1."
+        // Buscar línea de resumen en múltiples formatos:
+        // Formato 1: "Tests: 7, Assertions: 17, Failures: 1, Skipped: 1, Risky: 1."
+        // Formato 2: "OK (26 tests, 54 assertions)" o "ERRORS! (26 tests, 54 assertions, 2 failures)"
         if (preg_match('/Tests: (\d+), Assertions: (\d+)/', $output, $matches)) {
             $summary['total_tests'] = (int)$matches[1];
             $summary['assertions'] = (int)$matches[2];
-            error_log("DEBUG PARSE - Found total_tests: {$summary['total_tests']}, assertions: {$summary['assertions']}");
+            error_log("DEBUG PARSE - Format 1 - Found total_tests: {$summary['total_tests']}, assertions: {$summary['assertions']}");
+        } elseif (preg_match('/\((\d+) tests?, (\d+) assertions?\)/', $output, $matches)) {
+            $summary['total_tests'] = (int)$matches[1];
+            $summary['assertions'] = (int)$matches[2];
+            error_log("DEBUG PARSE - Format 2 - Found total_tests: {$summary['total_tests']}, assertions: {$summary['assertions']}");
         }
         
         // Buscar tiempo y memoria: "Time: 00:00.808, Memory: 42.50 MB"
@@ -999,19 +1005,36 @@ class DevToolsAdminPanel {
         }
         
         // Buscar específicamente errores, fallos y omitidos en cualquier parte del output
-        if (preg_match('/Errors?: (\d+)/', $output, $matches)) {
-            $summary['errors'] = (int)$matches[1];
-            error_log("DEBUG PARSE - Found errors: {$summary['errors']}");
-        }
-        
-        if (preg_match('/Failures?: (\d+)/', $output, $matches)) {
-            $summary['failed'] = (int)$matches[1];
-            error_log("DEBUG PARSE - Found failures: {$summary['failed']}");
-        }
-        
-        if (preg_match('/Skipped: (\d+)/', $output, $matches)) {
-            $summary['skipped'] = (int)$matches[1];
-            error_log("DEBUG PARSE - Found skipped: {$summary['skipped']}");
+        // Primero buscar en la línea de resumen final si está presente
+        if (preg_match('/(Tests: \d+, Assertions: \d+)(?:, Failures?: (\d+))?(?:, Errors?: (\d+))?(?:, Skipped: (\d+))?(?:, Risky: (\d+))?/', $output, $matches)) {
+            if (isset($matches[2]) && $matches[2] !== '') {
+                $summary['failed'] = (int)$matches[2];
+                error_log("DEBUG PARSE - Found failures from summary: {$summary['failed']}");
+            }
+            if (isset($matches[3]) && $matches[3] !== '') {
+                $summary['errors'] = (int)$matches[3];
+                error_log("DEBUG PARSE - Found errors from summary: {$summary['errors']}");
+            }
+            if (isset($matches[4]) && $matches[4] !== '') {
+                $summary['skipped'] = (int)$matches[4];
+                error_log("DEBUG PARSE - Found skipped from summary: {$summary['skipped']}");
+            }
+        } else {
+            // Fallback: buscar individualmente si no está en el resumen
+            if (preg_match('/Errors?: (\d+)/', $output, $matches)) {
+                $summary['errors'] = (int)$matches[1];
+                error_log("DEBUG PARSE - Found errors (fallback): {$summary['errors']}");
+            }
+            
+            if (preg_match('/Failures?: (\d+)/', $output, $matches)) {
+                $summary['failed'] = (int)$matches[1];
+                error_log("DEBUG PARSE - Found failures (fallback): {$summary['failed']}");
+            }
+            
+            if (preg_match('/Skipped: (\d+)/', $output, $matches)) {
+                $summary['skipped'] = (int)$matches[1];
+                error_log("DEBUG PARSE - Found skipped (fallback): {$summary['skipped']}");
+            }
         }
         
         // Determinar estado general basado en la salida
