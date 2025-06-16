@@ -62,6 +62,7 @@ class DevToolsAdminPanel {
         $test_types = $_POST['test_types'] ?? ['unit'];
         $verbose = filter_var($_POST['verbose'] ?? false, FILTER_VALIDATE_BOOLEAN);
         $coverage = filter_var($_POST['coverage'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        $testdox = filter_var($_POST['testdox'] ?? false, FILTER_VALIDATE_BOOLEAN);
         
         // Asegurar que test_types sea un array
         if (!is_array($test_types)) {
@@ -69,7 +70,7 @@ class DevToolsAdminPanel {
         }
         
         try {
-            $result = $this->run_tests_with_options($test_types, $verbose, $coverage);
+            $result = $this->run_tests_with_options($test_types, $verbose, $coverage, $testdox);
             
             if ($result['success']) {
                 wp_send_json_success($result['data']);
@@ -665,6 +666,12 @@ class DevToolsAdminPanel {
                                             Generate Coverage
                                         </label>
                                     </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="testdoxOutput">
+                                        <label class="form-check-label" for="testdoxOutput">
+                                            TestDox Summary
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -804,7 +811,7 @@ class DevToolsAdminPanel {
     /**
      * Construir comando PHPUnit
      */
-    private function build_phpunit_command($test_types, $verbose = false, $coverage = false) {
+    private function build_phpunit_command($test_types, $verbose = false, $coverage = false, $testdox = false) {
         // Obtener la ruta correcta de PHP
         $php_binary = $this->get_php_binary_path();
         
@@ -822,6 +829,12 @@ class DevToolsAdminPanel {
         if ($coverage) {
             $options[] = '--coverage-text';
             error_log("DEBUG BUILD COMMAND - Added --coverage-text option");
+        }
+        
+        // Agregar testdox
+        if ($testdox) {
+            $options[] = '--testdox';
+            error_log("DEBUG BUILD COMMAND - Added --testdox option");
         }
         
         error_log("DEBUG BUILD COMMAND - All options: " . print_r($options, true));
@@ -1062,10 +1075,10 @@ class DevToolsAdminPanel {
     /**
      * Ejecutar tests completos con opciones
      */
-    private function run_tests_with_options($test_types = ['unit'], $verbose = false, $coverage = false) {
+    private function run_tests_with_options($test_types = ['unit'], $verbose = false, $coverage = false, $testdox = false) {
         try {
             // Construir comando PHPUnit
-            $command = $this->build_phpunit_command($test_types, $verbose, $coverage);
+            $command = $this->build_phpunit_command($test_types, $verbose, $coverage, $testdox);
             
             // Ejecutar tests
             $result = $this->execute_phpunit($command);

@@ -116,6 +116,7 @@ class TestRunner {
         
         const verbose = document.getElementById('verboseOutput')?.checked || false;
         const coverage = document.getElementById('generateCoverage')?.checked || false;
+        const testdox = document.getElementById('testdoxOutput')?.checked || false;
         
         if (testTypes.length === 0) {
             this.showMessage('⚠️ Selecciona al menos un tipo de test', 'warning');
@@ -130,7 +131,8 @@ class TestRunner {
             const response = await this.makeTestAjaxRequest('run_tests', {
                 test_types: testTypes,
                 verbose: verbose,
-                coverage: coverage
+                coverage: coverage,
+                testdox: testdox
             });
             
             if (response) {
