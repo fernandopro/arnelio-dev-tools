@@ -108,19 +108,19 @@ class TestRunner {
             return;
         }
 
-        // Leer valores de los checkboxes con nuevos IDs simplificados
-        const testTypes = [];
-        if (document.getElementById('devtools-devtoolsTests')?.checked) testTypes.push('devtools');
-        if (document.getElementById('devtools-pluginTests')?.checked) testTypes.push('plugin');
+        // Leer valor del radio button seleccionado
+        const selectedTestType = document.querySelector('input[name="testType"]:checked');
+        
+        if (!selectedTestType) {
+            this.showMessage('⚠️ Selecciona un tipo de test', 'warning');
+            return;
+        }
+        
+        const testTypes = [selectedTestType.value]; // Solo un tipo ahora
         
         const verbose = document.getElementById('devtools-verboseOutput')?.checked || false;
         const coverage = document.getElementById('devtools-generateCoverage')?.checked || false;
         const testdox = document.getElementById('devtools-testdoxOutput')?.checked || false;
-        
-        if (testTypes.length === 0) {
-            this.showMessage('⚠️ Selecciona al menos un tipo de test', 'warning');
-            return;
-        }
 
         this.isRunning = true;
         this.updateButtonStates(true, 'devtools-runTests');

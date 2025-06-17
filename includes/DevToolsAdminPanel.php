@@ -446,13 +446,13 @@ class DevToolsAdminPanel {
                             <div class="col-md-3">
                                 <div class="devtools-section">
                                     <label class="devtools-label" style="display: block; font-weight: 600; color: #1e293b; margin-bottom: 1rem; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">Tipos de Test</label>
-                                    <div class="devtools-checkbox-group" style="display: flex; flex-direction: column; gap: 0.75rem;">
-                                        <label class="devtools-checkbox" style="display: flex; align-items: center; cursor: pointer;">
-                                            <input type="checkbox" id="devtools-devtoolsTests" checked style="margin-right: 0.75rem; accent-color: #667eea;">
+                                    <div class="devtools-radio-group" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                        <label class="devtools-radio" style="display: flex; align-items: center; cursor: pointer;">
+                                            <input type="radio" name="testType" id="devtools-devtoolsTests" value="devtools" checked style="margin-right: 0.75rem; accent-color: #667eea;">
                                             <span style="color: #475569; font-weight: 500;">Dev-Tools Tests</span>
                                         </label>
-                                        <label class="devtools-checkbox" style="display: flex; align-items: center; cursor: pointer;">
-                                            <input type="checkbox" id="devtools-pluginTests" style="margin-right: 0.75rem; accent-color: #667eea;">
+                                        <label class="devtools-radio" style="display: flex; align-items: center; cursor: pointer;">
+                                            <input type="radio" name="testType" id="devtools-pluginTests" value="plugin" style="margin-right: 0.75rem; accent-color: #667eea;">
                                             <span style="color: #475569; font-weight: 500;">Plugin Tests</span>
                                         </label>
                                     </div>
@@ -935,24 +935,57 @@ class DevToolsAdminPanel {
             'errors' => 0,
             'risky' => 0,
             'assertions' => 0,
+            'incomplete' => 0,
             'time' => null,
             'memory' => null,
             'status' => 'unknown'
         ];
         
         error_log("DEBUG PARSE - Raw output length: " . strlen($output));
+        error_log("DEBUG PARSE - Last 500 chars: " . substr($output, -500));
         
-        // Buscar línea de resumen en múltiples formatos:
-        // Formato 1: "Tests: 7, Assertions: 17, Failures: 1, Skipped: 1, Risky: 1."
-        // Formato 2: "OK (26 tests, 54 assertions)" o "ERRORS! (26 tests, 54 assertions, 2 failures)"
-        if (preg_match('/Tests: (\d+), Assertions: (\d+)/', $output, $matches)) {
+        // Buscar la línea de resumen final más completa
+        // Formato: "Tests: 18, Assertions: 37, Errors: 2, Failures: 2, Skipped: 2, Incomplete: 1, Risky: 1."
+        $final_summary_pattern = '/Tests: (\d+), Assertions: (\d+)(?:, Errors?: (\d+))?(?:, Failures?: (\d+))?(?:, Skipped: (\d+))?(?:, Incomplete: (\d+))?(?:, Risky: (\d+))?/';
+        
+        if (preg_match($final_summary_pattern, $output, $matches)) {
             $summary['total_tests'] = (int)$matches[1];
             $summary['assertions'] = (int)$matches[2];
-            error_log("DEBUG PARSE - Format 1 - Found total_tests: {$summary['total_tests']}, assertions: {$summary['assertions']}");
-        } elseif (preg_match('/\((\d+) tests?, (\d+) assertions?\)/', $output, $matches)) {
-            $summary['total_tests'] = (int)$matches[1];
-            $summary['assertions'] = (int)$matches[2];
-            error_log("DEBUG PARSE - Format 2 - Found total_tests: {$summary['total_tests']}, assertions: {$summary['assertions']}");
+            $summary['errors'] = isset($matches[3]) && $matches[3] !== '' ? (int)$matches[3] : 0;
+            $summary['failed'] = isset($matches[4]) && $matches[4] !== '' ? (int)$matches[4] : 0;
+            $summary['skipped'] = isset($matches[5]) && $matches[5] !== '' ? (int)$matches[5] : 0;
+            $summary['incomplete'] = isset($matches[6]) && $matches[6] !== '' ? (int)$matches[6] : 0;
+            $summary['risky'] = isset($matches[7]) && $matches[7] !== '' ? (int)$matches[7] : 0;
+            
+            error_log("DEBUG PARSE - Complete parsing successful:");
+            error_log("  Total: {$summary['total_tests']}, Assertions: {$summary['assertions']}");
+            error_log("  Errors: {$summary['errors']}, Failures: {$summary['failed']}");
+            error_log("  Skipped: {$summary['skipped']}, Incomplete: {$summary['incomplete']}, Risky: {$summary['risky']}");
+        } else {
+            // Fallback: buscar cada métrica individualmente
+            error_log("DEBUG PARSE - Using fallback individual parsing");
+            
+            if (preg_match('/Tests: (\d+)/', $output, $matches)) {
+                $summary['total_tests'] = (int)$matches[1];
+            }
+            if (preg_match('/Assertions: (\d+)/', $output, $matches)) {
+                $summary['assertions'] = (int)$matches[1];
+            }
+            if (preg_match('/Errors?: (\d+)/', $output, $matches)) {
+                $summary['errors'] = (int)$matches[1];
+            }
+            if (preg_match('/Failures?: (\d+)/', $output, $matches)) {
+                $summary['failed'] = (int)$matches[1];
+            }
+            if (preg_match('/Skipped: (\d+)/', $output, $matches)) {
+                $summary['skipped'] = (int)$matches[1];
+            }
+            if (preg_match('/Incomplete: (\d+)/', $output, $matches)) {
+                $summary['incomplete'] = (int)$matches[1];
+            }
+            if (preg_match('/Risky: (\d+)/', $output, $matches)) {
+                $summary['risky'] = (int)$matches[1];
+            }
         }
         
         // Buscar tiempo y memoria: "Time: 00:00.808, Memory: 42.50 MB"
@@ -962,68 +995,27 @@ class DevToolsAdminPanel {
             error_log("DEBUG PARSE - Found time: {$summary['time']}, memory: {$summary['memory']}");
         }
         
-        // Buscar específicamente errores, fallos y omitidos en cualquier parte del output
-        // Primero buscar en la línea de resumen final si está presente
-        if (preg_match('/(Tests: \d+, Assertions: \d+)(?:, Failures?: (\d+))?(?:, Errors?: (\d+))?(?:, Skipped: (\d+))?(?:, Risky: (\d+))?/', $output, $matches)) {
-            if (isset($matches[2]) && $matches[2] !== '') {
-                $summary['failed'] = (int)$matches[2];
-                error_log("DEBUG PARSE - Found failures from summary: {$summary['failed']}");
-            }
-            if (isset($matches[3]) && $matches[3] !== '') {
-                $summary['errors'] = (int)$matches[3];
-                error_log("DEBUG PARSE - Found errors from summary: {$summary['errors']}");
-            }
-            if (isset($matches[4]) && $matches[4] !== '') {
-                $summary['skipped'] = (int)$matches[4];
-                error_log("DEBUG PARSE - Found skipped from summary: {$summary['skipped']}");
-            }
-            if (isset($matches[5]) && $matches[5] !== '') {
-                $summary['risky'] = (int)$matches[5];
-                error_log("DEBUG PARSE - Found risky from summary: {$summary['risky']}");
-            }
-        } else {
-            // Fallback: buscar individualmente si no está en el resumen
-            if (preg_match('/Errors?: (\d+)/', $output, $matches)) {
-                $summary['errors'] = (int)$matches[1];
-                error_log("DEBUG PARSE - Found errors (fallback): {$summary['errors']}");
-            }
-            
-            if (preg_match('/Failures?: (\d+)/', $output, $matches)) {
-                $summary['failed'] = (int)$matches[1];
-                error_log("DEBUG PARSE - Found failures (fallback): {$summary['failed']}");
-            }
-            
-            if (preg_match('/Skipped: (\d+)/', $output, $matches)) {
-                $summary['skipped'] = (int)$matches[1];
-                error_log("DEBUG PARSE - Found skipped (fallback): {$summary['skipped']}");
-            }
-            
-            if (preg_match('/Risky: (\d+)/', $output, $matches)) {
-                $summary['risky'] = (int)$matches[1];
-                error_log("DEBUG PARSE - Found risky (fallback): {$summary['risky']}");
-            }
-        }
+        // Calcular tests pasados correctamente
+        // Pasados = Total - Errores - Fallos - Omitidos - Incompletos - Riesgosos
+        $summary['passed'] = max(0, $summary['total_tests'] - $summary['errors'] - $summary['failed'] - $summary['skipped'] - $summary['incomplete'] - $summary['risky']);
         
         // Determinar estado general basado en la salida
-        if (strpos($output, 'OK (') !== false && $summary['errors'] === 0 && $summary['failed'] === 0) {
-            $summary['status'] = 'success';
-            $summary['passed'] = $summary['total_tests'] - $summary['skipped'] - $summary['risky'];
-            error_log("DEBUG PARSE - Status: success, passed: {$summary['passed']}");
-        } elseif (strpos($output, 'ERRORS!') !== false || strpos($output, 'FAILURES!') !== false) {
+        if (strpos($output, 'ERRORS!') !== false) {
             $summary['status'] = 'error';
-            $summary['passed'] = $summary['total_tests'] - $summary['errors'] - $summary['failed'] - $summary['skipped'] - $summary['risky'];
-            error_log("DEBUG PARSE - Status: error, passed: {$summary['passed']}");
+        } elseif (strpos($output, 'FAILURES!') !== false) {
+            $summary['status'] = 'error';
+        } elseif ($summary['errors'] > 0 || $summary['failed'] > 0) {
+            $summary['status'] = 'error';
         } elseif (strpos($output, 'OK, but incomplete, skipped, or risky tests!') !== false) {
             $summary['status'] = 'warning';
-            $summary['passed'] = $summary['total_tests'] - $summary['errors'] - $summary['failed'] - $summary['skipped'] - $summary['risky'];
-            error_log("DEBUG PARSE - Status: warning, passed: {$summary['passed']}");
+        } elseif ($summary['risky'] > 0 || $summary['skipped'] > 0 || $summary['incomplete'] > 0) {
+            $summary['status'] = 'warning';
+        } elseif (strpos($output, 'OK (') !== false) {
+            $summary['status'] = 'success';
         } else {
-            // Fallback: calcular basado en lo que tenemos
-            $summary['passed'] = max(0, $summary['total_tests'] - $summary['errors'] - $summary['failed'] - $summary['skipped'] - $summary['risky']);
-            error_log("DEBUG PARSE - Status: fallback, passed: {$summary['passed']}");
+            $summary['status'] = 'unknown';
         }
         
-        // Log final del resumen
         error_log("DEBUG PARSE - Final summary: " . json_encode($summary));
         
         return $summary;
