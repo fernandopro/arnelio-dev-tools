@@ -293,6 +293,10 @@ class DevToolsAdminPanel {
             case 'all':
                 $command = $phpunit_path . ' tests/ --verbose';
                 break;
+            case 'plugin':
+                // Ejecutar tests del plugin con bootstrap minimal sin cargar dev-tools
+                $command = $phpunit_path . ' --bootstrap ../plugin-dev-tools/tests/minimal-bootstrap.php ../plugin-dev-tools/tests/unit/Tarokina2025BasicTest.php --verbose';
+                break;
             case 'specific':
                 if (empty($test_file)) {
                     throw new Exception('Test file not specified');
@@ -444,16 +448,12 @@ class DevToolsAdminPanel {
                                     <label class="devtools-label" style="display: block; font-weight: 600; color: #1e293b; margin-bottom: 1rem; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">Tipos de Test</label>
                                     <div class="devtools-checkbox-group" style="display: flex; flex-direction: column; gap: 0.75rem;">
                                         <label class="devtools-checkbox" style="display: flex; align-items: center; cursor: pointer;">
-                                            <input type="checkbox" id="devtools-unitTests" checked style="margin-right: 0.75rem; accent-color: #667eea;">
-                                            <span style="color: #475569; font-weight: 500;">Unit Tests</span>
+                                            <input type="checkbox" id="devtools-devtoolsTests" checked style="margin-right: 0.75rem; accent-color: #667eea;">
+                                            <span style="color: #475569; font-weight: 500;">Dev-Tools Tests</span>
                                         </label>
                                         <label class="devtools-checkbox" style="display: flex; align-items: center; cursor: pointer;">
-                                            <input type="checkbox" id="devtools-integrationTests" style="margin-right: 0.75rem; accent-color: #667eea;">
-                                            <span style="color: #475569; font-weight: 500;">Integration Tests</span>
-                                        </label>
-                                        <label class="devtools-checkbox" style="display: flex; align-items: center; cursor: pointer;">
-                                            <input type="checkbox" id="devtools-databaseTests" style="margin-right: 0.75rem; accent-color: #667eea;">
-                                            <span style="color: #475569; font-weight: 500;">Database Tests</span>
+                                            <input type="checkbox" id="devtools-pluginTests" style="margin-right: 0.75rem; accent-color: #667eea;">
+                                            <span style="color: #475569; font-weight: 500;">Plugin Tests</span>
                                         </label>
                                     </div>
                                 </div>
@@ -803,43 +803,27 @@ class DevToolsAdminPanel {
         
         // Determinar qué tests ejecutar según los tipos seleccionados
         $test_paths = [];
-        $available_test_dirs = ['unit', 'integration', 'database'];
         
-        // Mapear tipos de test a rutas específicas y verificar que existan tests
+        // Mapear tipos de test a rutas específicas
         foreach ($test_types as $type) {
-            $test_dir = "tests/{$type}/";
-            
             switch ($type) {
-                case 'unit':
-                    // Siempre disponible
-                    $test_paths[] = $test_dir;
-                    error_log("DEBUG BUILD COMMAND - Added unit test path: " . $test_dir);
+                case 'devtools':
+                    // Ejecutar TODOS los tests del framework dev-tools
+                    $test_paths[] = 'tests/';
+                    error_log("DEBUG BUILD COMMAND - Added dev-tools test path: tests/");
                     break;
-                case 'integration':
-                    // Verificar si hay tests de integración (no solo .gitkeep)
-                    $plugin_dev_tools_dir = dirname(dirname(__DIR__)) . '/plugin-dev-tools/';
-                    $integration_dir = $plugin_dev_tools_dir . 'tests/integration/';
-                    if ($this->has_test_files($integration_dir)) {
-                        $test_paths[] = $test_dir;
-                        error_log("DEBUG BUILD COMMAND - Added integration test path: " . $test_dir);
-                    } else {
-                        error_log("DEBUG BUILD COMMAND - No integration tests found, skipping");
-                    }
-                    break;
-                case 'database':
-                    // Verificar si hay tests de base de datos (no solo .gitkeep)
-                    $plugin_dev_tools_dir = dirname(dirname(__DIR__)) . '/plugin-dev-tools/';
-                    $database_dir = $plugin_dev_tools_dir . 'tests/database/';
-                    if ($this->has_test_files($database_dir)) {
-                        $test_paths[] = $test_dir;
-                        error_log("DEBUG BUILD COMMAND - Added database test path: " . $test_dir);
-                    } else {
-                        error_log("DEBUG BUILD COMMAND - No database tests found, skipping");
-                    }
+                case 'plugin':
+                    // Ejecutar TODOS los tests del plugin (toda la carpeta tests y subcarpetas)
+                    // Como el comando se ejecuta desde plugin-dev-tools, usar rutas relativas desde ahí
+                    $test_paths[] = 'tests/';
+                    // Bootstrap relativo desde plugin-dev-tools
+                    $options[] = '--bootstrap';
+                    $options[] = 'tests/bootstrap.php';
+                    error_log("DEBUG BUILD COMMAND - Added ALL plugin tests directory: tests/");
                     break;
                 default:
-                    // Tipo no reconocido, usar como ruta directa si existe
-                    $test_paths[] = $test_dir;
+                    // Tipo no reconocido, ignorar
+                    error_log("DEBUG BUILD COMMAND - Unknown test type: " . $type);
                     break;
             }
         }
@@ -860,10 +844,11 @@ class DevToolsAdminPanel {
             error_log("DEBUG BUILD COMMAND - Selected paths were: " . print_r($test_paths, true));
         }
         
-        $command = $base_command . ' ' . $test_path;
-        
+        // Construir comando final
         if (!empty($options)) {
-            $command .= ' ' . implode(' ', $options);
+            $command = $base_command . ' ' . implode(' ', $options) . ' ' . $test_path;
+        } else {
+            $command = $base_command . ' ' . $test_path;
         }
         
         return $command;
@@ -872,19 +857,29 @@ class DevToolsAdminPanel {
     /**
      * Ejecutar comando PHPUnit
      */
-    private function execute_phpunit($command) {
+    private function execute_phpunit($command, $test_types = []) {
         $start_time = microtime(true);
         
-        // Cambiar al directorio plugin-dev-tools (sistema override para tests específicos del plugin)
+        // Determinar directorio de trabajo según el tipo de test
         $original_dir = getcwd();
-        $plugin_dev_tools_dir = dirname(dirname(__DIR__)) . '/plugin-dev-tools';
+        $working_dir = null;
         
-        if (!is_dir($plugin_dev_tools_dir)) {
-            throw new \Exception("Directorio plugin-dev-tools no encontrado: {$plugin_dev_tools_dir}");
+        // Si incluye tests de plugin, usar plugin-dev-tools
+        if (in_array('plugin', $test_types)) {
+            $working_dir = dirname(dirname(__DIR__)) . '/plugin-dev-tools';
+            error_log("DEBUG PHPUNIT EXECUTION - Using plugin-dev-tools directory for plugin tests");
+        } else {
+            // Para otros tests (unit, integration, database), permanecer en dev-tools
+            $working_dir = dirname(__DIR__);
+            error_log("DEBUG PHPUNIT EXECUTION - Using dev-tools directory for framework tests");
         }
         
-        error_log("DEBUG PHPUNIT EXECUTION - Changing to override directory: " . $plugin_dev_tools_dir);
-        chdir($plugin_dev_tools_dir);
+        if (!is_dir($working_dir)) {
+            throw new \Exception("Directorio de trabajo no encontrado: {$working_dir}");
+        }
+        
+        error_log("DEBUG PHPUNIT EXECUTION - Changing to directory: " . $working_dir);
+        chdir($working_dir);
         
         try {
             // Ejecutar el comando tal como viene de build_phpunit_command
@@ -938,6 +933,7 @@ class DevToolsAdminPanel {
             'failed' => 0,
             'skipped' => 0,
             'errors' => 0,
+            'risky' => 0,
             'assertions' => 0,
             'time' => null,
             'memory' => null,
@@ -981,6 +977,10 @@ class DevToolsAdminPanel {
                 $summary['skipped'] = (int)$matches[4];
                 error_log("DEBUG PARSE - Found skipped from summary: {$summary['skipped']}");
             }
+            if (isset($matches[5]) && $matches[5] !== '') {
+                $summary['risky'] = (int)$matches[5];
+                error_log("DEBUG PARSE - Found risky from summary: {$summary['risky']}");
+            }
         } else {
             // Fallback: buscar individualmente si no está en el resumen
             if (preg_match('/Errors?: (\d+)/', $output, $matches)) {
@@ -997,24 +997,29 @@ class DevToolsAdminPanel {
                 $summary['skipped'] = (int)$matches[1];
                 error_log("DEBUG PARSE - Found skipped (fallback): {$summary['skipped']}");
             }
+            
+            if (preg_match('/Risky: (\d+)/', $output, $matches)) {
+                $summary['risky'] = (int)$matches[1];
+                error_log("DEBUG PARSE - Found risky (fallback): {$summary['risky']}");
+            }
         }
         
         // Determinar estado general basado en la salida
         if (strpos($output, 'OK (') !== false && $summary['errors'] === 0 && $summary['failed'] === 0) {
             $summary['status'] = 'success';
-            $summary['passed'] = $summary['total_tests'] - $summary['skipped'];
+            $summary['passed'] = $summary['total_tests'] - $summary['skipped'] - $summary['risky'];
             error_log("DEBUG PARSE - Status: success, passed: {$summary['passed']}");
         } elseif (strpos($output, 'ERRORS!') !== false || strpos($output, 'FAILURES!') !== false) {
             $summary['status'] = 'error';
-            $summary['passed'] = $summary['total_tests'] - $summary['errors'] - $summary['failed'] - $summary['skipped'];
+            $summary['passed'] = $summary['total_tests'] - $summary['errors'] - $summary['failed'] - $summary['skipped'] - $summary['risky'];
             error_log("DEBUG PARSE - Status: error, passed: {$summary['passed']}");
         } elseif (strpos($output, 'OK, but incomplete, skipped, or risky tests!') !== false) {
             $summary['status'] = 'warning';
-            $summary['passed'] = $summary['total_tests'] - $summary['errors'] - $summary['failed'] - $summary['skipped'];
+            $summary['passed'] = $summary['total_tests'] - $summary['errors'] - $summary['failed'] - $summary['skipped'] - $summary['risky'];
             error_log("DEBUG PARSE - Status: warning, passed: {$summary['passed']}");
         } else {
             // Fallback: calcular basado en lo que tenemos
-            $summary['passed'] = max(0, $summary['total_tests'] - $summary['errors'] - $summary['failed'] - $summary['skipped']);
+            $summary['passed'] = max(0, $summary['total_tests'] - $summary['errors'] - $summary['failed'] - $summary['skipped'] - $summary['risky']);
             error_log("DEBUG PARSE - Status: fallback, passed: {$summary['passed']}");
         }
         
@@ -1033,7 +1038,7 @@ class DevToolsAdminPanel {
             $command = $this->build_phpunit_command($test_types, $verbose, $coverage, $testdox);
             
             // Ejecutar tests
-            $result = $this->execute_phpunit($command);
+            $result = $this->execute_phpunit($command, $test_types);
             
             return [
                 'success' => true,

@@ -108,11 +108,10 @@ class TestRunner {
             return;
         }
 
-        // Leer valores de los checkboxes con nuevos IDs
+        // Leer valores de los checkboxes con nuevos IDs simplificados
         const testTypes = [];
-        if (document.getElementById('devtools-unitTests')?.checked) testTypes.push('unit');
-        if (document.getElementById('devtools-integrationTests')?.checked) testTypes.push('integration');
-        if (document.getElementById('devtools-databaseTests')?.checked) testTypes.push('database');
+        if (document.getElementById('devtools-devtoolsTests')?.checked) testTypes.push('devtools');
+        if (document.getElementById('devtools-pluginTests')?.checked) testTypes.push('plugin');
         
         const verbose = document.getElementById('devtools-verboseOutput')?.checked || false;
         const coverage = document.getElementById('devtools-generateCoverage')?.checked || false;
@@ -263,6 +262,10 @@ class TestRunner {
                 <div class="modern-info-item ${summary.skipped > 0 ? 'warning' : 'muted'}" data-type="${summary.skipped > 0 ? 'warning' : 'muted'}">
                     <div class="modern-info-label">Omitidos</div>
                     <div class="modern-info-value">${summary.skipped}</div>
+                </div>
+                <div class="modern-info-item ${summary.risky > 0 ? 'warning' : 'muted'}" data-type="${summary.risky > 0 ? 'warning' : 'muted'}">
+                    <div class="modern-info-label">Riesgosos</div>
+                    <div class="modern-info-value">${summary.risky || 0}</div>
                 </div>
                 <div class="modern-info-item info" data-type="info">
                     <div class="modern-info-label">Aserciones</div>

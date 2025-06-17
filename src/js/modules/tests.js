@@ -91,7 +91,7 @@ class TestsModule {
     getSelectedTestTypes() {
         const checkboxes = document.querySelectorAll('input[type="checkbox"][id$="Tests"]:checked');
         return Array.from(checkboxes).map(cb => {
-            return cb.id.replace('Tests', '').toLowerCase();
+            return cb.id.replace('devtools-', '').replace('Tests', '').toLowerCase();
         });
     }
     
