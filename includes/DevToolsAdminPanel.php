@@ -663,16 +663,16 @@ class DevToolsAdminPanel {
                         </div>
                         
                         <div class="d-grid gap-2">
-                            <button id="devtools-runTests" class="btn btn-success" type="button" data-test-action="run-full">
+                            <button id="devtools-runTests" class="btn btn-success" type="button" data-test-action="run-full" data-original-content='<i class="dashicons dashicons-yes-alt"></i> 🚀 Run Selected Tests'>
                                 <i class="dashicons dashicons-yes-alt"></i> 🚀 Run Selected Tests
                             </button>
-                            <button id="devtools-runQuickTest" class="btn btn-outline-info" type="button" data-test-action="run-quick">
+                            <button id="devtools-runQuickTest" class="btn btn-outline-info" type="button" data-test-action="run-quick" data-original-content='<i class="dashicons dashicons-performance"></i> ⚡ Quick Test'>
                                 <i class="dashicons dashicons-performance"></i> ⚡ Quick Test
                             </button>
-                            <button id="devtools-clearResults" class="btn btn-outline-secondary btn-sm" type="button" data-test-action="clear">
+                            <button id="devtools-clearResults" class="btn btn-outline-secondary btn-sm" type="button" data-test-action="clear" data-original-content='<i class="dashicons dashicons-dismiss"></i> Clear Results'>
                                 <i class="dashicons dashicons-dismiss"></i> Clear Results
                             </button>
-                            <button id="devtools-testConnectivity" class="btn btn-outline-primary btn-sm" type="button" data-test-action="connectivity">
+                            <button id="devtools-testConnectivity" class="btn btn-outline-primary btn-sm" type="button" data-test-action="connectivity" data-original-content='<i class="dashicons dashicons-admin-network"></i> Test Connectivity'>
                                 <i class="dashicons dashicons-admin-network"></i> Test Connectivity
                             </button>
                         </div>

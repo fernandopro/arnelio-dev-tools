@@ -124,7 +124,7 @@ class TestRunner {
         }
 
         this.isRunning = true;
-        this.updateButtonStates(true);
+        this.updateButtonStates(true, 'devtools-runTests');
         this.showStatus('Ejecutando tests: ' + testTypes.join(', ') + '...');
         
         try {
@@ -146,7 +146,7 @@ class TestRunner {
             this.showError('Error de conexión: ' + error.message);
         } finally {
             this.isRunning = false;
-            this.updateButtonStates(false);
+            this.updateButtonStates(false, 'devtools-runTests');
             this.hideStatus();
         }
     }
@@ -161,7 +161,7 @@ class TestRunner {
         }
 
         this.isRunning = true;
-        this.updateButtonStates(true);
+        this.updateButtonStates(true, 'devtools-runQuickTest');
         this.showStatus('Ejecutando test rápido...');
         
         try {
@@ -178,7 +178,7 @@ class TestRunner {
             this.showError('Error de conexión: ' + error.message);
         } finally {
             this.isRunning = false;
-            this.updateButtonStates(false);
+            this.updateButtonStates(false, 'devtools-runQuickTest');
             this.hideStatus();
         }
     }
@@ -193,7 +193,7 @@ class TestRunner {
         }
 
         this.isRunning = true;
-        this.updateButtonStates(true);
+        this.updateButtonStates(true, 'devtools-testConnectivity');
         this.showStatus('Probando conectividad AJAX...');
         
         try {
@@ -220,7 +220,7 @@ class TestRunner {
             this.showError('❌ Error de conectividad: ' + error.message);
         } finally {
             this.isRunning = false;
-            this.updateButtonStates(false);
+            this.updateButtonStates(false, 'devtools-testConnectivity');
             this.hideStatus();
         }
     }
@@ -339,29 +339,71 @@ class TestRunner {
     }
 
     /**
-     * Actualizar estado de los botones
+     * Actualizar estado de un botón específico
      */
-    updateButtonStates(isRunning) {
-        const runButton = document.getElementById('devtools-runTests');
-        const quickButton = document.getElementById('devtools-runQuickTest');
-        const clearButton = document.getElementById('devtools-clearResults');
+    updateSpecificButtonState(buttonId, isRunning, loadingText = 'Ejecutando...') {
+        const button = document.getElementById(buttonId);
+        if (!button) return;
         
-        if (runButton) {
-            runButton.disabled = isRunning;
-            runButton.innerHTML = isRunning ? 
-                '<span class="spinner-border spinner-border-sm me-2"></span>Ejecutando...' : 
-                '<i class="dashicons dashicons-yes-alt"></i> 🚀 Run Selected Tests';
+        const originalContent = button.getAttribute('data-original-content');
+        
+        // Guardar contenido original la primera vez
+        if (!originalContent && !isRunning) {
+            button.setAttribute('data-original-content', button.innerHTML);
         }
         
-        if (quickButton) {
-            quickButton.disabled = isRunning;
-            quickButton.innerHTML = isRunning ? 
-                '<span class="spinner-border spinner-border-sm me-2"></span>Ejecutando...' : 
-                '<i class="dashicons dashicons-performance"></i> ⚡ Quick Test';
-        }
+        button.disabled = isRunning;
         
-        if (clearButton) {
-            clearButton.disabled = isRunning;
+        if (isRunning) {
+            button.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>${loadingText}`;
+        } else {
+            // Restaurar contenido original
+            const content = originalContent || button.innerHTML;
+            button.innerHTML = content;
+        }
+    }
+
+    /**
+     * Actualizar estado de los botones (método legacy - ahora usa específico)
+     */
+    updateButtonStates(isRunning, specificButtonId = null) {
+        if (specificButtonId) {
+            // Solo actualizar el botón específico
+            this.updateSpecificButtonState(specificButtonId, isRunning);
+            
+            // Deshabilitar otros botones durante ejecución
+            const allButtons = ['devtools-runTests', 'devtools-runQuickTest', 'devtools-clearResults', 'devtools-testConnectivity'];
+            allButtons.forEach(buttonId => {
+                if (buttonId !== specificButtonId) {
+                    const button = document.getElementById(buttonId);
+                    if (button) {
+                        button.disabled = isRunning;
+                    }
+                }
+            });
+        } else {
+            // Comportamiento original (actualizar todos)
+            const runButton = document.getElementById('devtools-runTests');
+            const quickButton = document.getElementById('devtools-runQuickTest');
+            const clearButton = document.getElementById('devtools-clearResults');
+            
+            if (runButton) {
+                runButton.disabled = isRunning;
+                runButton.innerHTML = isRunning ? 
+                    '<span class="spinner-border spinner-border-sm me-2"></span>Ejecutando...' : 
+                    '<i class="dashicons dashicons-yes-alt"></i> 🚀 Run Selected Tests';
+            }
+            
+            if (quickButton) {
+                quickButton.disabled = isRunning;
+                quickButton.innerHTML = isRunning ? 
+                    '<span class="spinner-border spinner-border-sm me-2"></span>Ejecutando...' : 
+                    '<i class="dashicons dashicons-performance"></i> ⚡ Quick Test';
+            }
+            
+            if (clearButton) {
+                clearButton.disabled = isRunning;
+            }
         }
     }
 
