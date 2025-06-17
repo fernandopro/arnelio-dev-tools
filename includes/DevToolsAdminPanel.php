@@ -30,7 +30,7 @@ class DevToolsAdminPanel {
         
         // Registrar handlers AJAX para tests
         add_action('wp_ajax_dev_tools_run_tests', [$this, 'ajax_run_tests']);
-        add_action('wp_ajax_dev_tools_run_quick_test', [$this, 'ajax_run_quick_test']);
+        add_action('wp_ajax_dev_tools_test_connectivity', [$this, 'ajax_test_connectivity']);
     }
     
     /**
@@ -85,6 +85,180 @@ class DevToolsAdminPanel {
                 'message' => 'Error ejecutando tests: ' . $e->getMessage()
             ]);
         }
+    }
+    
+    /**
+     * Handler AJAX para probar conectividad del sistema
+     */
+    public function ajax_test_connectivity() {
+        // Debug del nonce recibido
+        $received_nonce = $_POST['nonce'] ?? '';
+        $expected_action = 'dev_tools_nonce';
+        
+        error_log("DEBUG CONNECTIVITY - Received nonce: {$received_nonce}");
+        error_log("DEBUG CONNECTIVITY - Expected action: {$expected_action}");
+        
+        // Verificar nonce de seguridad
+        if (!wp_verify_nonce($received_nonce, $expected_action)) {
+            error_log("DEBUG CONNECTIVITY - Nonce verification failed");
+            wp_send_json_error(['message' => 'Security check failed - Invalid nonce']);
+            return;
+        }
+        
+        // Verificar permisos
+        if (!current_user_can('manage_options')) {
+            error_log("DEBUG CONNECTIVITY - User permission check failed");
+            wp_send_json_error(['message' => 'Insufficient permissions']);
+            return;
+        }
+        
+        error_log("DEBUG CONNECTIVITY - Starting connectivity tests...");
+        
+        try {
+            // Realizar pruebas de conectividad
+            $connectivity_results = $this->perform_connectivity_tests();
+            
+            error_log("DEBUG CONNECTIVITY - Tests completed successfully");
+            
+            wp_send_json_success([
+                'message' => 'Connectivity test completed',
+                'results' => $connectivity_results,
+                'timestamp' => current_time('mysql'),
+                'wp_version' => get_bloginfo('version'),
+                'php_version' => PHP_VERSION
+            ]);
+            
+        } catch (Exception $e) {
+            error_log("DEBUG CONNECTIVITY - Exception caught: " . $e->getMessage());
+            error_log("DEBUG CONNECTIVITY - Exception trace: " . $e->getTraceAsString());
+            
+            wp_send_json_error([
+                'message' => 'Error en prueba de conectividad: ' . $e->getMessage(),
+                'error_details' => [
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'trace' => $e->getTraceAsString()
+                ]
+            ]);
+        } catch (\Error $e) {
+            error_log("DEBUG CONNECTIVITY - Fatal error caught: " . $e->getMessage());
+            error_log("DEBUG CONNECTIVITY - Fatal error trace: " . $e->getTraceAsString());
+            
+            wp_send_json_error([
+                'message' => 'Fatal error en prueba de conectividad: ' . $e->getMessage(),
+                'error_details' => [
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'trace' => $e->getTraceAsString()
+                ]
+            ]);
+        }
+    }
+    
+    /**
+     * Realizar pruebas de conectividad del sistema
+     */
+    private function perform_connectivity_tests() {
+        error_log("DEBUG CONNECTIVITY - Starting perform_connectivity_tests()");
+        
+        $results = [];
+        
+        try {
+            error_log("DEBUG CONNECTIVITY - Getting basic PHP/WP info");
+            $results['php_version'] = PHP_VERSION;
+            $results['wp_version'] = get_bloginfo('version');
+            $results['memory_limit'] = ini_get('memory_limit');
+            $results['max_execution_time'] = ini_get('max_execution_time');
+            $results['wordpress_loaded'] = true;
+            
+            error_log("DEBUG CONNECTIVITY - Checking user permissions");
+            $results['user_can_manage'] = current_user_can('manage_options');
+            
+            error_log("DEBUG CONNECTIVITY - Testing nonce system");
+            $test_nonce = wp_create_nonce('dev_tools_nonce');
+            $results['nonce_system'] = wp_verify_nonce($test_nonce, 'dev_tools_nonce');
+            
+            error_log("DEBUG CONNECTIVITY - Getting AJAX URL");
+            $results['ajax_url'] = admin_url('admin-ajax.php');
+            $results['plugin_active'] = true;
+            
+            error_log("DEBUG CONNECTIVITY - Checking paths object");
+            if ($this->paths) {
+                error_log("DEBUG CONNECTIVITY - Paths object exists");
+                try {
+                    // Usar una ruta alternativa más segura
+                    $base_path = dirname(__DIR__); // dev-tools directory
+                    error_log("DEBUG CONNECTIVITY - Base path (alternative): " . $base_path);
+                    $results['dev_tools_paths'] = [
+                        'base_path' => $base_path,
+                        'plugin_url' => plugins_url('', $base_path . '/loader.php'),
+                        'paths_object_type' => get_class($this->paths)
+                    ];
+                } catch (Exception $e) {
+                    error_log("DEBUG CONNECTIVITY - Error getting paths: " . $e->getMessage());
+                    $results['dev_tools_paths'] = [
+                        'base_path' => 'Error: ' . $e->getMessage(),
+                        'plugin_url' => 'Error getting base path'
+                    ];
+                }
+            } else {
+                error_log("DEBUG CONNECTIVITY - Paths object is null");
+                $results['dev_tools_paths'] = [
+                    'base_path' => 'Paths object not initialized',
+                    'plugin_url' => 'N/A'
+                ];
+            }
+            
+            error_log("DEBUG CONNECTIVITY - Checking PHPUnit availability");
+            try {
+                // Usar ruta alternativa segura
+                $base_path = dirname(__DIR__); // dev-tools directory
+                $phpunit_path = $base_path . '/vendor/phpunit/phpunit/phpunit';
+                $results['phpunit_available'] = file_exists($phpunit_path);
+                $results['phpunit_path'] = $phpunit_path;
+                error_log("DEBUG CONNECTIVITY - PHPUnit path: " . $phpunit_path);
+                error_log("DEBUG CONNECTIVITY - PHPUnit exists: " . ($results['phpunit_available'] ? 'Yes' : 'No'));
+            } catch (Exception $e) {
+                error_log("DEBUG CONNECTIVITY - Error checking PHPUnit: " . $e->getMessage());
+                $results['phpunit_available'] = false;
+                $results['phpunit_path'] = 'Error: ' . $e->getMessage();
+            }
+            
+            error_log("DEBUG CONNECTIVITY - Getting PHP binary path");
+            try {
+                $php_binary = $this->get_php_binary_path();
+                $results['php_binary'] = $php_binary;
+                $results['php_binary_exists'] = file_exists($php_binary) || $php_binary === 'php';
+            } catch (Exception $e) {
+                error_log("DEBUG CONNECTIVITY - Error getting PHP binary: " . $e->getMessage());
+                $results['php_binary'] = 'Error: ' . $e->getMessage();
+                $results['php_binary_exists'] = false;
+            }
+            
+            error_log("DEBUG CONNECTIVITY - Checking plugin-dev-tools directory");
+            try {
+                $plugin_dev_tools_dir = dirname(dirname(__DIR__)) . '/plugin-dev-tools';
+                $results['plugin_dev_tools_dir'] = $plugin_dev_tools_dir;
+                $results['plugin_dev_tools_exists'] = is_dir($plugin_dev_tools_dir);
+                error_log("DEBUG CONNECTIVITY - Plugin dev tools dir: " . $plugin_dev_tools_dir);
+                error_log("DEBUG CONNECTIVITY - Plugin dev tools exists: " . ($results['plugin_dev_tools_exists'] ? 'Yes' : 'No'));
+            } catch (Exception $e) {
+                error_log("DEBUG CONNECTIVITY - Error checking plugin-dev-tools: " . $e->getMessage());
+                $results['plugin_dev_tools_dir'] = 'Error: ' . $e->getMessage();
+                $results['plugin_dev_tools_exists'] = false;
+            }
+            
+            error_log("DEBUG CONNECTIVITY - All tests completed successfully");
+            
+        } catch (Exception $e) {
+            error_log("DEBUG CONNECTIVITY - Exception in perform_connectivity_tests: " . $e->getMessage());
+            throw $e;
+        } catch (\Error $e) {
+            error_log("DEBUG CONNECTIVITY - Fatal error in perform_connectivity_tests: " . $e->getMessage());
+            throw $e;
+        }
+        
+        return $results;
     }
     
     /**
@@ -244,13 +418,13 @@ class DevToolsAdminPanel {
     }
     
     /**
-     * Contenido de Tests - Diseño Moderno y Minimalista
+     * Contenido de Tests - Diseño Moderno y Minimalista con Layout Vertical
      */
     private function render_tests_content() {
         ?>
-        <div class="row g-4">
-            <!-- Panel de Control -->
-            <div class="col-xl-4">
+        <!-- Panel de Control - Ancho completo arriba -->
+        <div class="row mb-4">
+            <div class="col-12">
                 <div class="devtools-card" style="background: #ffffff; border-radius: 16px; box-shadow: 0 4px 25px rgba(0,0,0,0.08); border: none; overflow: hidden;">
                     <!-- Header del card -->
                     <div class="devtools-card-header" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 1.5rem; margin: 0;">
@@ -261,86 +435,105 @@ class DevToolsAdminPanel {
                         <p class="mb-0" style="opacity: 0.9; font-size: 0.875rem; margin-top: 0.25rem;">Ejecutar tests PHPUnit con opciones avanzadas</p>
                     </div>
                     
-                    <!-- Contenido del card -->
+                    <!-- Contenido del card - Layout horizontal -->
                     <div class="devtools-card-body" style="padding: 2rem;">
-                        <!-- Tipos de Test -->
-                        <div class="devtools-section mb-4">
-                            <label class="devtools-label" style="display: block; font-weight: 600; color: #1e293b; margin-bottom: 1rem; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">Tipos de Test</label>
-                            <div class="devtools-checkbox-group" style="display: flex; flex-direction: column; gap: 0.75rem;">
-                                <label class="devtools-checkbox" style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="checkbox" id="devtools-unitTests" checked style="margin-right: 0.75rem; accent-color: #667eea;">
-                                    <span style="color: #475569; font-weight: 500;">Unit Tests</span>
-                                </label>
-                                <label class="devtools-checkbox" style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="checkbox" id="devtools-integrationTests" style="margin-right: 0.75rem; accent-color: #667eea;">
-                                    <span style="color: #475569; font-weight: 500;">Integration Tests</span>
-                                </label>
-                                <label class="devtools-checkbox" style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="checkbox" id="devtools-databaseTests" style="margin-right: 0.75rem; accent-color: #667eea;">
-                                    <span style="color: #475569; font-weight: 500;">Database Tests</span>
-                                </label>
+                        <div class="row g-4">
+                            <!-- Columna 1: Tipos de Test -->
+                            <div class="col-md-3">
+                                <div class="devtools-section">
+                                    <label class="devtools-label" style="display: block; font-weight: 600; color: #1e293b; margin-bottom: 1rem; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">Tipos de Test</label>
+                                    <div class="devtools-checkbox-group" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                        <label class="devtools-checkbox" style="display: flex; align-items: center; cursor: pointer;">
+                                            <input type="checkbox" id="devtools-unitTests" checked style="margin-right: 0.75rem; accent-color: #667eea;">
+                                            <span style="color: #475569; font-weight: 500;">Unit Tests</span>
+                                        </label>
+                                        <label class="devtools-checkbox" style="display: flex; align-items: center; cursor: pointer;">
+                                            <input type="checkbox" id="devtools-integrationTests" style="margin-right: 0.75rem; accent-color: #667eea;">
+                                            <span style="color: #475569; font-weight: 500;">Integration Tests</span>
+                                        </label>
+                                        <label class="devtools-checkbox" style="display: flex; align-items: center; cursor: pointer;">
+                                            <input type="checkbox" id="devtools-databaseTests" style="margin-right: 0.75rem; accent-color: #667eea;">
+                                            <span style="color: #475569; font-weight: 500;">Database Tests</span>
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        
-                        <!-- Opciones de Salida -->
-                        <div class="devtools-section mb-4">
-                            <label class="devtools-label" style="display: block; font-weight: 600; color: #1e293b; margin-bottom: 1rem; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">Opciones de Salida</label>
-                            <div class="devtools-checkbox-group" style="display: flex; flex-direction: column; gap: 0.75rem;">
-                                <label class="devtools-checkbox" style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="checkbox" id="devtools-verboseOutput" style="margin-right: 0.75rem; accent-color: #667eea;">
-                                    <span style="color: #475569; font-weight: 500;">Verbose Output</span>
-                                </label>
-                                <label class="devtools-checkbox" style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="checkbox" id="devtools-generateCoverage" style="margin-right: 0.75rem; accent-color: #667eea;">
-                                    <span style="color: #475569; font-weight: 500;">Generate Coverage</span>
-                                </label>
-                                <label class="devtools-checkbox" style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="checkbox" id="devtools-testdoxOutput" style="margin-right: 0.75rem; accent-color: #667eea;">
-                                    <span style="color: #475569; font-weight: 500;">TestDox Summary</span>
-                                </label>
-                            </div>
-                        </div>
-                        
-                        <!-- Botones de Acción -->
-                        <div class="devtools-actions" style="display: flex; flex-direction: column; gap: 0.75rem;">
-                            <button id="devtools-runTests" class="devtools-btn devtools-btn-primary" type="button" data-test-action="run-full" data-original-content='🚀 Run Selected Tests' style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 1rem 1.5rem; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                                🚀 Run Selected Tests
-                            </button>
-                            <button id="devtools-runQuickTest" class="devtools-btn devtools-btn-secondary" type="button" data-test-action="run-quick" data-original-content='⚡ Quick Test' style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none; padding: 0.875rem 1.5rem; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                                ⚡ Quick Test
-                            </button>
                             
-                            <!-- Botones secundarios -->
-                            <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
-                                <button id="devtools-clearResults" class="devtools-btn devtools-btn-outline" type="button" data-test-action="clear" data-original-content='Clear Results' style="background: transparent; color: #64748b; border: 2px solid #e2e8f0; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.3s ease; flex: 1; font-size: 0.875rem;">
-                                    Clear Results
-                                </button>
-                                <button id="devtools-testConnectivity" class="devtools-btn devtools-btn-outline" type="button" data-test-action="connectivity" data-original-content='Test Connectivity' style="background: transparent; color: #64748b; border: 2px solid #e2e8f0; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.3s ease; flex: 1; font-size: 0.875rem;">
-                                    Test Connectivity
-                                </button>
+                            <!-- Columna 2: Opciones de Salida -->
+                            <div class="col-md-3">
+                                <div class="devtools-section">
+                                    <label class="devtools-label" style="display: block; font-weight: 600; color: #1e293b; margin-bottom: 1rem; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">Opciones de Salida</label>
+                                    <div class="devtools-checkbox-group" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                        <label class="devtools-checkbox" style="display: flex; align-items: center; cursor: pointer;">
+                                            <input type="checkbox" id="devtools-verboseOutput" style="margin-right: 0.75rem; accent-color: #667eea;">
+                                            <span style="color: #475569; font-weight: 500;">Verbose Output</span>
+                                        </label>
+                                        <label class="devtools-checkbox" style="display: flex; align-items: center; cursor: pointer;">
+                                            <input type="checkbox" id="devtools-generateCoverage" style="margin-right: 0.75rem; accent-color: #667eea;">
+                                            <span style="color: #475569; font-weight: 500;">Generate Coverage</span>
+                                        </label>
+                                        <label class="devtools-checkbox" style="display: flex; align-items: center; cursor: pointer;">
+                                            <input type="checkbox" id="devtools-testdoxOutput" style="margin-right: 0.75rem; accent-color: #667eea;">
+                                            <span style="color: #475569; font-weight: 500;">TestDox Summary</span>
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        
-                        <!-- Estado del runner -->
-                        <div id="devtools-testStatus" class="devtools-status" style="display: none; margin-top: 1.5rem; padding: 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; color: white;">
-                            <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                <div class="devtools-spinner" style="width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.3); border-top: 2px solid white; border-radius: 50%; animation: spin 1s linear infinite;"></div>
-                                <span id="devtools-statusText" style="font-weight: 500;">Ejecutando tests...</span>
+                            
+                            <!-- Columna 3: Botones de Acción -->
+                            <div class="col-md-4">
+                                <div class="devtools-section">
+                                    <label class="devtools-label" style="display: block; font-weight: 600; color: #1e293b; margin-bottom: 1rem; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">Acciones</label>
+                                    <div class="devtools-actions" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                        <button id="devtools-runTests" class="devtools-btn devtools-btn-primary" type="button" data-test-action="run-full" data-original-content='🚀 Run Selected Tests' style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 1rem 1.5rem; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                                            🚀 Run Selected Tests
+                                        </button>
+                                        
+                                        <!-- Botones secundarios -->
+                                        <div style="display: flex; gap: 0.5rem;">
+                                            <button id="devtools-clearResults" class="devtools-btn devtools-btn-outline" type="button" data-test-action="clear" data-original-content='Clear Results' style="background: transparent; color: #64748b; border: 2px solid #e2e8f0; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.3s ease; flex: 1; font-size: 0.875rem;">
+                                                Clear Results
+                                            </button>
+                                            <button id="devtools-testConnectivity" class="devtools-btn devtools-btn-outline" type="button" data-test-action="connectivity" data-original-content='Test Connectivity' style="background: transparent; color: #64748b; border: 2px solid #e2e8f0; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.3s ease; flex: 1; font-size: 0.875rem;">
+                                                Test Connectivity
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Columna 4: Estado del runner -->
+                            <div class="col-md-2">
+                                <div class="devtools-section">
+                                    <label class="devtools-label" style="display: block; font-weight: 600; color: #1e293b; margin-bottom: 1rem; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">Estado</label>
+                                    <div id="devtools-testStatus" class="devtools-status" style="display: none; padding: 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; color: white;">
+                                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                            <div class="devtools-spinner" style="width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.3); border-top: 2px solid white; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                                            <span id="devtools-statusText" style="font-weight: 500; font-size: 0.875rem;">Ejecutando...</span>
+                                        </div>
+                                    </div>
+                                    <div id="devtools-testStatusIdle" class="devtools-status-idle" style="padding: 1rem; background: #f1f5f9; border-radius: 12px; color: #64748b; text-align: center;">
+                                        <div style="font-size: 1.5rem; margin-bottom: 0.5rem; opacity: 0.6;">⚡</div>
+                                        <span style="font-weight: 500; font-size: 0.875rem;">Listo</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            
-            <!-- Panel de Resultados -->
-            <div class="col-xl-8">
-                <div class="devtools-card" style="background: #ffffff; border-radius: 16px; box-shadow: 0 4px 25px rgba(0,0,0,0.08); border: none; overflow: hidden; height: fit-content;">
+        </div>
+        
+        <!-- Panel de Resultados - Ancho completo abajo -->
+        <div class="row">
+            <div class="col-12">
+                <div class="devtools-card" style="background: #ffffff; border-radius: 16px; box-shadow: 0 4px 25px rgba(0,0,0,0.08); border: none; overflow: hidden;">
                     <!-- Header del card -->
                     <div class="devtools-card-header" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 1.5rem; margin: 0;">
-                        <div style="display: flex; justify-content: between; align-items: center;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
                                 <h5 class="mb-0" style="font-weight: 600; display: flex; align-items: center; gap: 0.75rem;">
-                                    <span style="font-size: 1.2em;">�</span>
+                                    <span style="font-size: 1.2em;">📊</span>
                                     Test Results
                                 </h5>
                                 <p class="mb-0" style="opacity: 0.9; font-size: 0.875rem; margin-top: 0.25rem;">Output y análisis en tiempo real</p>
@@ -350,7 +543,7 @@ class DevToolsAdminPanel {
                     
                     <!-- Contenido de resultados -->
                     <div class="devtools-card-body" style="padding: 0;">
-                        <div id="devtools-testResults" class="devtools-results" style="min-height: 500px; max-height: 700px; overflow-y: auto; padding: 2rem; background: #f8fafc;">
+                        <div id="devtools-testResults" class="devtools-results" style="min-height: 400px; max-height: 600px; overflow-y: auto; padding: 2rem; background: #f8fafc;">
                             <div class="devtools-empty-state" style="text-align: center; padding: 3rem 2rem; color: #64748b;">
                                 <div style="font-size: 4rem; opacity: 0.3; margin-bottom: 1rem;">🔧</div>
                                 <h6 style="font-weight: 600; color: #475569; margin-bottom: 0.5rem;">No tests executed yet</h6>
@@ -415,7 +608,6 @@ class DevToolsAdminPanel {
             
             // Event listeners específicos para cada botón
             const runTestsBtn = document.getElementById('devtools-runTests');
-            const runQuickTestBtn = document.getElementById('devtools-runQuickTest');
             const clearResultsBtn = document.getElementById('devtools-clearResults');
             const testConnectivityBtn = document.getElementById('devtools-testConnectivity');
             
@@ -428,24 +620,6 @@ class DevToolsAdminPanel {
                     if (window.devTools && window.devTools.testRunner) {
                         if (!window.devTools.testRunner.isRunning) {
                             window.devTools.testRunner.runTests();
-                        } else {
-                            console.log('🔍 Test ya ejecutándose, ignorando click');
-                        }
-                    } else {
-                        console.error('TestRunner no disponible');
-                    }
-                });
-            }
-            
-            if (runQuickTestBtn) {
-                runQuickTestBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log('⚡ Ejecutando test rápido...');
-                    
-                    if (window.devTools && window.devTools.testRunner) {
-                        if (!window.devTools.testRunner.isRunning) {
-                            window.devTools.testRunner.runQuickTest();
                         } else {
                             console.log('🔍 Test ya ejecutándose, ignorando click');
                         }
@@ -473,17 +647,158 @@ class DevToolsAdminPanel {
                 testConnectivityBtn.addEventListener('click', function(e) {
                     e.preventDefault();
                     e.stopPropagation();
-                    console.log('🌐 Probando conectividad...');
+                    console.log('🌐 Probando conectividad AJAX...');
                     
-                    if (window.devTools && window.devTools.testRunner) {
-                        if (!window.devTools.testRunner.isRunning) {
-                            window.devTools.testRunner.testConnectivity();
-                        } else {
-                            console.log('🔍 Test ya ejecutándose, ignorando click');
-                        }
-                    } else {
-                        console.error('TestRunner no disponible');
+                    // Mostrar estado de carga
+                    const resultArea = document.getElementById('devtools-testResults');
+                    if (resultArea) {
+                        resultArea.innerHTML = `
+                            <div style="padding: 2rem; text-align: center;">
+                                <div class="devtools-spinner" style="width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top: 4px solid #667eea; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div>
+                                <h6 style="color: #475569; font-weight: 600; margin-bottom: 0.5rem;">Probando conectividad...</h6>
+                                <p style="color: #64748b; font-size: 0.875rem; margin: 0;">
+                                    Verificando conexión AJAX con el servidor...
+                                </p>
+                            </div>
+                        `;
                     }
+                    
+                    // Realizar llamada AJAX de prueba
+                    const formData = new FormData();
+                    formData.append('action', 'dev_tools_test_connectivity');
+                    formData.append('nonce', '<?php echo wp_create_nonce('dev_tools_nonce'); ?>');
+                    
+                    fetch('<?php echo admin_url('admin-ajax.php'); ?>', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('✅ Conectividad OK:', data);
+                        
+                        if (data.success) {
+                            const results = data.data.results;
+                            const timestamp = data.data.timestamp;
+                            
+                            // Mostrar resultados exitosos
+                            if (resultArea) {
+                                resultArea.innerHTML = `
+                                    <div style="padding: 2rem;">
+                                        <div style="text-align: center; margin-bottom: 2rem;">
+                                            <div style="color: #059669; font-size: 3rem; margin-bottom: 1rem;">✅</div>
+                                            <h6 style="color: #059669; font-weight: 600; margin-bottom: 0.5rem;">Conectividad AJAX OK</h6>
+                                            <p style="color: #64748b; font-size: 0.875rem; margin: 0;">
+                                                Prueba realizada: ${timestamp}
+                                            </p>
+                                        </div>
+                                        
+                                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
+                                            <div style="background: #f0fdf4; padding: 1rem; border-radius: 8px; border-left: 4px solid #059669;">
+                                                <h6 style="color: #065f46; font-weight: 600; margin-bottom: 0.5rem;">Sistema WordPress</h6>
+                                                <small style="color: #065f46;">
+                                                    ✅ WordPress ${results.wp_version}<br>
+                                                    ✅ PHP ${results.php_version}<br>
+                                                    ✅ Usuario autorizado: ${results.user_can_manage ? 'Sí' : 'No'}<br>
+                                                    ✅ Sistema de nonce: ${results.nonce_system ? 'OK' : 'Error'}
+                                                </small>
+                                            </div>
+                                            
+                                            <div style="background: #eff6ff; padding: 1rem; border-radius: 8px; border-left: 4px solid #2563eb;">
+                                                <h6 style="color: #1e40af; font-weight: 600; margin-bottom: 0.5rem;">Configuración PHP</h6>
+                                                <small style="color: #1e40af;">
+                                                    ✅ Memory Limit: ${results.memory_limit}<br>
+                                                    ✅ Max Execution: ${results.max_execution_time}s<br>
+                                                    ✅ PHP Binary: ${results.php_binary_exists ? 'Disponible' : 'No encontrado'}<br>
+                                                    ✅ PHPUnit: ${results.phpunit_available ? 'Disponible' : 'No encontrado'}
+                                                </small>
+                                            </div>
+                                            
+                                            <div style="background: #fef3f2; padding: 1rem; border-radius: 8px; border-left: 4px solid #dc2626;">
+                                                <h6 style="color: #dc2626; font-weight: 600; margin-bottom: 0.5rem;">Directorios</h6>
+                                                <small style="color: #dc2626;">
+                                                    ${results.plugin_dev_tools_exists ? '✅' : '❌'} Plugin Dev Tools<br>
+                                                    ✅ AJAX URL: Configurada<br>
+                                                    ✅ Plugin URL: Configurada
+                                                </small>
+                                            </div>
+                                        </div>
+                                        
+                                        <div style="margin-top: 2rem; padding: 1rem; background: #f8fafc; border-radius: 8px; text-align: center;">
+                                            <small style="color: #64748b; font-weight: 500;">
+                                                🚀 Sistema listo para ejecutar tests PHPUnit
+                                            </small>
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                        } else {
+                            console.error('❌ AJAX Error:', data);
+                            
+                            // Mostrar error detallado en el área de resultados
+                            const errorMessage = data.data?.message || 'Error desconocido';
+                            const errorDetails = data.data?.error_details || null;
+                            
+                            if (resultArea) {
+                                resultArea.innerHTML = `
+                                    <div style="padding: 2rem;">
+                                        <div style="text-align: center; margin-bottom: 2rem;">
+                                            <div style="color: #dc2626; font-size: 3rem; margin-bottom: 1rem;">❌</div>
+                                            <h6 style="color: #dc2626; font-weight: 600; margin-bottom: 0.5rem;">Error en Prueba de Conectividad</h6>
+                                            <p style="color: #64748b; font-size: 0.875rem; margin: 0;">
+                                                ${errorMessage}
+                                            </p>
+                                        </div>
+                                        
+                                        ${errorDetails ? `
+                                            <div style="background: #fef2f2; padding: 1rem; border-radius: 8px; border-left: 4px solid #dc2626; margin-bottom: 1rem;">
+                                                <h6 style="color: #991b1b; font-weight: 600; margin-bottom: 0.5rem;">Detalles del Error</h6>
+                                                <small style="color: #991b1b; font-family: monospace;">
+                                                    <strong>Archivo:</strong> ${errorDetails.file}<br>
+                                                    <strong>Línea:</strong> ${errorDetails.line}<br>
+                                                    <strong>Mensaje:</strong> ${errorMessage}
+                                                </small>
+                                            </div>
+                                        ` : ''}
+                                        
+                                        <div style="background: #fef3f2; padding: 1rem; border-radius: 8px; border-left: 4px solid #dc2626;">
+                                            <small style="color: #991b1b; font-weight: 500;">
+                                                📋 Revisa los logs de PHP para más información:<br>
+                                                <code style="background: rgba(0,0,0,0.1); padding: 2px 4px; border-radius: 3px;">
+                                                /Users/fernandovazquezperez/Local Sites/tarokina-2025/logs/php/error.log
+                                                </code>
+                                            </small>
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('❌ Error de conectividad:', error);
+                        
+                        // Mostrar error en el área de resultados
+                        if (resultArea) {
+                            resultArea.innerHTML = `
+                                <div style="padding: 2rem; text-align: center;">
+                                    <div style="color: #dc2626; font-size: 3rem; margin-bottom: 1rem;">❌</div>
+                                    <h6 style="color: #dc2626; font-weight: 600; margin-bottom: 0.5rem;">Error de Conectividad</h6>
+                                    <p style="color: #64748b; font-size: 0.875rem; margin-bottom: 1.5rem;">
+                                        ${error.message}
+                                    </p>
+                                    <div style="background: #fef2f2; padding: 1rem; border-radius: 8px; border-left: 4px solid #dc2626;">
+                                        <small style="color: #991b1b; font-weight: 500;">
+                                            Verifica la consola del navegador para más detalles
+                                        </small>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    });
                 });
             }
             
@@ -491,8 +806,7 @@ class DevToolsAdminPanel {
             setTimeout(() => {
                 const criticalElements = [
                     'devtools-testResults',
-                    'devtools-runTests', 
-                    'devtools-runQuickTest'
+                    'devtools-runTests'
                 ];
                 
                 let allPresent = true;
@@ -773,39 +1087,6 @@ class DevToolsAdminPanel {
     }
 
     /**
-     * Ejecutar test rápido (solo básicos)
-     */
-    private function run_quick_test() {
-        try {
-            // Obtener la ruta correcta de PHP y ejecutar solo el test básico
-            $php_binary = $this->get_php_binary_path();
-            $basic_test_file = $this->get_basic_test_filename();
-            $command = '"' . $php_binary . '" ../dev-tools/vendor/phpunit/phpunit/phpunit ' . $basic_test_file . ' --verbose';
-            
-            error_log("DEBUG TEST EXECUTION - Final command: " . $command);
-            
-            $result = $this->execute_phpunit($command);
-            
-            return [
-                'success' => true,
-                'data' => [
-                    'command' => $command,
-                    'output' => $result['output'],
-                    'return_code' => $result['exit_code'],
-                    'execution_time' => $result['execution_time'],
-                    'summary' => $this->parse_test_output($result['output'])
-                ]
-            ];
-            
-        } catch (\Exception $e) {
-            return [
-                'success' => false,
-                'error' => 'Error ejecutando quick test: ' . $e->getMessage()
-            ];
-        }
-    }
-
-    /**
      * Ejecutar tests completos con opciones
      */
     private function run_tests_with_options($test_types = ['unit'], $verbose = false, $coverage = false, $testdox = false) {
@@ -832,49 +1113,6 @@ class DevToolsAdminPanel {
                 'success' => false,
                 'error' => 'Error ejecutando tests: ' . $e->getMessage()
             ];
-        }
-    }
-    
-    /**
-     * Handler AJAX para ejecutar test rápido
-     */
-    public function ajax_run_quick_test() {
-        // Debug del nonce recibido
-        $received_nonce = $_POST['nonce'] ?? '';
-        $expected_action = 'dev_tools_nonce';
-        
-        // Log de debugging (remover en producción)
-        error_log("DEBUG QUICK TEST NONCE - Received: {$received_nonce}");
-        error_log("DEBUG QUICK TEST NONCE - Expected action: {$expected_action}");
-        error_log("DEBUG QUICK TEST NONCE - Verification result: " . (wp_verify_nonce($received_nonce, $expected_action) ? 'VALID' : 'INVALID'));
-        
-        // Verificar nonce de seguridad
-        if (!wp_verify_nonce($received_nonce, $expected_action)) {
-            wp_send_json_error(['message' => 'Security check failed - Invalid nonce']);
-            return;
-        }
-        
-        // Verificar permisos
-        if (!current_user_can('manage_options')) {
-            wp_send_json_error(['message' => 'Insufficient permissions']);
-            return;
-        }
-        
-        try {
-            $result = $this->run_quick_test();
-            
-            if ($result['success']) {
-                wp_send_json_success($result['data']);
-            } else {
-                wp_send_json_error([
-                    'message' => $result['error'] ?? 'Error desconocido ejecutando quick test'
-                ]);
-            }
-            
-        } catch (Exception $e) {
-            wp_send_json_error([
-                'message' => 'Error ejecutando quick test: ' . $e->getMessage()
-            ]);
         }
     }
     
