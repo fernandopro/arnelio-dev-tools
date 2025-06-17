@@ -279,7 +279,7 @@ class TestRunner {
                     <h6 class="mb-0">🔍 Output Completo</h6>
                 </div>
                 <div class="card-body p-0">
-                    <pre class="bg-dark text-light p-3 m-0 rounded-bottom" style="max-height: 300px; overflow-y: auto; font-size: 0.85rem;">${this.escapeHtml(results.output)}</pre>
+                    <pre class="bg-dark text-light p-3 m-0 rounded-bottom" style="font-size: 0.85rem;">${this.escapeHtml(results.output)}</pre>
                 </div>
             </div>`;
         }
