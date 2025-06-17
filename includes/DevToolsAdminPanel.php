@@ -448,11 +448,11 @@ class DevToolsAdminPanel {
                                     <label class="devtools-label" style="display: block; font-weight: 600; color: #1e293b; margin-bottom: 1rem; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">Tipos de Test</label>
                                     <div class="devtools-radio-group" style="display: flex; flex-direction: column; gap: 0.75rem;">
                                         <label class="devtools-radio" style="display: flex; align-items: center; cursor: pointer;">
-                                            <input type="radio" name="testType" id="devtools-devtoolsTests" value="devtools" checked style="margin-right: 0.75rem; accent-color: #667eea;">
+                                            <input type="radio" name="testType" id="devtools-devtoolsTests" value="devtools" style="margin-right: 0.75rem; accent-color: #667eea;">
                                             <span style="color: #475569; font-weight: 500;">Dev-Tools Tests</span>
                                         </label>
                                         <label class="devtools-radio" style="display: flex; align-items: center; cursor: pointer;">
-                                            <input type="radio" name="testType" id="devtools-pluginTests" value="plugin" style="margin-right: 0.75rem; accent-color: #667eea;">
+                                            <input type="radio" name="testType" id="devtools-pluginTests" value="plugin" checked style="margin-right: 0.75rem; accent-color: #667eea;">
                                             <span style="color: #475569; font-weight: 500;">Plugin Tests</span>
                                         </label>
                                     </div>

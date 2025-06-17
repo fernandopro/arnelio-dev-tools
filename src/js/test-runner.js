@@ -263,6 +263,10 @@ class TestRunner {
                     <div class="modern-info-label">Omitidos</div>
                     <div class="modern-info-value">${summary.skipped}</div>
                 </div>
+                <div class="modern-info-item ${(summary.incomplete || 0) > 0 ? 'warning' : 'muted'}" data-type="${(summary.incomplete || 0) > 0 ? 'warning' : 'muted'}">
+                    <div class="modern-info-label">Incompletos</div>
+                    <div class="modern-info-value">${summary.incomplete || 0}</div>
+                </div>
                 <div class="modern-info-item ${summary.risky > 0 ? 'warning' : 'muted'}" data-type="${summary.risky > 0 ? 'warning' : 'muted'}">
                     <div class="modern-info-label">Riesgosos</div>
                     <div class="modern-info-value">${summary.risky || 0}</div>
