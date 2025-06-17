@@ -942,6 +942,7 @@ class DevToolsAdminPanel {
         ];
         
         error_log("DEBUG PARSE - Raw output length: " . strlen($output));
+        error_log("DEBUG PARSE - Full output: " . $output);
         error_log("DEBUG PARSE - Last 500 chars: " . substr($output, -500));
         
         // Buscar la línea de resumen final más completa
@@ -965,26 +966,40 @@ class DevToolsAdminPanel {
             // Fallback: buscar cada métrica individualmente
             error_log("DEBUG PARSE - Using fallback individual parsing");
             
+            // También buscar formato alternativo como "OK (8 tests, 27 assertions)"
+            if (preg_match('/OK \((\d+) tests?, (\d+) assertions?\)/', $output, $matches)) {
+                $summary['total_tests'] = (int)$matches[1];
+                $summary['assertions'] = (int)$matches[2];
+                error_log("DEBUG PARSE - Found OK format: {$summary['total_tests']} tests, {$summary['assertions']} assertions");
+            }
+            
             if (preg_match('/Tests: (\d+)/', $output, $matches)) {
                 $summary['total_tests'] = (int)$matches[1];
+                error_log("DEBUG PARSE - Fallback found total_tests: " . $summary['total_tests']);
             }
             if (preg_match('/Assertions: (\d+)/', $output, $matches)) {
                 $summary['assertions'] = (int)$matches[1];
+                error_log("DEBUG PARSE - Fallback found assertions: " . $summary['assertions']);
             }
             if (preg_match('/Errors?: (\d+)/', $output, $matches)) {
                 $summary['errors'] = (int)$matches[1];
+                error_log("DEBUG PARSE - Fallback found errors: " . $summary['errors']);
             }
             if (preg_match('/Failures?: (\d+)/', $output, $matches)) {
                 $summary['failed'] = (int)$matches[1];
+                error_log("DEBUG PARSE - Fallback found failures: " . $summary['failed']);
             }
             if (preg_match('/Skipped: (\d+)/', $output, $matches)) {
                 $summary['skipped'] = (int)$matches[1];
+                error_log("DEBUG PARSE - Fallback found skipped: " . $summary['skipped']);
             }
             if (preg_match('/Incomplete: (\d+)/', $output, $matches)) {
                 $summary['incomplete'] = (int)$matches[1];
+                error_log("DEBUG PARSE - Fallback found incomplete: " . $summary['incomplete']);
             }
             if (preg_match('/Risky: (\d+)/', $output, $matches)) {
                 $summary['risky'] = (int)$matches[1];
+                error_log("DEBUG PARSE - Fallback found risky: " . $summary['risky']);
             }
         }
         
