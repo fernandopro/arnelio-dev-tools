@@ -364,18 +364,48 @@ class DevToolsAjaxHandler {
         $html = '<div class="test-result">';
         
         if ($result['success']) {
-            $html .= '<div class="alert alert-success"><strong>✅ Conexión exitosa</strong></div>';
-            $html .= '<p><strong>DSN:</strong> <code>' . esc_html($result['dsn_used']) . '</code></p>';
-            $html .= '<p><strong>Server Info:</strong> ' . esc_html($result['server_info']) . '</p>';
+            $html .= '<div class="modern-alert modern-alert-success">';
+            $html .= '<div class="modern-alert-icon">✅</div>';
+            $html .= '<div class="modern-alert-content">';
+            $html .= '<div class="modern-alert-title">Conexión exitosa</div>';
+            $html .= '</div>';
+            $html .= '</div>';
+            
+            $html .= '<div class="modern-info-grid">';
+            $html .= '<div class="modern-info-item">';
+            $html .= '<span class="modern-info-label">DSN:</span>';
+            $html .= '<code class="modern-code">' . esc_html($result['dsn_used']) . '</code>';
+            $html .= '</div>';
+            $html .= '<div class="modern-info-item">';
+            $html .= '<span class="modern-info-label">Server Info:</span>';
+            $html .= '<span class="modern-info-value">' . esc_html($result['server_info']) . '</span>';
+            $html .= '</div>';
+            $html .= '</div>';
             
             if (isset($result['test_query'])) {
-                $html .= '<h6>Test Query:</h6>';
-                $html .= '<pre>' . esc_html(json_encode($result['test_query'], JSON_PRETTY_PRINT)) . '</pre>';
+                $html .= '<div class="modern-section">';
+                $html .= '<div class="modern-section-title">Test Query</div>';
+                $html .= '<pre class="modern-code-block">' . esc_html(json_encode($result['test_query'], JSON_PRETTY_PRINT)) . '</pre>';
+                $html .= '</div>';
             }
         } else {
-            $html .= '<div class="alert alert-danger"><strong>❌ Error de conexión</strong></div>';
-            $html .= '<p><strong>Error:</strong> ' . esc_html($result['error']) . '</p>';
-            $html .= '<p><strong>DSN intentado:</strong> <code>' . esc_html($result['dsn_used']) . '</code></p>';
+            $html .= '<div class="modern-alert modern-alert-error">';
+            $html .= '<div class="modern-alert-icon">❌</div>';
+            $html .= '<div class="modern-alert-content">';
+            $html .= '<div class="modern-alert-title">Error de conexión</div>';
+            $html .= '</div>';
+            $html .= '</div>';
+            
+            $html .= '<div class="modern-info-grid">';
+            $html .= '<div class="modern-info-item">';
+            $html .= '<span class="modern-info-label">Error:</span>';
+            $html .= '<span class="modern-info-value text-danger">' . esc_html($result['error']) . '</span>';
+            $html .= '</div>';
+            $html .= '<div class="modern-info-item">';
+            $html .= '<span class="modern-info-label">DSN intentado:</span>';
+            $html .= '<code class="modern-code">' . esc_html($result['dsn_used']) . '</code>';
+            $html .= '</div>';
+            $html .= '</div>';
         }
         
         $html .= '</div>';
@@ -389,30 +419,32 @@ class DevToolsAjaxHandler {
         $html = '<div class="system-info">';
         
         foreach ($info as $section => $data) {
-            $html .= '<div class="card mb-3">';
-            $html .= '<div class="card-header"><h6 class="mb-0">' . ucfirst($section) . '</h6></div>';
-            $html .= '<div class="card-body">';
+            $html .= '<div class="modern-card">';
+            $html .= '<div class="modern-card-header">';
+            $html .= '<h6 class="modern-card-title">' . ucfirst($section) . '</h6>';
+            $html .= '</div>';
+            $html .= '<div class="modern-card-body">';
             
             if (is_array($data)) {
-                $html .= '<dl class="row">';
+                $html .= '<div class="modern-info-grid">';
                 foreach ($data as $key => $value) {
-                    $html .= '<dt class="col-sm-3">' . esc_html($key) . ':</dt>';
-                    $html .= '<dd class="col-sm-9">';
+                    $html .= '<div class="modern-info-item">';
+                    $html .= '<span class="modern-info-label">' . esc_html($key) . ':</span>';
                     
                     if (is_array($value)) {
-                        $html .= '<small>' . esc_html(implode(', ', array_slice($value, 0, 5))) . '</small>';
+                        $html .= '<span class="modern-info-value">' . esc_html(implode(', ', array_slice($value, 0, 5))) . '</span>';
                         if (count($value) > 5) {
-                            $html .= '<small class="text-muted"> (and ' . (count($value) - 5) . ' more...)</small>';
+                            $html .= '<small class="modern-info-extra"> (y ' . (count($value) - 5) . ' más...)</small>';
                         }
                     } else {
-                        $html .= '<code>' . esc_html($value) . '</code>';
+                        $html .= '<code class="modern-code">' . esc_html($value) . '</code>';
                     }
                     
-                    $html .= '</dd>';
+                    $html .= '</div>';
                 }
-                $html .= '</dl>';
+                $html .= '</div>';
             } else {
-                $html .= '<p>' . esc_html($data) . '</p>';
+                $html .= '<p class="modern-text">' . esc_html($data) . '</p>';
             }
             
             $html .= '</div></div>';
@@ -428,29 +460,42 @@ class DevToolsAjaxHandler {
     private function format_url_detection_result($result) {
         $html = '<div class="url-detection-result">';
         
-        $html .= '<div class="alert alert-info">';
-        $html .= '<strong>🌐 URL Detectado:</strong> <code>' . esc_html($result['detected_url']) . '</code>';
+        $html .= '<div class="modern-alert modern-alert-info">';
+        $html .= '<div class="modern-alert-icon">🌐</div>';
+        $html .= '<div class="modern-alert-content">';
+        $html .= '<div class="modern-alert-title">URL Detectado</div>';
+        $html .= '<code class="modern-code">' . esc_html($result['detected_url']) . '</code>';
+        $html .= '</div>';
         $html .= '</div>';
         
-        $html .= '<h6>Métodos de Detección:</h6>';
-        $html .= '<ul class="list-group">';
+        $html .= '<div class="modern-section">';
+        $html .= '<div class="modern-section-title">Métodos de Detección</div>';
+        $html .= '<div class="modern-method-list">';
         
         foreach ($result['all_methods'] as $method => $url) {
             $is_active = $result['environment']['detection_method'] === $method;
-            $class = $is_active ? 'list-group-item-success' : 'list-group-item-light';
+            $class = $is_active ? 'modern-method-item active' : 'modern-method-item';
             
-            $html .= '<li class="list-group-item ' . $class . '">';
-            $html .= '<strong>' . esc_html($method) . ':</strong> ';
-            $html .= $url ? '<code>' . esc_html($url) . '</code>' : '<em>No detectado</em>';
+            $html .= '<div class="' . $class . '">';
+            $html .= '<div class="modern-method-name">' . esc_html($method) . '</div>';
+            $html .= '<div class="modern-method-value">';
             
-            if ($is_active) {
-                $html .= ' <span class="badge bg-success">ACTIVO</span>';
+            if ($url) {
+                $html .= '<code class="modern-code">' . esc_html($url) . '</code>';
+            } else {
+                $html .= '<em class="modern-method-empty">No detectado</em>';
             }
             
-            $html .= '</li>';
+            if ($is_active) {
+                $html .= ' <span class="modern-badge modern-badge-success">ACTIVO</span>';
+            }
+            
+            $html .= '</div>';
+            $html .= '</div>';
         }
         
-        $html .= '</ul>';
+        $html .= '</div>';
+        $html .= '</div>';
         $html .= '</div>';
         
         return $html;
@@ -463,18 +508,32 @@ class DevToolsAjaxHandler {
         $html = '<div class="test-results">';
         
         if ($results['success']) {
-            $html .= '<div class="alert alert-success"><strong>✅ Tests completados exitosamente</strong></div>';
+            $html .= '<div class="modern-alert modern-alert-success">';
+            $html .= '<div class="modern-alert-icon">✅</div>';
+            $html .= '<div class="modern-alert-content">';
+            $html .= '<div class="modern-alert-title">Tests completados exitosamente</div>';
+            $html .= '</div>';
+            $html .= '</div>';
         } else {
-            $html .= '<div class="alert alert-danger"><strong>❌ Tests fallaron</strong></div>';
+            $html .= '<div class="modern-alert modern-alert-error">';
+            $html .= '<div class="modern-alert-icon">❌</div>';
+            $html .= '<div class="modern-alert-content">';
+            $html .= '<div class="modern-alert-title">Tests fallaron</div>';
+            $html .= '</div>';
+            $html .= '</div>';
         }
         
-        $html .= '<h6>Comando ejecutado:</h6>';
-        $html .= '<pre class="bg-light p-2"><code>' . esc_html($results['command']) . '</code></pre>';
+        $html .= '<div class="modern-section">';
+        $html .= '<div class="modern-section-title">Comando ejecutado</div>';
+        $html .= '<pre class="modern-code-block modern-code-block-light"><code>' . esc_html($results['command']) . '</code></pre>';
+        $html .= '</div>';
         
-        $html .= '<h6>Output:</h6>';
-        $html .= '<pre class="bg-dark text-white p-3" style="max-height: 400px; overflow-y: auto;">';
+        $html .= '<div class="modern-section">';
+        $html .= '<div class="modern-section-title">Output</div>';
+        $html .= '<pre class="modern-code-block modern-code-block-dark">';
         $html .= esc_html($results['output']);
         $html .= '</pre>';
+        $html .= '</div>';
         
         $html .= '</div>';
         

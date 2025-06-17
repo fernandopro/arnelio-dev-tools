@@ -12189,4 +12189,253 @@ textarea.form-control-lg {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
 }
 
+.modern-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font-size: 14px;
+}
+.modern-alert .modern-alert-icon {
+  font-size: 18px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.modern-alert .modern-alert-content {
+  flex: 1;
+  min-width: 0;
+}
+.modern-alert .modern-alert-title {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.modern-alert.modern-alert-success {
+  background-color: #f0f9f4;
+  border-color: #bbf7d0;
+  color: #166534;
+}
+.modern-alert.modern-alert-error {
+  background-color: #fef2f2;
+  border-color: #fecaca;
+  color: #dc2626;
+}
+.modern-alert.modern-alert-info {
+  background-color: #f0f9ff;
+  border-color: #bae6fd;
+  color: #1d4ed8;
+}
+
+.modern-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+.modern-card .modern-card-header {
+  background-color: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 12px 16px;
+}
+.modern-card .modern-card-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+}
+.modern-card .modern-card-body {
+  padding: 16px;
+}
+
+.modern-info-grid {
+  display: -ms-grid;
+  display: grid;
+  gap: 12px;
+}
+.modern-info-grid .modern-info-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-height: 20px;
+}
+.modern-info-grid .modern-info-label {
+  font-weight: 500;
+  color: #6b7280;
+  min-width: 120px;
+  flex-shrink: 0;
+  font-size: 13px;
+}
+.modern-info-grid .modern-info-value {
+  flex: 1;
+  color: #374151;
+  font-size: 13px;
+  word-break: break-word;
+}
+.modern-info-grid .modern-info-extra {
+  color: #9ca3af;
+  font-style: italic;
+}
+
+.modern-code {
+  background-color: #f3f4f6;
+  color: #1f2937;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.modern-code-block {
+  background-color: #f8fafc;
+  color: #1e293b;
+  padding: 16px;
+  border-radius: 6px;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  border: 1px solid #e2e8f0;
+  overflow-x: auto;
+  margin: 8px 0;
+}
+.modern-code-block.modern-code-block-light {
+  background-color: #f8fafc;
+  color: #475569;
+  border-color: #e2e8f0;
+}
+.modern-code-block.modern-code-block-dark {
+  background-color: #1e293b;
+  color: #e2e8f0;
+  border-color: #334155;
+  max-height: 400px;
+  overflow-y: auto;
+}
+.modern-code-block code {
+  background: none;
+  padding: 0;
+  color: inherit;
+  font-size: inherit;
+  border: none;
+}
+
+.modern-section {
+  margin-bottom: 20px;
+}
+.modern-section .modern-section-title {
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+  font-size: 14px;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 4px;
+}
+
+.modern-method-list {
+  display: -ms-grid;
+  display: grid;
+  gap: 8px;
+}
+.modern-method-list .modern-method-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+}
+.modern-method-list .modern-method-item.active {
+  background-color: #ecfdf5;
+  border-color: #10b981;
+}
+.modern-method-list .modern-method-name {
+  font-weight: 500;
+  color: #374151;
+  font-size: 13px;
+}
+.modern-method-list .modern-method-value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  margin-left: 12px;
+}
+.modern-method-list .modern-method-empty {
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+.modern-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+.modern-badge.modern-badge-success {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.modern-text {
+  color: #374151;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  .modern-alert.modern-alert-success {
+    background-color: #064e3b;
+    border-color: #047857;
+    color: #6ee7b7;
+  }
+  .modern-alert.modern-alert-error {
+    background-color: #7f1d1d;
+    border-color: #dc2626;
+    color: #fca5a5;
+  }
+  .modern-alert.modern-alert-info {
+    background-color: #1e3a8a;
+    border-color: #3b82f6;
+    color: #93c5fd;
+  }
+  .modern-card {
+    background: #374151;
+    border-color: #4b5563;
+  }
+  .modern-card .modern-card-header {
+    background-color: #4b5563;
+    border-color: #6b7280;
+  }
+  .modern-card .modern-card-title {
+    color: #f3f4f6;
+  }
+  .modern-code {
+    background-color: #4b5563;
+    color: #e5e7eb;
+    border-color: #6b7280;
+  }
+  .modern-info-label {
+    color: #d1d5db;
+  }
+  .modern-info-value {
+    color: #f3f4f6;
+  }
+  .modern-section-title {
+    color: #f3f4f6;
+    border-color: #4b5563;
+  }
+  .modern-text {
+    color: #e5e7eb;
+  }
+}
+
 /*# sourceMappingURL=dev-tools-styles.min.css.map*/
