@@ -501,23 +501,6 @@ class DevToolsAdminPanel {
                                     </div>
                                 </div>
                             </div>
-                            
-                            <!-- Columna 4: Estado del runner -->
-                            <div class="col-md-2">
-                                <div class="devtools-section">
-                                    <label class="devtools-label" style="display: block; font-weight: 600; color: #1e293b; margin-bottom: 1rem; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">Estado</label>
-                                    <div id="devtools-testStatus" class="devtools-status" style="display: none; padding: 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; color: white;">
-                                        <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                            <div class="devtools-spinner" style="width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.3); border-top: 2px solid white; border-radius: 50%; animation: spin 1s linear infinite;"></div>
-                                            <span id="devtools-statusText" style="font-weight: 500; font-size: 0.875rem;">Ejecutando...</span>
-                                        </div>
-                                    </div>
-                                    <div id="devtools-testStatusIdle" class="devtools-status-idle" style="padding: 1rem; background: #f1f5f9; border-radius: 12px; color: #64748b; text-align: center;">
-                                        <div style="font-size: 1.5rem; margin-bottom: 0.5rem; opacity: 0.6;">⚡</div>
-                                        <span style="font-weight: 500; font-size: 0.875rem;">Listo</span>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>

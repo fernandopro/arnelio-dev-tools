@@ -125,7 +125,6 @@ class TestRunner {
 
         this.isRunning = true;
         this.updateButtonStates(true, 'devtools-runTests');
-        this.showStatus('Ejecutando tests: ' + testTypes.join(', ') + '...');
         
         try {
             const response = await this.makeTestAjaxRequest('run_tests', {
@@ -147,7 +146,6 @@ class TestRunner {
         } finally {
             this.isRunning = false;
             this.updateButtonStates(false, 'devtools-runTests');
-            this.hideStatus();
         }
     }
 
@@ -162,7 +160,6 @@ class TestRunner {
 
         this.isRunning = true;
         this.updateButtonStates(true, 'devtools-runQuickTest');
-        this.showStatus('Ejecutando test rápido...');
         
         try {
             const response = await this.makeTestAjaxRequest('run_quick_test', {});
@@ -179,7 +176,6 @@ class TestRunner {
         } finally {
             this.isRunning = false;
             this.updateButtonStates(false, 'devtools-runQuickTest');
-            this.hideStatus();
         }
     }
 
@@ -194,7 +190,6 @@ class TestRunner {
 
         this.isRunning = true;
         this.updateButtonStates(true, 'devtools-testConnectivity');
-        this.showStatus('Probando conectividad AJAX...');
         
         try {
             this.showMessage('🔄 Probando conectividad con el sistema...', 'info');
@@ -221,7 +216,6 @@ class TestRunner {
         } finally {
             this.isRunning = false;
             this.updateButtonStates(false, 'devtools-testConnectivity');
-            this.hideStatus();
         }
     }
 
@@ -424,29 +418,6 @@ class TestRunner {
             if (clearButton) {
                 clearButton.disabled = isRunning;
             }
-        }
-    }
-
-    /**
-     * Mostrar estado de ejecución
-     */
-    showStatus(message) {
-        const statusDiv = document.getElementById('devtools-testStatus');
-        const statusText = document.getElementById('devtools-statusText');
-        
-        if (statusDiv && statusText) {
-            statusText.textContent = message;
-            statusDiv.style.display = 'block';
-        }
-    }
-
-    /**
-     * Ocultar estado de ejecución
-     */
-    hideStatus() {
-        const statusDiv = document.getElementById('devtools-testStatus');
-        if (statusDiv) {
-            statusDiv.style.display = 'none';
         }
     }
 
