@@ -111,17 +111,44 @@ class DevTools {
             testUrlBtn.addEventListener('click', () => this.testSiteUrl());
         }
         
-        // Run Tests
-        const runTestsBtn = document.querySelector('[data-action="run-tests"]');
-        if (runTestsBtn) {
-            runTestsBtn.addEventListener('click', () => this.runTests());
-        }
-        
         // Clear Cache
         const clearCacheBtn = document.querySelector('[data-action="clear-cache"]');
         if (clearCacheBtn) {
             clearCacheBtn.addEventListener('click', () => this.clearCache());
         }
+        
+        // Quick Actions con event delegation (solo para dashboard, no tests tab)
+        document.addEventListener('click', (e) => {
+            // Ignorar clicks dentro de la pestaña tests
+            if (e.target.closest('#tests')) {
+                return;
+            }
+            
+            const target = e.target.closest('[data-quick-action]');
+            if (!target) return;
+            
+            const action = target.getAttribute('data-quick-action');
+            
+            switch(action) {
+                case 'test-database':
+                    this.testDatabase();
+                    break;
+                case 'test-site-url':
+                    this.testSiteUrl();
+                    break;
+                case 'run-quick-test':
+                    // Usar testRunner para quick test desde dashboard
+                    if (this.testRunner) {
+                        this.testRunner.runQuickTest();
+                    } else {
+                        console.error('TestRunner no disponible');
+                    }
+                    break;
+                case 'clear-cache':
+                    this.clearCache();
+                    break;
+            }
+        });
     }
     
     /**

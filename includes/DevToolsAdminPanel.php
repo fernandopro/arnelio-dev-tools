@@ -172,14 +172,11 @@ class DevToolsAdminPanel {
                 </div>
                 
                 <!-- Navegación -->
-                <!-- DEBUG: Navegación deshabilitada temporalmente -->
-                <!--
                 <div class="row mb-4">
                     <div class="col-12">
                         <?php $this->render_navigation(); ?>
                     </div>
                 </div>
-                -->
         <?php
     }
     
@@ -259,46 +256,34 @@ class DevToolsAdminPanel {
      * Renderiza la página principal con pestañas
      */
     public function render_dashboard() {
-        $this->render_header('Dev-Tools Console - Test Runner Debug');
+        $this->render_header('Dashboard');
         ?>
         
-        <!-- DEBUG: Test Runner fuera de pestañas -->
-        <div class="container-fluid">
-            <div class="alert alert-warning" role="alert">
-                <strong>🔧 DEBUG MODE:</strong> Test Runner mostrado directamente sin pestañas para depurar problemas de AJAX.
+        <!-- Contenido principal con pestañas -->
+        <div class="tab-content" id="devToolsTabContent">
+            <!-- Dashboard Tab -->
+            <div class="tab-pane fade show active" id="dashboard" role="tabpanel" aria-labelledby="dashboard-tab">
+                <?php $this->render_dashboard_content(); ?>
             </div>
             
-            <?php $this->render_tests_content(); ?>
+            <!-- System Info Tab -->
+            <div class="tab-pane fade" id="system-info" role="tabpanel" aria-labelledby="system-info-tab">
+                <?php $this->render_system_info_content(); ?>
+            </div>
             
-            <hr class="my-4">
-            <h4>Información de Debug</h4>
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header">🔍 JavaScript Debug</div>
-                        <div class="card-body">
-                            <button class="btn btn-outline-primary btn-sm" onclick="console.log('devTools:', window.devTools)">
-                                Log devTools Object
-                            </button>
-                            <button class="btn btn-outline-primary btn-sm" onclick="console.log('devToolsConfig:', window.devToolsConfig)">
-                                Log devToolsConfig
-                            </button>
-                            <button class="btn btn-outline-info btn-sm" onclick="console.log('Nonce:', window.devTools?.getNonce())">
-                                Log Nonce
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header">📊 PHP Info</div>
-                        <div class="card-body">
-                            <p><strong>AJAX URL:</strong> <?php echo admin_url('admin-ajax.php'); ?></p>
-                            <p><strong>Nonce generado:</strong> <?php echo wp_create_nonce('dev_tools_nonce'); ?></p>
-                            <p><strong>User can manage:</strong> <?php echo current_user_can('manage_options') ? 'YES' : 'NO'; ?></p>
-                        </div>
-                    </div>
-                </div>
+            <!-- Database Tab -->
+            <div class="tab-pane fade" id="database" role="tabpanel" aria-labelledby="database-tab">
+                <?php $this->render_database_content(); ?>
+            </div>
+            
+            <!-- AJAX Tester Tab -->
+            <div class="tab-pane fade" id="ajax-tester" role="tabpanel" aria-labelledby="ajax-tester-tab">
+                <?php $this->render_ajax_tester_content(); ?>
+            </div>
+            
+            <!-- Tests Tab -->
+            <div class="tab-pane fade" id="tests" role="tabpanel" aria-labelledby="tests-tab">
+                <?php $this->render_tests_content(); ?>
             </div>
         </div>
         
@@ -429,16 +414,16 @@ class DevToolsAdminPanel {
     private function render_quick_actions() {
         ?>
         <div class="d-grid gap-2">
-            <button class="btn btn-outline-primary" onclick="devTools.testDatabase()">
+            <button class="btn btn-outline-primary" type="button" data-quick-action="test-database">
                 🔌 Test Database
             </button>
-            <button class="btn btn-outline-info" onclick="devTools.testSiteUrl()">
+            <button class="btn btn-outline-info" type="button" data-quick-action="test-site-url">
                 🌐 Test Site URL
             </button>
-            <button class="btn btn-outline-success" onclick="devTools.runTests()">
-                🧪 Run Tests
+            <button class="btn btn-outline-success" type="button" data-quick-action="run-quick-test">
+                🧪 Quick Test
             </button>
-            <button class="btn btn-outline-warning" onclick="devTools.clearCache()">
+            <button class="btn btn-outline-warning" type="button" data-quick-action="clear-cache">
                 🗑️ Clear Cache
             </button>
         </div>
@@ -622,83 +607,283 @@ class DevToolsAdminPanel {
         ?>
         <div class="row">
             <div class="col-lg-4">
-                <div class="card">
+                <div class="card border-warning">
                     <div class="card-header bg-warning text-dark">
                         <h5 class="mb-0">🧪 Test Runner</h5>
+                        <small class="text-muted">Ejecutar tests PHPUnit con diferentes opciones</small>
                     </div>
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">Tipos de Test</label>
+                                    <label class="form-label fw-bold">Tipos de Test</label>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="unitTests" checked>
-                                        <label class="form-check-label" for="unitTests">
+                                        <input class="form-check-input" type="checkbox" id="devtools-unitTests" checked>
+                                        <label class="form-check-label" for="devtools-unitTests">
                                             Unit Tests
                                         </label>
                                     </div>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="integrationTests">
-                                        <label class="form-check-label" for="integrationTests">
+                                        <input class="form-check-input" type="checkbox" id="devtools-integrationTests">
+                                        <label class="form-check-label" for="devtools-integrationTests">
                                             Integration Tests
                                         </label>
                                     </div>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="database">
-                                        <label class="form-check-label" for="database">
-                                            database Tests
+                                        <input class="form-check-input" type="checkbox" id="devtools-databaseTests">
+                                        <label class="form-check-label" for="devtools-databaseTests">
+                                            Database Tests
                                         </label>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">Opciones</label>
+                                    <label class="form-label fw-bold">Opciones de Salida</label>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="verboseOutput">
-                                        <label class="form-check-label" for="verboseOutput">
+                                        <input class="form-check-input" type="checkbox" id="devtools-verboseOutput">
+                                        <label class="form-check-label" for="devtools-verboseOutput">
                                             Verbose Output
                                         </label>
                                     </div>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="generateCoverage">
-                                        <label class="form-check-label" for="generateCoverage">
+                                        <input class="form-check-input" type="checkbox" id="devtools-generateCoverage">
+                                        <label class="form-check-label" for="devtools-generateCoverage">
                                             Generate Coverage
                                         </label>
                                     </div>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="testdoxOutput">
-                                        <label class="form-check-label" for="testdoxOutput">
+                                        <input class="form-check-input" type="checkbox" id="devtools-testdoxOutput">
+                                        <label class="form-check-label" for="devtools-testdoxOutput">
                                             TestDox Summary
                                         </label>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="d-grid gap-2 d-md-flex">
-                            <button id="runTest" class="btn btn-success" onclick="devTools.testRunner.runTests()">
-                                🚀 Run Selected Tests
+                        
+                        <div class="d-grid gap-2">
+                            <button id="devtools-runTests" class="btn btn-success" type="button" data-test-action="run-full">
+                                <i class="dashicons dashicons-yes-alt"></i> 🚀 Run Selected Tests
                             </button>
-                            <button id="runQuickTest" class="btn btn-outline-info" onclick="devTools.testRunner.runQuickTest()">
-                                ⚡ Quick Test
+                            <button id="devtools-runQuickTest" class="btn btn-outline-info" type="button" data-test-action="run-quick">
+                                <i class="dashicons dashicons-performance"></i> ⚡ Quick Test
                             </button>
+                            <button id="devtools-clearResults" class="btn btn-outline-secondary btn-sm" type="button" data-test-action="clear">
+                                <i class="dashicons dashicons-dismiss"></i> Clear Results
+                            </button>
+                            <button id="devtools-testConnectivity" class="btn btn-outline-primary btn-sm" type="button" data-test-action="connectivity">
+                                <i class="dashicons dashicons-admin-network"></i> Test Connectivity
+                            </button>
+                        </div>
+                        
+                        <!-- Estado del runner -->
+                        <div id="devtools-testStatus" class="mt-3" style="display: none;">
+                            <div class="alert alert-info mb-0">
+                                <div class="d-flex align-items-center">
+                                    <div class="spinner-border spinner-border-sm me-2" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <span id="devtools-statusText">Ejecutando tests...</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+            
             <div class="col-lg-8">
-                <div class="card">
+                <div class="card border-info">
                     <div class="card-header bg-info text-white">
-                        <h5 class="mb-0">📈 Test Results</h5>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">📈 Test Results</h5>
+                            <small class="opacity-75">Output en tiempo real</small>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <div id="testResults" class="bg-light p-3 rounded">
-                            <p class="text-muted mb-0">No tests executed yet...</p>
+                    <div class="card-body p-0">
+                        <div id="devtools-testResults" class="p-3" style="min-height: 400px; max-height: 600px; overflow-y: auto;">
+                            <div class="text-center text-muted py-5">
+                                <i class="dashicons dashicons-admin-tools" style="font-size: 48px; opacity: 0.3;"></i>
+                                <p class="mt-2 mb-0">No tests executed yet...</p>
+                                <small>Selecciona los tipos de test y presiona "Run Selected Tests"</small>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+        
+        <!-- JavaScript específico para tests (prevenir conflictos) -->
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Asegurar que el testRunner esté disponible cuando se active la pestaña
+            const testsTab = document.getElementById('tests-tab');
+            if (testsTab) {
+                testsTab.addEventListener('shown.bs.tab', function() {
+                    // Verificar que el testRunner esté inicializado
+                    if (typeof window.devTools === 'undefined' || !window.devTools.testRunner) {
+                        console.warn('TestRunner no disponible, reintentando inicialización...');
+                        // Reintentar inicialización si es necesario
+                        setTimeout(() => {
+                            if (typeof window.devTools !== 'undefined' && window.devTools.testRunner) {
+                                console.log('✅ TestRunner inicializado correctamente');
+                            }
+                        }, 500);
+                    } else {
+                        console.log('✅ TestRunner ya disponible');
+                    }
+                });
+            }
+            
+            // Event listeners específicos para cada botón (evitar event delegation global)
+            const runTestsBtn = document.getElementById('devtools-runTests');
+            const runQuickTestBtn = document.getElementById('devtools-runQuickTest');
+            const clearResultsBtn = document.getElementById('devtools-clearResults');
+            const testConnectivityBtn = document.getElementById('devtools-testConnectivity');
+            
+            if (runTestsBtn) {
+                runTestsBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('🔍 Click específico en runTests button');
+                    
+                    if (window.devTools && window.devTools.testRunner) {
+                        if (!window.devTools.testRunner.isRunning) {
+                            console.log('� Ejecutando tests completos desde botón específico...');
+                            window.devTools.testRunner.runTests();
+                        } else {
+                            console.log('🔍 Test ya ejecutándose, ignorando click');
+                        }
+                    } else {
+                        console.error('TestRunner no disponible');
+                    }
+                });
+            }
+            
+            if (runQuickTestBtn) {
+                runQuickTestBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('🔍 Click específico en runQuickTest button');
+                    
+                    if (window.devTools && window.devTools.testRunner) {
+                        if (!window.devTools.testRunner.isRunning) {
+                            console.log('⚡ Ejecutando test rápido desde botón específico...');
+                            window.devTools.testRunner.runQuickTest();
+                        } else {
+                            console.log('🔍 Test ya ejecutándose, ignorando click');
+                        }
+                    } else {
+                        console.error('TestRunner no disponible');
+                    }
+                });
+            }
+            
+            if (clearResultsBtn) {
+                clearResultsBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('� Click específico en clearResults button');
+                    
+                    if (window.devTools && window.devTools.testRunner) {
+                        console.log('🧹 Limpiando resultados desde botón específico...');
+                        window.devTools.testRunner.clearResults();
+                    } else {
+                        console.error('TestRunner no disponible');
+                    }
+                });
+            }
+            
+            if (testConnectivityBtn) {
+                testConnectivityBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('🔍 Click específico en testConnectivity button');
+                    
+                    if (window.devTools && window.devTools.testRunner) {
+                        if (!window.devTools.testRunner.isRunning) {
+                            console.log('🌐 Probando conectividad desde botón específico...');
+                            window.devTools.testRunner.testConnectivity();
+                        } else {
+                            console.log('🔍 Test ya ejecutándose, ignorando click');
+                        }
+                    } else {
+                        console.error('TestRunner no disponible');
+                    }
+                });
+            }
+            
+            // Prevenir conflictos con otros formularios de Bootstrap
+            const testForm = document.querySelector('#tests .card-body');
+            if (testForm) {
+                testForm.addEventListener('click', function(e) {
+                    // Asegurar que los clicks en checkboxes no interfieran con otros elementos
+                    if (e.target.matches('input[type="checkbox"]')) {
+                        e.stopPropagation();
+                    }
+                });
+            }
+        });
+        </script>
+        
+        <!-- JavaScript de debug para verificar funcionamiento -->
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Debug específico para Dev-Tools
+            if (typeof console !== 'undefined') {
+                console.group('🔧 Dev-Tools System Status');
+                
+                // Verificar que devTools esté disponible
+                if (typeof window.devTools !== 'undefined') {
+                    console.log('✅ devTools system loaded');
+                    
+                    if (window.devTools.testRunner) {
+                        console.log('✅ TestRunner initialized');
+                    }
+                } else {
+                    console.warn('⚠️ devTools not yet loaded, will retry...');
+                    
+                    // Reintentar después de un momento
+                    setTimeout(() => {
+                        if (typeof window.devTools !== 'undefined') {
+                            console.log('✅ devTools loaded after retry');
+                        }
+                    }, 1000);
+                }
+                
+                // Verificar elementos críticos de la UI
+                const criticalElements = [
+                    'devtools-testResults',
+                    'devtools-runTests', 
+                    'devtools-runQuickTest',
+                    'tests-tab'
+                ];
+                
+                let missingElements = [];
+                criticalElements.forEach(id => {
+                    if (!document.getElementById(id)) {
+                        missingElements.push(id);
+                    }
+                });
+                
+                if (missingElements.length === 0) {
+                    console.log('✅ All UI elements present');
+                } else {
+                    console.warn('⚠️ Missing elements:', missingElements);
+                }
+                
+                // Verificar que las pestañas de Bootstrap funcionen
+                const tabs = document.querySelectorAll('[data-bs-toggle="tab"]');
+                if (tabs.length > 0) {
+                    console.log(`✅ Found ${tabs.length} tabs with Bootstrap attributes`);
+                } else {
+                    console.warn('⚠️ No Bootstrap tabs found');
+                }
+                
+                console.groupEnd();
+            }
+        });
+        </script>
         <?php
     }
     

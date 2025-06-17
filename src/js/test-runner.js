@@ -108,15 +108,15 @@ class TestRunner {
             return;
         }
 
-        // Leer valores de los checkboxes
+        // Leer valores de los checkboxes con nuevos IDs
         const testTypes = [];
-        if (document.getElementById('unitTests')?.checked) testTypes.push('unit');
-        if (document.getElementById('integrationTests')?.checked) testTypes.push('integration');
-        if (document.getElementById('database')?.checked) testTypes.push('database');
+        if (document.getElementById('devtools-unitTests')?.checked) testTypes.push('unit');
+        if (document.getElementById('devtools-integrationTests')?.checked) testTypes.push('integration');
+        if (document.getElementById('devtools-databaseTests')?.checked) testTypes.push('database');
         
-        const verbose = document.getElementById('verboseOutput')?.checked || false;
-        const coverage = document.getElementById('generateCoverage')?.checked || false;
-        const testdox = document.getElementById('testdoxOutput')?.checked || false;
+        const verbose = document.getElementById('devtools-verboseOutput')?.checked || false;
+        const coverage = document.getElementById('devtools-generateCoverage')?.checked || false;
+        const testdox = document.getElementById('devtools-testdoxOutput')?.checked || false;
         
         if (testTypes.length === 0) {
             this.showMessage('⚠️ Selecciona al menos un tipo de test', 'warning');
@@ -124,10 +124,10 @@ class TestRunner {
         }
 
         this.isRunning = true;
+        this.updateButtonStates(true);
+        this.showStatus('Ejecutando tests: ' + testTypes.join(', ') + '...');
         
         try {
-            this.showMessage(`🔄 Ejecutando tests: ${testTypes.join(', ')}...`, 'info');
-            
             const response = await this.makeTestAjaxRequest('run_tests', {
                 test_types: testTypes,
                 verbose: verbose,
@@ -146,6 +146,8 @@ class TestRunner {
             this.showError('Error de conexión: ' + error.message);
         } finally {
             this.isRunning = false;
+            this.updateButtonStates(false);
+            this.hideStatus();
         }
     }
 
@@ -159,10 +161,10 @@ class TestRunner {
         }
 
         this.isRunning = true;
+        this.updateButtonStates(true);
+        this.showStatus('Ejecutando test rápido...');
         
         try {
-            this.showMessage('🚀 Ejecutando test rápido...', 'info');
-            
             const response = await this.makeTestAjaxRequest('run_quick_test', {});
             
             if (response) {
@@ -176,6 +178,50 @@ class TestRunner {
             this.showError('Error de conexión: ' + error.message);
         } finally {
             this.isRunning = false;
+            this.updateButtonStates(false);
+            this.hideStatus();
+        }
+    }
+
+    /**
+     * Test de conectividad con el sistema AJAX
+     */
+    async testConnectivity() {
+        if (this.isRunning) {
+            this.showMessage('Ya hay un test en ejecución...', 'warning');
+            return;
+        }
+
+        this.isRunning = true;
+        this.updateButtonStates(true);
+        this.showStatus('Probando conectividad AJAX...');
+        
+        try {
+            this.showMessage('🔄 Probando conectividad con el sistema...', 'info');
+            
+            // Test básico de conectividad
+            const startTime = Date.now();
+            const response = await this.makeTestAjaxRequest('run_quick_test', {});
+            const endTime = Date.now();
+            
+            const connectivityInfo = 'Conectividad AJAX funcionando correctamente\n' +
+                                   'Tiempo de respuesta: ' + (endTime - startTime) + 'ms\n' +
+                                   'URL: ' + ((typeof devToolsConfig !== 'undefined') ? devToolsConfig.ajaxurl : 'No disponible') + '\n' +
+                                   'Nonce: ' + ((typeof devToolsConfig !== 'undefined') ? 'Configurado' : 'No disponible');
+            
+            if (response) {
+                this.showMessage('✅ ' + connectivityInfo, 'success');
+            } else {
+                this.showError('❌ Error de conectividad: No se recibió respuesta del servidor');
+            }
+            
+        } catch (error) {
+            console.error('Error en test de conectividad:', error);
+            this.showError('❌ Error de conectividad: ' + error.message);
+        } finally {
+            this.isRunning = false;
+            this.updateButtonStates(false);
+            this.hideStatus();
         }
     }
 
@@ -183,9 +229,9 @@ class TestRunner {
      * Mostrar resultados en el div testResults
      */
     displayResults(results) {
-        const testResultsDiv = document.getElementById('testResults');
+        const testResultsDiv = document.getElementById('devtools-testResults');
         if (!testResultsDiv) {
-            console.error('Div testResults no encontrado');
+            console.error('Div devtools-testResults no encontrado');
             return;
         }
         
@@ -194,7 +240,8 @@ class TestRunner {
         // Encabezado con información del comando
         if (results.command) {
             html += `<div class="alert alert-info mb-3">
-                <strong>Comando ejecutado:</strong> <code>${results.command}</code>
+                <strong>📝 Comando ejecutado:</strong><br>
+                <code class="small">${this.escapeHtml(results.command)}</code>
             </div>`;
         }
         
@@ -203,23 +250,25 @@ class TestRunner {
             const summary = results.summary;
             const statusClass = summary.status === 'success' ? 'success' : 
                                summary.status === 'error' ? 'danger' : 'warning';
+            const statusIcon = summary.status === 'success' ? '✅' : 
+                              summary.status === 'error' ? '❌' : '⚠️';
             
             html += `<div class="alert alert-${statusClass} mb-3">
-                <h5>📊 Resumen de Tests</h5>
+                <h6>${statusIcon} Resumen de Tests</h6>
                 <div class="row">
                     <div class="col-md-6">
-                        <p><strong>Total:</strong> ${summary.total_tests}</p>
-                        <p><strong>Pasados:</strong> ${summary.passed}</p>
-                        <p><strong>Fallidos:</strong> ${summary.failed}</p>
+                        <p class="mb-1"><strong>Total:</strong> ${summary.total_tests}</p>
+                        <p class="mb-1"><strong>Pasados:</strong> <span class="text-success">${summary.passed}</span></p>
+                        <p class="mb-1"><strong>Fallidos:</strong> <span class="text-danger">${summary.failed}</span></p>
                     </div>
                     <div class="col-md-6">
-                        <p><strong>Errores:</strong> ${summary.errors}</p>
-                        <p><strong>Omitidos:</strong> ${summary.skipped}</p>
-                        <p><strong>Aserciones:</strong> ${summary.assertions}</p>
+                        <p class="mb-1"><strong>Errores:</strong> <span class="text-warning">${summary.errors}</span></p>
+                        <p class="mb-1"><strong>Omitidos:</strong> <span class="text-muted">${summary.skipped}</span></p>
+                        <p class="mb-1"><strong>Aserciones:</strong> ${summary.assertions}</p>
                     </div>
                 </div>
-                ${summary.time ? `<p><strong>Tiempo:</strong> ${summary.time}</p>` : ''}
-                ${summary.memory ? `<p><strong>Memoria:</strong> ${summary.memory}</p>` : ''}
+                ${summary.time ? `<p class="mb-0"><strong>⏱️ Tiempo:</strong> ${summary.time}</p>` : ''}
+                ${summary.memory ? `<p class="mb-0"><strong>💾 Memoria:</strong> ${summary.memory}</p>` : ''}
             </div>`;
         }
         
@@ -227,10 +276,10 @@ class TestRunner {
         if (results.output) {
             html += `<div class="card">
                 <div class="card-header">
-                    <h6>🔍 Output Completo</h6>
+                    <h6 class="mb-0">🔍 Output Completo</h6>
                 </div>
-                <div class="card-body">
-                    <pre class="bg-dark text-light p-3 rounded" style="max-height: 400px; overflow-y: auto;">${this.escapeHtml(results.output)}</pre>
+                <div class="card-body p-0">
+                    <pre class="bg-dark text-light p-3 m-0 rounded-bottom" style="max-height: 300px; overflow-y: auto; font-size: 0.85rem;">${this.escapeHtml(results.output)}</pre>
                 </div>
             </div>`;
         }
@@ -238,7 +287,7 @@ class TestRunner {
         // Información de ejecución
         if (results.execution_time) {
             html += `<div class="mt-3 text-muted small">
-                ⏱️ Tiempo de ejecución: ${results.execution_time}s
+                ⏱️ Tiempo de ejecución: ${results.execution_time}ms
                 ${results.exit_code !== undefined ? ` | Código de salida: ${results.exit_code}` : ''}
             </div>`;
         }
@@ -247,7 +296,7 @@ class TestRunner {
         
         testResultsDiv.innerHTML = html;
         
-        // Scroll al div de resultados
+        // Scroll al div de resultados suavemente
         testResultsDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
@@ -255,7 +304,7 @@ class TestRunner {
      * Mostrar mensaje de estado
      */
     showMessage(message, type = 'info') {
-        const testResultsDiv = document.getElementById('testResults');
+        const testResultsDiv = document.getElementById('devtools-testResults');
         if (!testResultsDiv) return;
         
         const alertClass = {
@@ -265,7 +314,7 @@ class TestRunner {
             'error': 'alert-danger'
         }[type] || 'alert-info';
         
-        testResultsDiv.innerHTML = `<div class="alert ${alertClass}">${message}</div>`;
+        testResultsDiv.innerHTML = `<div class="alert ${alertClass} mb-0">${message}</div>`;
     }
 
     /**
@@ -276,22 +325,76 @@ class TestRunner {
     }
 
     /**
+     * Limpiar resultados
+     */
+    clearResults() {
+        const testResultsDiv = document.getElementById('devtools-testResults');
+        if (testResultsDiv) {
+            testResultsDiv.innerHTML = `<div class="text-center text-muted py-5">
+                <i class="dashicons dashicons-admin-tools" style="font-size: 48px; opacity: 0.3;"></i>
+                <p class="mt-2 mb-0">No hay resultados de tests aún.</p>
+                <small>Selecciona los tipos de test y presiona "Run Selected Tests"</small>
+            </div>`;
+        }
+    }
+
+    /**
+     * Actualizar estado de los botones
+     */
+    updateButtonStates(isRunning) {
+        const runButton = document.getElementById('devtools-runTests');
+        const quickButton = document.getElementById('devtools-runQuickTest');
+        const clearButton = document.getElementById('devtools-clearResults');
+        
+        if (runButton) {
+            runButton.disabled = isRunning;
+            runButton.innerHTML = isRunning ? 
+                '<span class="spinner-border spinner-border-sm me-2"></span>Ejecutando...' : 
+                '<i class="dashicons dashicons-yes-alt"></i> 🚀 Run Selected Tests';
+        }
+        
+        if (quickButton) {
+            quickButton.disabled = isRunning;
+            quickButton.innerHTML = isRunning ? 
+                '<span class="spinner-border spinner-border-sm me-2"></span>Ejecutando...' : 
+                '<i class="dashicons dashicons-performance"></i> ⚡ Quick Test';
+        }
+        
+        if (clearButton) {
+            clearButton.disabled = isRunning;
+        }
+    }
+
+    /**
+     * Mostrar estado de ejecución
+     */
+    showStatus(message) {
+        const statusDiv = document.getElementById('devtools-testStatus');
+        const statusText = document.getElementById('devtools-statusText');
+        
+        if (statusDiv && statusText) {
+            statusText.textContent = message;
+            statusDiv.style.display = 'block';
+        }
+    }
+
+    /**
+     * Ocultar estado de ejecución
+     */
+    hideStatus() {
+        const statusDiv = document.getElementById('devtools-testStatus');
+        if (statusDiv) {
+            statusDiv.style.display = 'none';
+        }
+    }
+
+    /**
      * Escapar HTML para mostrar output seguro
      */
     escapeHtml(text) {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
-    }
-
-    /**
-     * Limpiar resultados
-     */
-    clearResults() {
-        const testResultsDiv = document.getElementById('testResults');
-        if (testResultsDiv) {
-            testResultsDiv.innerHTML = '<p class="text-muted">No hay resultados de tests aún.</p>';
-        }
     }
 }
 
