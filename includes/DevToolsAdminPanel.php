@@ -148,43 +148,54 @@ class DevToolsAdminPanel {
     }
     
     /**
-     * Renderiza el header simplificado para tests
+     * Renderiza el header moderno y minimalista
      */
-    private function render_header($title = 'Tests') {
+    private function render_header($title = 'Dev Tools') {
         ?>
-        <div class="wrap">
-            <div class="container-fluid">
-                <!-- Header Principal -->
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <div class="d-flex justify-content-between align-items-center bg-primary text-white p-3 rounded">
-                            <div>
-                                <h1 class="h3 mb-1">🔧 <?php echo esc_html($this->config['name']); ?> - Test Runner</h1>
-                                <p class="mb-0 opacity-75">v<?php echo esc_html($this->config['version']); ?> - Ejecución y gestión de tests</p>
+        <div class="devtools-modern-wrap" style="margin: 0; padding: 0; background: #f8fafc; min-height: 100vh;">
+            <!-- Header Principal Moderno -->
+            <div class="devtools-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem 0; margin: 0; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+                <div class="container-fluid" style="max-width: none; padding: 0 2rem;">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <div class="d-flex align-items-center">
+                                <div class="devtools-icon" style="width: 60px; height: 60px; background: rgba(255,255,255,0.2); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin-right: 1.5rem; font-size: 24px;">
+                                    🔧
+                                </div>
+                                <div>
+                                    <h1 class="h2 mb-1" style="font-weight: 600; margin: 0;"><?php echo esc_html($this->config['name']); ?></h1>
+                                    <p class="mb-0" style="opacity: 0.9; font-size: 0.95rem;">Sistema de desarrollo y testing v<?php echo esc_html($this->config['version']); ?></p>
+                                </div>
                             </div>
-                            <div class="text-end">
-                                <small class="d-block">Entorno: <?php echo $this->get_environment_badge(); ?></small>
-                                <small>WordPress <?php echo get_bloginfo('version'); ?></small>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <div class="devtools-env-info">
+                                <?php echo $this->get_environment_badge(); ?>
+                                <small class="d-block mt-1" style="opacity: 0.8;">WordPress <?php echo get_bloginfo('version'); ?></small>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
         <?php
     }
     
     /**
-     * Renderiza el footer común
+     * Renderiza el footer moderno
      */
     private function render_footer() {
         ?>
-                <!-- Footer -->
-                <div class="row mt-5">
-                    <div class="col-12">
-                        <div class="border-top pt-3 text-muted text-center">
-                            <small>
-                                <?php echo esc_html($this->config['name']); ?> - 
-                                Test Runner simplificado para desarrollo WordPress
-                            </small>
+                <!-- Footer Minimalista -->
+                <div class="devtools-footer" style="margin-top: 3rem; padding: 2rem 0; background: #ffffff; border-top: 1px solid #e2e8f0;">
+                    <div class="container-fluid" style="max-width: none; padding: 0 2rem;">
+                        <div class="row">
+                            <div class="col-12 text-center">
+                                <p class="mb-0" style="color: #64748b; font-size: 0.875rem;">
+                                    <?php echo esc_html($this->config['name']); ?> · 
+                                    Sistema de desarrollo para WordPress ·
+                                    <span style="color: #667eea;">Dev-Tools Arquitectura 3.0</span>
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -196,34 +207,34 @@ class DevToolsAdminPanel {
 
     
     /**
-     * Obtiene el badge del entorno actual
+     * Obtiene el badge del entorno actual - Versión moderna
      */
     private function get_environment_badge() {
         $site_detector = $this->modules['SiteUrlDetectionModule'] ?? null;
         if ($site_detector) {
             $env_info = $site_detector->get_environment_info();
             if ($env_info['is_local_wp']) {
-                return '<span class="badge bg-warning text-dark">Local by WP Engine</span>';
+                return '<span class="badge" style="background: rgba(255,193,7,0.9); color: #000; padding: 0.5rem 1rem; border-radius: 20px; font-weight: 500;">Local by WP Engine</span>';
             }
         }
         
         if (defined('WP_DEBUG') && WP_DEBUG) {
-            return '<span class="badge bg-info">Development</span>';
+            return '<span class="badge" style="background: rgba(13,202,240,0.9); color: #fff; padding: 0.5rem 1rem; border-radius: 20px; font-weight: 500;">Development</span>';
         }
         
-        return '<span class="badge bg-success">Production</span>';
+        return '<span class="badge" style="background: rgba(25,135,84,0.9); color: #fff; padding: 0.5rem 1rem; border-radius: 20px; font-weight: 500;">Production</span>';
     }
     
     /**
-     * Renderiza la página simplificada solo con tests
+     * Renderiza la página principal con diseño moderno
      */
     public function render_dashboard() {
-        $this->render_header('Tests');
+        $this->render_header('Dev Tools');
         ?>
         
-        <!-- Contenido principal - Solo Tests -->
-        <div class="row">
-            <div class="col-12">
+        <!-- Contenido Principal Moderno -->
+        <div class="devtools-main-content" style="padding: 2rem 0; background: #f8fafc;">
+            <div class="container-fluid" style="max-width: none; padding: 0 2rem;">
                 <?php $this->render_tests_content(); ?>
             </div>
         </div>
@@ -233,111 +244,117 @@ class DevToolsAdminPanel {
     }
     
     /**
-     * Contenido de Tests
+     * Contenido de Tests - Diseño Moderno y Minimalista
      */
     private function render_tests_content() {
         ?>
-        <div class="row">
-            <div class="col-lg-4">
-                <div class="card border-warning">
-                    <div class="card-header bg-warning text-dark">
-                        <h5 class="mb-0">🧪 Test Runner</h5>
-                        <small class="text-muted">Ejecutar tests PHPUnit con diferentes opciones</small>
+        <div class="row g-4">
+            <!-- Panel de Control -->
+            <div class="col-xl-4">
+                <div class="devtools-card" style="background: #ffffff; border-radius: 16px; box-shadow: 0 4px 25px rgba(0,0,0,0.08); border: none; overflow: hidden;">
+                    <!-- Header del card -->
+                    <div class="devtools-card-header" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 1.5rem; margin: 0;">
+                        <h5 class="mb-0" style="font-weight: 600; display: flex; align-items: center; gap: 0.75rem;">
+                            <span style="font-size: 1.2em;">🧪</span>
+                            Test Runner
+                        </h5>
+                        <p class="mb-0" style="opacity: 0.9; font-size: 0.875rem; margin-top: 0.25rem;">Ejecutar tests PHPUnit con opciones avanzadas</p>
                     </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold">Tipos de Test</label>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="devtools-unitTests" checked>
-                                        <label class="form-check-label" for="devtools-unitTests">
-                                            Unit Tests
-                                        </label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="devtools-integrationTests">
-                                        <label class="form-check-label" for="devtools-integrationTests">
-                                            Integration Tests
-                                        </label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="devtools-databaseTests">
-                                        <label class="form-check-label" for="devtools-databaseTests">
-                                            Database Tests
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold">Opciones de Salida</label>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="devtools-verboseOutput">
-                                        <label class="form-check-label" for="devtools-verboseOutput">
-                                            Verbose Output
-                                        </label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="devtools-generateCoverage">
-                                        <label class="form-check-label" for="devtools-generateCoverage">
-                                            Generate Coverage
-                                        </label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="devtools-testdoxOutput">
-                                        <label class="form-check-label" for="devtools-testdoxOutput">
-                                            TestDox Summary
-                                        </label>
-                                    </div>
-                                </div>
+                    
+                    <!-- Contenido del card -->
+                    <div class="devtools-card-body" style="padding: 2rem;">
+                        <!-- Tipos de Test -->
+                        <div class="devtools-section mb-4">
+                            <label class="devtools-label" style="display: block; font-weight: 600; color: #1e293b; margin-bottom: 1rem; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">Tipos de Test</label>
+                            <div class="devtools-checkbox-group" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                <label class="devtools-checkbox" style="display: flex; align-items: center; cursor: pointer;">
+                                    <input type="checkbox" id="devtools-unitTests" checked style="margin-right: 0.75rem; accent-color: #667eea;">
+                                    <span style="color: #475569; font-weight: 500;">Unit Tests</span>
+                                </label>
+                                <label class="devtools-checkbox" style="display: flex; align-items: center; cursor: pointer;">
+                                    <input type="checkbox" id="devtools-integrationTests" style="margin-right: 0.75rem; accent-color: #667eea;">
+                                    <span style="color: #475569; font-weight: 500;">Integration Tests</span>
+                                </label>
+                                <label class="devtools-checkbox" style="display: flex; align-items: center; cursor: pointer;">
+                                    <input type="checkbox" id="devtools-databaseTests" style="margin-right: 0.75rem; accent-color: #667eea;">
+                                    <span style="color: #475569; font-weight: 500;">Database Tests</span>
+                                </label>
                             </div>
                         </div>
                         
-                        <div class="d-grid gap-2">
-                            <button id="devtools-runTests" class="btn btn-success" type="button" data-test-action="run-full" data-original-content='<i class="dashicons dashicons-yes-alt"></i> 🚀 Run Selected Tests'>
-                                <i class="dashicons dashicons-yes-alt"></i> 🚀 Run Selected Tests
+                        <!-- Opciones de Salida -->
+                        <div class="devtools-section mb-4">
+                            <label class="devtools-label" style="display: block; font-weight: 600; color: #1e293b; margin-bottom: 1rem; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">Opciones de Salida</label>
+                            <div class="devtools-checkbox-group" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                <label class="devtools-checkbox" style="display: flex; align-items: center; cursor: pointer;">
+                                    <input type="checkbox" id="devtools-verboseOutput" style="margin-right: 0.75rem; accent-color: #667eea;">
+                                    <span style="color: #475569; font-weight: 500;">Verbose Output</span>
+                                </label>
+                                <label class="devtools-checkbox" style="display: flex; align-items: center; cursor: pointer;">
+                                    <input type="checkbox" id="devtools-generateCoverage" style="margin-right: 0.75rem; accent-color: #667eea;">
+                                    <span style="color: #475569; font-weight: 500;">Generate Coverage</span>
+                                </label>
+                                <label class="devtools-checkbox" style="display: flex; align-items: center; cursor: pointer;">
+                                    <input type="checkbox" id="devtools-testdoxOutput" style="margin-right: 0.75rem; accent-color: #667eea;">
+                                    <span style="color: #475569; font-weight: 500;">TestDox Summary</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Botones de Acción -->
+                        <div class="devtools-actions" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                            <button id="devtools-runTests" class="devtools-btn devtools-btn-primary" type="button" data-test-action="run-full" data-original-content='🚀 Run Selected Tests' style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 1rem 1.5rem; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                                🚀 Run Selected Tests
                             </button>
-                            <button id="devtools-runQuickTest" class="btn btn-outline-info" type="button" data-test-action="run-quick" data-original-content='<i class="dashicons dashicons-performance"></i> ⚡ Quick Test'>
-                                <i class="dashicons dashicons-performance"></i> ⚡ Quick Test
+                            <button id="devtools-runQuickTest" class="devtools-btn devtools-btn-secondary" type="button" data-test-action="run-quick" data-original-content='⚡ Quick Test' style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none; padding: 0.875rem 1.5rem; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                                ⚡ Quick Test
                             </button>
-                            <button id="devtools-clearResults" class="btn btn-outline-secondary btn-sm" type="button" data-test-action="clear" data-original-content='<i class="dashicons dashicons-dismiss"></i> Clear Results'>
-                                <i class="dashicons dashicons-dismiss"></i> Clear Results
-                            </button>
-                            <button id="devtools-testConnectivity" class="btn btn-outline-primary btn-sm" type="button" data-test-action="connectivity" data-original-content='<i class="dashicons dashicons-admin-network"></i> Test Connectivity'>
-                                <i class="dashicons dashicons-admin-network"></i> Test Connectivity
-                            </button>
+                            
+                            <!-- Botones secundarios -->
+                            <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                                <button id="devtools-clearResults" class="devtools-btn devtools-btn-outline" type="button" data-test-action="clear" data-original-content='Clear Results' style="background: transparent; color: #64748b; border: 2px solid #e2e8f0; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.3s ease; flex: 1; font-size: 0.875rem;">
+                                    Clear Results
+                                </button>
+                                <button id="devtools-testConnectivity" class="devtools-btn devtools-btn-outline" type="button" data-test-action="connectivity" data-original-content='Test Connectivity' style="background: transparent; color: #64748b; border: 2px solid #e2e8f0; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.3s ease; flex: 1; font-size: 0.875rem;">
+                                    Test Connectivity
+                                </button>
+                            </div>
                         </div>
                         
                         <!-- Estado del runner -->
-                        <div id="devtools-testStatus" class="mt-3" style="display: none;">
-                            <div class="alert alert-info mb-0">
-                                <div class="d-flex align-items-center">
-                                    <div class="spinner-border spinner-border-sm me-2" role="status">
-                                        <span class="visually-hidden">Loading...</span>
-                                    </div>
-                                    <span id="devtools-statusText">Ejecutando tests...</span>
-                                </div>
+                        <div id="devtools-testStatus" class="devtools-status" style="display: none; margin-top: 1.5rem; padding: 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; color: white;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <div class="devtools-spinner" style="width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.3); border-top: 2px solid white; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                                <span id="devtools-statusText" style="font-weight: 500;">Ejecutando tests...</span>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
             
-            <div class="col-lg-8">
-                <div class="card border-info">
-                    <div class="card-header bg-info text-white">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">📈 Test Results</h5>
-                            <small class="opacity-75">Output en tiempo real</small>
+            <!-- Panel de Resultados -->
+            <div class="col-xl-8">
+                <div class="devtools-card" style="background: #ffffff; border-radius: 16px; box-shadow: 0 4px 25px rgba(0,0,0,0.08); border: none; overflow: hidden; height: fit-content;">
+                    <!-- Header del card -->
+                    <div class="devtools-card-header" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 1.5rem; margin: 0;">
+                        <div style="display: flex; justify-content: between; align-items: center;">
+                            <div>
+                                <h5 class="mb-0" style="font-weight: 600; display: flex; align-items: center; gap: 0.75rem;">
+                                    <span style="font-size: 1.2em;">�</span>
+                                    Test Results
+                                </h5>
+                                <p class="mb-0" style="opacity: 0.9; font-size: 0.875rem; margin-top: 0.25rem;">Output y análisis en tiempo real</p>
+                            </div>
                         </div>
                     </div>
-                    <div class="card-body p-0">
-                        <div id="devtools-testResults" class="p-3" style="min-height: 400px; max-height: 600px; overflow-y: auto;">
-                            <div class="text-center text-muted py-5">
-                                <i class="dashicons dashicons-admin-tools" style="font-size: 48px; opacity: 0.3;"></i>
-                                <p class="mt-2 mb-0">No tests executed yet...</p>
-                                <small>Selecciona los tipos de test y presiona "Run Selected Tests"</small>
+                    
+                    <!-- Contenido de resultados -->
+                    <div class="devtools-card-body" style="padding: 0;">
+                        <div id="devtools-testResults" class="devtools-results" style="min-height: 500px; max-height: 700px; overflow-y: auto; padding: 2rem; background: #f8fafc;">
+                            <div class="devtools-empty-state" style="text-align: center; padding: 3rem 2rem; color: #64748b;">
+                                <div style="font-size: 4rem; opacity: 0.3; margin-bottom: 1rem;">🔧</div>
+                                <h6 style="font-weight: 600; color: #475569; margin-bottom: 0.5rem;">No tests executed yet</h6>
+                                <p style="margin: 0; font-size: 0.875rem;">Selecciona los tipos de test y presiona "Run Selected Tests" para comenzar</p>
                             </div>
                         </div>
                     </div>
@@ -345,11 +362,53 @@ class DevToolsAdminPanel {
             </div>
         </div>
         
+        <!-- Estilos CSS modernos embebidos -->
+        <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .devtools-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .devtools-btn-outline:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+            color: #475569;
+        }
+        
+        .devtools-checkbox input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            border-radius: 4px;
+        }
+        
+        .devtools-results::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .devtools-results::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        
+        .devtools-results::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        
+        .devtools-results::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        </style>
+        
         <!-- JavaScript específico para tests -->
         <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Inicialización directa del TestRunner (sin tabs)
-            console.log('🔧 Inicializando Test Runner simplificado...');
+            // Inicialización directa del TestRunner moderno
+            console.log('🔧 Inicializando Test Runner moderno...');
             
             // Event listeners específicos para cada botón
             const runTestsBtn = document.getElementById('devtools-runTests');
