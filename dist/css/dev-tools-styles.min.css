@@ -12189,43 +12189,86 @@ textarea.form-control-lg {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
 }
 
-.modern-alert {
-  display: flex;
+.devtools-modern-wrap .modern-alert,
+#devtools-testResults .modern-alert,
+.dev-tools-container .modern-alert {
+  display: flex !important;
   align-items: flex-start;
   gap: 12px;
-  padding: 16px;
-  margin-bottom: 16px;
-  border-radius: 8px;
-  border: 1px solid transparent;
-  font-size: 14px;
+  padding: 16px !important;
+  margin-bottom: 16px !important;
+  border-radius: 8px !important;
+  border: 1px solid transparent !important;
+  font-size: 14px !important;
+  background: none !important;
 }
-.modern-alert .modern-alert-icon {
+.devtools-modern-wrap .modern-alert .modern-alert-icon,
+#devtools-testResults .modern-alert .modern-alert-icon,
+.dev-tools-container .modern-alert .modern-alert-icon {
   font-size: 18px;
   line-height: 1;
   flex-shrink: 0;
 }
-.modern-alert .modern-alert-content {
+.devtools-modern-wrap .modern-alert .modern-alert-content,
+#devtools-testResults .modern-alert .modern-alert-content,
+.dev-tools-container .modern-alert .modern-alert-content {
   flex: 1;
   min-width: 0;
 }
-.modern-alert .modern-alert-title {
-  font-weight: 600;
-  margin-bottom: 4px;
+.devtools-modern-wrap .modern-alert .modern-alert-title,
+#devtools-testResults .modern-alert .modern-alert-title,
+.dev-tools-container .modern-alert .modern-alert-title {
+  font-weight: 600 !important;
+  margin-bottom: 4px !important;
+  margin: 0 !important;
 }
-.modern-alert.modern-alert-success {
-  background-color: #f0f9f4;
-  border-color: #bbf7d0;
-  color: #166534;
+.devtools-modern-wrap .modern-alert.modern-alert-success,
+#devtools-testResults .modern-alert.modern-alert-success,
+.dev-tools-container .modern-alert.modern-alert-success {
+  background-color: #f0f9f4 !important;
+  border-color: #bbf7d0 !important;
+  color: #166534 !important;
 }
-.modern-alert.modern-alert-error {
-  background-color: #fef2f2;
-  border-color: #fecaca;
-  color: #dc2626;
+.devtools-modern-wrap .modern-alert.modern-alert-error,
+#devtools-testResults .modern-alert.modern-alert-error,
+.dev-tools-container .modern-alert.modern-alert-error {
+  background-color: #fef2f2 !important;
+  border-color: #fecaca !important;
+  color: #dc2626 !important;
 }
-.modern-alert.modern-alert-info {
-  background-color: #f0f9ff;
-  border-color: #bae6fd;
-  color: #1d4ed8;
+.devtools-modern-wrap .modern-alert.modern-alert-info,
+#devtools-testResults .modern-alert.modern-alert-info,
+.dev-tools-container .modern-alert.modern-alert-info {
+  background-color: #f0f9ff !important;
+  border-color: #bae6fd !important;
+  color: #1d4ed8 !important;
+}
+
+.devtools-modern-wrap .alert:has(+ .modern-alert), .devtools-modern-wrap .alert.modern-alert,
+#devtools-testResults .alert:has(+ .modern-alert),
+#devtools-testResults .alert.modern-alert,
+.dev-tools-container .alert:has(+ .modern-alert),
+.dev-tools-container .alert.modern-alert {
+  display: none;
+}
+
+.devtools-modern-wrap .modern-alert,
+#devtools-testResults .modern-alert,
+.dev-tools-container .modern-alert {
+  display: flex !important;
+}
+
+.dev-tools-container .alert-success.modern-alert-success, .dev-tools-container .alert-success.modern-alert-error, .dev-tools-container .alert-success.modern-alert-info,
+.dev-tools-container .alert-danger.modern-alert-success,
+.dev-tools-container .alert-danger.modern-alert-error,
+.dev-tools-container .alert-danger.modern-alert-info,
+.dev-tools-container .alert-info.modern-alert-success,
+.dev-tools-container .alert-info.modern-alert-error,
+.dev-tools-container .alert-info.modern-alert-info,
+.dev-tools-container .alert-warning.modern-alert-success,
+.dev-tools-container .alert-warning.modern-alert-error,
+.dev-tools-container .alert-warning.modern-alert-info {
+  display: none !important;
 }
 
 .modern-card {
@@ -12251,87 +12294,138 @@ textarea.form-control-lg {
   padding: 16px;
 }
 
-.modern-info-grid {
-  display: -ms-grid;
-  display: grid;
-  gap: 12px;
+.devtools-modern-wrap .modern-info-grid,
+#devtools-testResults .modern-info-grid,
+.dev-tools-container .modern-info-grid {
+  display: -ms-grid !important;
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
+  gap: 16px 24px !important;
+  margin: 16px 0 !important;
 }
-.modern-info-grid .modern-info-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  min-height: 20px;
+@media (min-width: 768px) {
+  .devtools-modern-wrap .modern-info-grid,
+  #devtools-testResults .modern-info-grid,
+  .dev-tools-container .modern-info-grid {
+    -ms-grid-columns: (1fr)[2] !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
 }
-.modern-info-grid .modern-info-label {
-  font-weight: 500;
-  color: #6b7280;
-  min-width: 120px;
-  flex-shrink: 0;
-  font-size: 13px;
+@media (min-width: 1200px) {
+  .devtools-modern-wrap .modern-info-grid,
+  #devtools-testResults .modern-info-grid,
+  .dev-tools-container .modern-info-grid {
+    -ms-grid-columns: (1fr)[3] !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
 }
-.modern-info-grid .modern-info-value {
-  flex: 1;
-  color: #374151;
-  font-size: 13px;
+.devtools-modern-wrap .modern-info-grid .modern-info-item,
+#devtools-testResults .modern-info-grid .modern-info-item,
+.dev-tools-container .modern-info-grid .modern-info-item {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+  padding: 12px !important;
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  min-height: auto !important;
+}
+.devtools-modern-wrap .modern-info-grid .modern-info-label,
+#devtools-testResults .modern-info-grid .modern-info-label,
+.dev-tools-container .modern-info-grid .modern-info-label {
+  font-weight: 600 !important;
+  color: #64748b !important;
+  font-size: 12px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  margin-bottom: 2px !important;
+  min-width: auto !important;
+  flex-shrink: 1 !important;
+}
+.devtools-modern-wrap .modern-info-grid .modern-info-value,
+#devtools-testResults .modern-info-grid .modern-info-value,
+.dev-tools-container .modern-info-grid .modern-info-value {
+  font-weight: 500 !important;
+  color: #1e293b !important;
+  font-size: 14px !important;
   word-break: break-word;
+  flex: none !important;
 }
-.modern-info-grid .modern-info-extra {
-  color: #9ca3af;
+.devtools-modern-wrap .modern-info-grid .modern-info-extra,
+#devtools-testResults .modern-info-grid .modern-info-extra,
+.dev-tools-container .modern-info-grid .modern-info-extra {
+  color: #9ca3af !important;
   font-style: italic;
+  font-size: 11px !important;
 }
 
-.modern-code {
-  background-color: #f3f4f6;
-  color: #1f2937;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-  font-size: 12px;
-  border: 1px solid #e5e7eb;
+.devtools-modern-wrap .modern-code,
+#devtools-testResults .modern-code,
+.dev-tools-container .modern-code {
+  background-color: #f3f4f6 !important;
+  color: #1f2937 !important;
+  padding: 2px 6px !important;
+  border-radius: 4px !important;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace !important;
+  font-size: 12px !important;
+  border: 1px solid #e5e7eb !important;
 }
 
-.modern-code-block {
-  background-color: #f8fafc;
-  color: #1e293b;
-  padding: 16px;
-  border-radius: 6px;
-  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-  font-size: 13px;
-  line-height: 1.5;
-  border: 1px solid #e2e8f0;
-  overflow-x: auto;
-  margin: 8px 0;
+.devtools-modern-wrap .modern-code-block,
+#devtools-testResults .modern-code-block,
+.dev-tools-container .modern-code-block {
+  background-color: #f8fafc !important;
+  color: #1e293b !important;
+  padding: 16px !important;
+  border-radius: 6px !important;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace !important;
+  font-size: 13px !important;
+  line-height: 1.5 !important;
+  border: 1px solid #e2e8f0 !important;
+  overflow-x: auto !important;
+  margin: 8px 0 !important;
 }
-.modern-code-block.modern-code-block-light {
-  background-color: #f8fafc;
-  color: #475569;
-  border-color: #e2e8f0;
+.devtools-modern-wrap .modern-code-block.modern-code-block-light,
+#devtools-testResults .modern-code-block.modern-code-block-light,
+.dev-tools-container .modern-code-block.modern-code-block-light {
+  background-color: #f8fafc !important;
+  color: #475569 !important;
+  border-color: #e2e8f0 !important;
 }
-.modern-code-block.modern-code-block-dark {
-  background-color: #1e293b;
-  color: #e2e8f0;
-  border-color: #334155;
-  max-height: 400px;
-  overflow-y: auto;
+.devtools-modern-wrap .modern-code-block.modern-code-block-dark,
+#devtools-testResults .modern-code-block.modern-code-block-dark,
+.dev-tools-container .modern-code-block.modern-code-block-dark {
+  background-color: #1e293b !important;
+  color: #e2e8f0 !important;
+  border-color: #334155 !important;
+  max-height: 400px !important;
+  overflow-y: auto !important;
 }
-.modern-code-block code {
-  background: none;
-  padding: 0;
-  color: inherit;
-  font-size: inherit;
-  border: none;
+.devtools-modern-wrap .modern-code-block code,
+#devtools-testResults .modern-code-block code,
+.dev-tools-container .modern-code-block code {
+  background: none !important;
+  padding: 0 !important;
+  color: inherit !important;
+  font-size: inherit !important;
+  border: none !important;
 }
 
-.modern-section {
-  margin-bottom: 20px;
+.devtools-modern-wrap .modern-section,
+#devtools-testResults .modern-section,
+.dev-tools-container .modern-section {
+  margin-bottom: 20px !important;
 }
-.modern-section .modern-section-title {
-  font-weight: 600;
-  color: #374151;
-  margin-bottom: 8px;
-  font-size: 14px;
-  border-bottom: 1px solid #e5e7eb;
-  padding-bottom: 4px;
+.devtools-modern-wrap .modern-section .modern-section-title,
+#devtools-testResults .modern-section .modern-section-title,
+.dev-tools-container .modern-section .modern-section-title {
+  font-weight: 600 !important;
+  color: #374151 !important;
+  margin-bottom: 8px !important;
+  font-size: 14px !important;
+  border-bottom: 1px solid #e5e7eb !important;
+  padding-bottom: 4px !important;
 }
 
 .modern-method-list {
@@ -12436,6 +12530,218 @@ textarea.form-control-lg {
   .modern-text {
     color: #e5e7eb;
   }
+}
+.devtools-modern-wrap .modern-info-item.success, .devtools-modern-wrap .modern-info-item:has(.text-success), .devtools-modern-wrap .modern-info-item[data-type=success],
+#devtools-testResults .modern-info-item.success,
+#devtools-testResults .modern-info-item:has(.text-success),
+#devtools-testResults .modern-info-item[data-type=success],
+.dev-tools-container .modern-info-item.success,
+.dev-tools-container .modern-info-item:has(.text-success),
+.dev-tools-container .modern-info-item[data-type=success] {
+  background: #f0fdf4 !important;
+  border-color: #bbf7d0 !important;
+}
+.devtools-modern-wrap .modern-info-item.success .modern-info-label, .devtools-modern-wrap .modern-info-item:has(.text-success) .modern-info-label, .devtools-modern-wrap .modern-info-item[data-type=success] .modern-info-label,
+#devtools-testResults .modern-info-item.success .modern-info-label,
+#devtools-testResults .modern-info-item:has(.text-success) .modern-info-label,
+#devtools-testResults .modern-info-item[data-type=success] .modern-info-label,
+.dev-tools-container .modern-info-item.success .modern-info-label,
+.dev-tools-container .modern-info-item:has(.text-success) .modern-info-label,
+.dev-tools-container .modern-info-item[data-type=success] .modern-info-label {
+  color: #166534 !important;
+}
+.devtools-modern-wrap .modern-info-item.success .modern-info-value, .devtools-modern-wrap .modern-info-item:has(.text-success) .modern-info-value, .devtools-modern-wrap .modern-info-item[data-type=success] .modern-info-value,
+#devtools-testResults .modern-info-item.success .modern-info-value,
+#devtools-testResults .modern-info-item:has(.text-success) .modern-info-value,
+#devtools-testResults .modern-info-item[data-type=success] .modern-info-value,
+.dev-tools-container .modern-info-item.success .modern-info-value,
+.dev-tools-container .modern-info-item:has(.text-success) .modern-info-value,
+.dev-tools-container .modern-info-item[data-type=success] .modern-info-value {
+  color: #15803d !important;
+  font-weight: 600 !important;
+}
+.devtools-modern-wrap .modern-info-item.error, .devtools-modern-wrap .modern-info-item:has(.text-danger), .devtools-modern-wrap .modern-info-item[data-type=error],
+#devtools-testResults .modern-info-item.error,
+#devtools-testResults .modern-info-item:has(.text-danger),
+#devtools-testResults .modern-info-item[data-type=error],
+.dev-tools-container .modern-info-item.error,
+.dev-tools-container .modern-info-item:has(.text-danger),
+.dev-tools-container .modern-info-item[data-type=error] {
+  background: #fef2f2 !important;
+  border-color: #fecaca !important;
+}
+.devtools-modern-wrap .modern-info-item.error .modern-info-label, .devtools-modern-wrap .modern-info-item:has(.text-danger) .modern-info-label, .devtools-modern-wrap .modern-info-item[data-type=error] .modern-info-label,
+#devtools-testResults .modern-info-item.error .modern-info-label,
+#devtools-testResults .modern-info-item:has(.text-danger) .modern-info-label,
+#devtools-testResults .modern-info-item[data-type=error] .modern-info-label,
+.dev-tools-container .modern-info-item.error .modern-info-label,
+.dev-tools-container .modern-info-item:has(.text-danger) .modern-info-label,
+.dev-tools-container .modern-info-item[data-type=error] .modern-info-label {
+  color: #dc2626 !important;
+}
+.devtools-modern-wrap .modern-info-item.error .modern-info-value, .devtools-modern-wrap .modern-info-item:has(.text-danger) .modern-info-value, .devtools-modern-wrap .modern-info-item[data-type=error] .modern-info-value,
+#devtools-testResults .modern-info-item.error .modern-info-value,
+#devtools-testResults .modern-info-item:has(.text-danger) .modern-info-value,
+#devtools-testResults .modern-info-item[data-type=error] .modern-info-value,
+.dev-tools-container .modern-info-item.error .modern-info-value,
+.dev-tools-container .modern-info-item:has(.text-danger) .modern-info-value,
+.dev-tools-container .modern-info-item[data-type=error] .modern-info-value {
+  color: #dc2626 !important;
+  font-weight: 600 !important;
+}
+.devtools-modern-wrap .modern-info-item.warning, .devtools-modern-wrap .modern-info-item:has(.text-warning), .devtools-modern-wrap .modern-info-item[data-type=warning],
+#devtools-testResults .modern-info-item.warning,
+#devtools-testResults .modern-info-item:has(.text-warning),
+#devtools-testResults .modern-info-item[data-type=warning],
+.dev-tools-container .modern-info-item.warning,
+.dev-tools-container .modern-info-item:has(.text-warning),
+.dev-tools-container .modern-info-item[data-type=warning] {
+  background: #fffbeb !important;
+  border-color: #fed7aa !important;
+}
+.devtools-modern-wrap .modern-info-item.warning .modern-info-label, .devtools-modern-wrap .modern-info-item:has(.text-warning) .modern-info-label, .devtools-modern-wrap .modern-info-item[data-type=warning] .modern-info-label,
+#devtools-testResults .modern-info-item.warning .modern-info-label,
+#devtools-testResults .modern-info-item:has(.text-warning) .modern-info-label,
+#devtools-testResults .modern-info-item[data-type=warning] .modern-info-label,
+.dev-tools-container .modern-info-item.warning .modern-info-label,
+.dev-tools-container .modern-info-item:has(.text-warning) .modern-info-label,
+.dev-tools-container .modern-info-item[data-type=warning] .modern-info-label {
+  color: #d97706 !important;
+}
+.devtools-modern-wrap .modern-info-item.warning .modern-info-value, .devtools-modern-wrap .modern-info-item:has(.text-warning) .modern-info-value, .devtools-modern-wrap .modern-info-item[data-type=warning] .modern-info-value,
+#devtools-testResults .modern-info-item.warning .modern-info-value,
+#devtools-testResults .modern-info-item:has(.text-warning) .modern-info-value,
+#devtools-testResults .modern-info-item[data-type=warning] .modern-info-value,
+.dev-tools-container .modern-info-item.warning .modern-info-value,
+.dev-tools-container .modern-info-item:has(.text-warning) .modern-info-value,
+.dev-tools-container .modern-info-item[data-type=warning] .modern-info-value {
+  color: #ea580c !important;
+  font-weight: 600 !important;
+}
+.devtools-modern-wrap .modern-info-item.info, .devtools-modern-wrap .modern-info-item:has(.text-info), .devtools-modern-wrap .modern-info-item[data-type=info],
+#devtools-testResults .modern-info-item.info,
+#devtools-testResults .modern-info-item:has(.text-info),
+#devtools-testResults .modern-info-item[data-type=info],
+.dev-tools-container .modern-info-item.info,
+.dev-tools-container .modern-info-item:has(.text-info),
+.dev-tools-container .modern-info-item[data-type=info] {
+  background: #eff6ff !important;
+  border-color: #bfdbfe !important;
+}
+.devtools-modern-wrap .modern-info-item.info .modern-info-label, .devtools-modern-wrap .modern-info-item:has(.text-info) .modern-info-label, .devtools-modern-wrap .modern-info-item[data-type=info] .modern-info-label,
+#devtools-testResults .modern-info-item.info .modern-info-label,
+#devtools-testResults .modern-info-item:has(.text-info) .modern-info-label,
+#devtools-testResults .modern-info-item[data-type=info] .modern-info-label,
+.dev-tools-container .modern-info-item.info .modern-info-label,
+.dev-tools-container .modern-info-item:has(.text-info) .modern-info-label,
+.dev-tools-container .modern-info-item[data-type=info] .modern-info-label {
+  color: #1d4ed8 !important;
+}
+.devtools-modern-wrap .modern-info-item.info .modern-info-value, .devtools-modern-wrap .modern-info-item:has(.text-info) .modern-info-value, .devtools-modern-wrap .modern-info-item[data-type=info] .modern-info-value,
+#devtools-testResults .modern-info-item.info .modern-info-value,
+#devtools-testResults .modern-info-item:has(.text-info) .modern-info-value,
+#devtools-testResults .modern-info-item[data-type=info] .modern-info-value,
+.dev-tools-container .modern-info-item.info .modern-info-value,
+.dev-tools-container .modern-info-item:has(.text-info) .modern-info-value,
+.dev-tools-container .modern-info-item[data-type=info] .modern-info-value {
+  color: #2563eb !important;
+  font-weight: 500 !important;
+}
+.devtools-modern-wrap .modern-info-item.muted, .devtools-modern-wrap .modern-info-item:has(.text-muted), .devtools-modern-wrap .modern-info-item[data-type=muted],
+#devtools-testResults .modern-info-item.muted,
+#devtools-testResults .modern-info-item:has(.text-muted),
+#devtools-testResults .modern-info-item[data-type=muted],
+.dev-tools-container .modern-info-item.muted,
+.dev-tools-container .modern-info-item:has(.text-muted),
+.dev-tools-container .modern-info-item[data-type=muted] {
+  background: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+  opacity: 0.8;
+}
+.devtools-modern-wrap .modern-info-item.muted .modern-info-label, .devtools-modern-wrap .modern-info-item:has(.text-muted) .modern-info-label, .devtools-modern-wrap .modern-info-item[data-type=muted] .modern-info-label,
+#devtools-testResults .modern-info-item.muted .modern-info-label,
+#devtools-testResults .modern-info-item:has(.text-muted) .modern-info-label,
+#devtools-testResults .modern-info-item[data-type=muted] .modern-info-label,
+.dev-tools-container .modern-info-item.muted .modern-info-label,
+.dev-tools-container .modern-info-item:has(.text-muted) .modern-info-label,
+.dev-tools-container .modern-info-item[data-type=muted] .modern-info-label {
+  color: #64748b !important;
+}
+.devtools-modern-wrap .modern-info-item.muted .modern-info-value, .devtools-modern-wrap .modern-info-item:has(.text-muted) .modern-info-value, .devtools-modern-wrap .modern-info-item[data-type=muted] .modern-info-value,
+#devtools-testResults .modern-info-item.muted .modern-info-value,
+#devtools-testResults .modern-info-item:has(.text-muted) .modern-info-value,
+#devtools-testResults .modern-info-item[data-type=muted] .modern-info-value,
+.dev-tools-container .modern-info-item.muted .modern-info-value,
+.dev-tools-container .modern-info-item:has(.text-muted) .modern-info-value,
+.dev-tools-container .modern-info-item[data-type=muted] .modern-info-value {
+  color: #64748b !important;
+}
+.devtools-modern-wrap .modern-info-item.total, .devtools-modern-wrap .modern-info-item[data-type=total],
+#devtools-testResults .modern-info-item.total,
+#devtools-testResults .modern-info-item[data-type=total],
+.dev-tools-container .modern-info-item.total,
+.dev-tools-container .modern-info-item[data-type=total] {
+  background: #faf5ff !important;
+  border-color: #e9d5ff !important;
+}
+.devtools-modern-wrap .modern-info-item.total .modern-info-label, .devtools-modern-wrap .modern-info-item[data-type=total] .modern-info-label,
+#devtools-testResults .modern-info-item.total .modern-info-label,
+#devtools-testResults .modern-info-item[data-type=total] .modern-info-label,
+.dev-tools-container .modern-info-item.total .modern-info-label,
+.dev-tools-container .modern-info-item[data-type=total] .modern-info-label {
+  color: #7c3aed !important;
+}
+.devtools-modern-wrap .modern-info-item.total .modern-info-value, .devtools-modern-wrap .modern-info-item[data-type=total] .modern-info-value,
+#devtools-testResults .modern-info-item.total .modern-info-value,
+#devtools-testResults .modern-info-item[data-type=total] .modern-info-value,
+.dev-tools-container .modern-info-item.total .modern-info-value,
+.dev-tools-container .modern-info-item[data-type=total] .modern-info-value {
+  color: #7c3aed !important;
+  font-weight: 700 !important;
+  font-size: 16px !important;
+}
+
+#wpfooter {
+  display: none !important;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+.devtools-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.devtools-btn-outline:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #475569;
+}
+
+.devtools-checkbox input[type=checkbox] {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+}
+
+.devtools-results::-webkit-scrollbar {
+  width: 8px;
+}
+.devtools-results::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+.devtools-results::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.devtools-results::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 /*# sourceMappingURL=dev-tools-styles.min.css.map*/

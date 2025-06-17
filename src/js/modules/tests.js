@@ -189,9 +189,14 @@ class TestsModule {
         // Errors
         if (errors && errors.length > 0) {
             html += '<div class="test-errors mt-3">';
-            html += '<h6 class="text-danger">Errors</h6>';
+            html += '<div class="modern-section-title text-danger">Errors</div>';
             errors.forEach(error => {
-                html += `<div class="alert alert-danger">${error}</div>`;
+                html += `<div class="modern-alert modern-alert-error">
+                    <div class="modern-alert-icon">❌</div>
+                    <div class="modern-alert-content">
+                        <div class="modern-alert-title">${error}</div>
+                    </div>
+                </div>`;
             });
             html += '</div>';
         }
@@ -231,10 +236,12 @@ class TestsModule {
         const container = document.getElementById('testResults');
         if (container) {
             container.innerHTML = `
-                <div class="alert alert-danger">
-                    <strong>Error:</strong> ${message}
-                </div>
-            `;
+                <div class="modern-alert modern-alert-error">
+                    <div class="modern-alert-icon">❌</div>
+                    <div class="modern-alert-content">
+                        <div class="modern-alert-title">Error: ${message}</div>
+                    </div>
+                </div>`;
         }
     }
 }

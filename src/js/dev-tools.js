@@ -363,7 +363,12 @@ class DevTools {
             const result = await this.makeAjaxRequest('system_info', {}, { useCache: true });
             container.innerHTML = result.formatted || this.formatSystemInfo(result);
         } catch (error) {
-            container.innerHTML = `<div class="alert alert-danger">Error loading system info: ${error.message}</div>`;
+            container.innerHTML = `<div class="modern-alert modern-alert-error">
+                <div class="modern-alert-icon">❌</div>
+                <div class="modern-alert-content">
+                    <div class="modern-alert-title">Error loading system info: ${error.message}</div>
+                </div>
+            </div>`;
         }
     }
     

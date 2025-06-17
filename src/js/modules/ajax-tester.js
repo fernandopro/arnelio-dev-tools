@@ -153,8 +153,11 @@ class AjaxTesterModule {
         const resultContainer = document.getElementById('ajaxResult');
         if (resultContainer) {
             resultContainer.innerHTML = `
-                <div class="alert alert-danger">
-                    <strong>Error:</strong> ${message}
+                <div class="modern-alert modern-alert-error">
+                    <div class="modern-alert-icon">❌</div>
+                    <div class="modern-alert-content">
+                        <div class="modern-alert-title">Error: ${message}</div>
+                    </div>
                 </div>
             `;
         }

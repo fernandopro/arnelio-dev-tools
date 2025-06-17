@@ -372,13 +372,13 @@ class DevToolsAjaxHandler {
             $html .= '</div>';
             
             $html .= '<div class="modern-info-grid">';
-            $html .= '<div class="modern-info-item">';
-            $html .= '<span class="modern-info-label">DSN:</span>';
+            $html .= '<div class="modern-info-item info" data-type="info">';
+            $html .= '<div class="modern-info-label">DSN</div>';
             $html .= '<code class="modern-code">' . esc_html($result['dsn_used']) . '</code>';
             $html .= '</div>';
-            $html .= '<div class="modern-info-item">';
-            $html .= '<span class="modern-info-label">Server Info:</span>';
-            $html .= '<span class="modern-info-value">' . esc_html($result['server_info']) . '</span>';
+            $html .= '<div class="modern-info-item success" data-type="success">';
+            $html .= '<div class="modern-info-label">Server Info</div>';
+            $html .= '<div class="modern-info-value">' . esc_html($result['server_info']) . '</div>';
             $html .= '</div>';
             $html .= '</div>';
             
@@ -397,12 +397,12 @@ class DevToolsAjaxHandler {
             $html .= '</div>';
             
             $html .= '<div class="modern-info-grid">';
-            $html .= '<div class="modern-info-item">';
-            $html .= '<span class="modern-info-label">Error:</span>';
-            $html .= '<span class="modern-info-value text-danger">' . esc_html($result['error']) . '</span>';
+            $html .= '<div class="modern-info-item error" data-type="error">';
+            $html .= '<div class="modern-info-label">Error</div>';
+            $html .= '<div class="modern-info-value text-danger">' . esc_html($result['error']) . '</div>';
             $html .= '</div>';
-            $html .= '<div class="modern-info-item">';
-            $html .= '<span class="modern-info-label">DSN intentado:</span>';
+            $html .= '<div class="modern-info-item warning" data-type="warning">';
+            $html .= '<div class="modern-info-label">DSN intentado</div>';
             $html .= '<code class="modern-code">' . esc_html($result['dsn_used']) . '</code>';
             $html .= '</div>';
             $html .= '</div>';
@@ -429,10 +429,10 @@ class DevToolsAjaxHandler {
                 $html .= '<div class="modern-info-grid">';
                 foreach ($data as $key => $value) {
                     $html .= '<div class="modern-info-item">';
-                    $html .= '<span class="modern-info-label">' . esc_html($key) . ':</span>';
+                    $html .= '<div class="modern-info-label">' . esc_html($key) . '</div>';
                     
                     if (is_array($value)) {
-                        $html .= '<span class="modern-info-value">' . esc_html(implode(', ', array_slice($value, 0, 5))) . '</span>';
+                        $html .= '<div class="modern-info-value">' . esc_html(implode(', ', array_slice($value, 0, 5))) . '</div>';
                         if (count($value) > 5) {
                             $html .= '<small class="modern-info-extra"> (y ' . (count($value) - 5) . ' más...)</small>';
                         }

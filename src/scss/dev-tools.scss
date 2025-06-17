@@ -380,16 +380,19 @@
   }
 }
 
-// Modern Alert Styles
-.modern-alert {
-  display: flex;
+// Modern Alert Styles - High Specificity
+.devtools-modern-wrap .modern-alert,
+#devtools-testResults .modern-alert,
+.dev-tools-container .modern-alert {
+  display: flex !important;
   align-items: flex-start;
   gap: 12px;
-  padding: 16px;
-  margin-bottom: 16px;
-  border-radius: 8px;
-  border: 1px solid transparent;
-  font-size: 14px;
+  padding: 16px !important;
+  margin-bottom: 16px !important;
+  border-radius: 8px !important;
+  border: 1px solid transparent !important;
+  font-size: 14px !important;
+  background: none !important; // Override Bootstrap alerts
   
   .modern-alert-icon {
     font-size: 18px;
@@ -403,26 +406,59 @@
   }
   
   .modern-alert-title {
-    font-weight: 600;
-    margin-bottom: 4px;
+    font-weight: 600 !important;
+    margin-bottom: 4px !important;
+    margin: 0 !important;
   }
   
   &.modern-alert-success {
-    background-color: #f0f9f4;
-    border-color: #bbf7d0;
-    color: #166534;
+    background-color: #f0f9f4 !important;
+    border-color: #bbf7d0 !important;
+    color: #166534 !important;
   }
   
   &.modern-alert-error {
-    background-color: #fef2f2;
-    border-color: #fecaca;
-    color: #dc2626;
+    background-color: #fef2f2 !important;
+    border-color: #fecaca !important;
+    color: #dc2626 !important;
   }
   
   &.modern-alert-info {
-    background-color: #f0f9ff;
-    border-color: #bae6fd;
-    color: #1d4ed8;
+    background-color: #f0f9ff !important;
+    border-color: #bae6fd !important;
+    color: #1d4ed8 !important;
+  }
+}
+
+// Override Bootstrap Alerts in Dev-Tools Context
+.devtools-modern-wrap .alert,
+#devtools-testResults .alert,
+.dev-tools-container .alert {
+  // Hide old Bootstrap alerts when modern alerts are present
+  &:has(+ .modern-alert),
+  &.modern-alert {
+    display: none;
+  }
+}
+
+// Force Modern Alert Display
+.devtools-modern-wrap .modern-alert,
+#devtools-testResults .modern-alert,
+.dev-tools-container .modern-alert {
+  display: flex !important;
+}
+
+// Override any remaining Bootstrap alert styles
+.dev-tools-container {
+  .alert-success,
+  .alert-danger,
+  .alert-info,
+  .alert-warning {
+    &.modern-alert-success,
+    &.modern-alert-error,
+    &.modern-alert-info {
+      display: none !important;
+    }
   }
 }
 
@@ -453,96 +489,123 @@
   }
 }
 
-// Modern Info Grid
-.modern-info-grid {
-  display: grid;
-  gap: 12px;
+// Modern Info Grid - High Specificity
+.devtools-modern-wrap .modern-info-grid,
+#devtools-testResults .modern-info-grid,
+.dev-tools-container .modern-info-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
+  gap: 16px 24px !important;
+  margin: 16px 0 !important;
+  
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  
+  @media (min-width: 1200px) {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
   
   .modern-info-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-    min-height: 20px;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+    padding: 12px !important;
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px !important;
+    min-height: auto !important;
   }
   
   .modern-info-label {
-    font-weight: 500;
-    color: #6b7280;
-    min-width: 120px;
-    flex-shrink: 0;
-    font-size: 13px;
+    font-weight: 600 !important;
+    color: #64748b !important;
+    font-size: 12px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    margin-bottom: 2px !important;
+    min-width: auto !important;
+    flex-shrink: 1 !important;
   }
   
   .modern-info-value {
-    flex: 1;
-    color: #374151;
-    font-size: 13px;
+    font-weight: 500 !important;
+    color: #1e293b !important;
+    font-size: 14px !important;
     word-break: break-word;
+    flex: none !important;
   }
   
   .modern-info-extra {
-    color: #9ca3af;
+    color: #9ca3af !important;
     font-style: italic;
+    font-size: 11px !important;
   }
 }
 
-// Modern Code Styles
-.modern-code {
-  background-color: #f3f4f6;
-  color: #1f2937;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-  font-size: 12px;
-  border: 1px solid #e5e7eb;
+// Modern Code Styles - High Specificity
+.devtools-modern-wrap .modern-code,
+#devtools-testResults .modern-code,
+.dev-tools-container .modern-code {
+  background-color: #f3f4f6 !important;
+  color: #1f2937 !important;
+  padding: 2px 6px !important;
+  border-radius: 4px !important;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace !important;
+  font-size: 12px !important;
+  border: 1px solid #e5e7eb !important;
 }
 
-.modern-code-block {
-  background-color: #f8fafc;
-  color: #1e293b;
-  padding: 16px;
-  border-radius: 6px;
-  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-  font-size: 13px;
-  line-height: 1.5;
-  border: 1px solid #e2e8f0;
-  overflow-x: auto;
-  margin: 8px 0;
+.devtools-modern-wrap .modern-code-block,
+#devtools-testResults .modern-code-block,
+.dev-tools-container .modern-code-block {
+  background-color: #f8fafc !important;
+  color: #1e293b !important;
+  padding: 16px !important;
+  border-radius: 6px !important;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace !important;
+  font-size: 13px !important;
+  line-height: 1.5 !important;
+  border: 1px solid #e2e8f0 !important;
+  overflow-x: auto !important;
+  margin: 8px 0 !important;
   
   &.modern-code-block-light {
-    background-color: #f8fafc;
-    color: #475569;
-    border-color: #e2e8f0;
+    background-color: #f8fafc !important;
+    color: #475569 !important;
+    border-color: #e2e8f0 !important;
   }
   
   &.modern-code-block-dark {
-    background-color: #1e293b;
-    color: #e2e8f0;
-    border-color: #334155;
-    max-height: 400px;
-    overflow-y: auto;
+    background-color: #1e293b !important;
+    color: #e2e8f0 !important;
+    border-color: #334155 !important;
+    max-height: 400px !important;
+    overflow-y: auto !important;
   }
   
   code {
-    background: none;
-    padding: 0;
-    color: inherit;
-    font-size: inherit;
-    border: none;
+    background: none !important;
+    padding: 0 !important;
+    color: inherit !important;
+    font-size: inherit !important;
+    border: none !important;
   }
 }
 
-// Modern Section Styles
-.modern-section {
-  margin-bottom: 20px;
+// Modern Section Styles - High Specificity
+.devtools-modern-wrap .modern-section,
+#devtools-testResults .modern-section,
+.dev-tools-container .modern-section {
+  margin-bottom: 20px !important;
   
   .modern-section-title {
-    font-weight: 600;
-    color: #374151;
-    margin-bottom: 8px;
-    font-size: 14px;
-    border-bottom: 1px solid #e5e7eb;
-    padding-bottom: 4px;
+    font-weight: 600 !important;
+    color: #374151 !important;
+    margin-bottom: 8px !important;
+    font-size: 14px !important;
+    border-bottom: 1px solid #e5e7eb !important;
+    padding-bottom: 4px !important;
   }
 }
 
@@ -668,5 +731,160 @@
   
   .modern-text {
     color: #e5e7eb;
+  }
+}
+
+// Modern Info Item Color Variants
+.devtools-modern-wrap .modern-info-item,
+#devtools-testResults .modern-info-item,
+.dev-tools-container .modern-info-item {
+  // Default style (already defined above)
+  
+  // Success variant (green) - for passed tests, successful operations
+  &.success,
+  &:has(.text-success),
+  &[data-type="success"] {
+    background: #f0fdf4 !important;
+    border-color: #bbf7d0 !important;
+    
+    .modern-info-label {
+      color: #166534 !important;
+    }
+    
+    .modern-info-value {
+      color: #15803d !important;
+      font-weight: 600 !important;
+    }
+  }
+  
+  // Error variant (red) - for failed tests, errors
+  &.error,
+  &:has(.text-danger),
+  &[data-type="error"] {
+    background: #fef2f2 !important;
+    border-color: #fecaca !important;
+    
+    .modern-info-label {
+      color: #dc2626 !important;
+    }
+    
+    .modern-info-value {
+      color: #dc2626 !important;
+      font-weight: 600 !important;
+    }
+  }
+  
+  // Warning variant (yellow) - for warnings, skipped tests
+  &.warning,
+  &:has(.text-warning),
+  &[data-type="warning"] {
+    background: #fffbeb !important;
+    border-color: #fed7aa !important;
+    
+    .modern-info-label {
+      color: #d97706 !important;
+    }
+    
+    .modern-info-value {
+      color: #ea580c !important;
+      font-weight: 600 !important;
+    }
+  }
+  
+  // Info variant (blue) - for general information
+  &.info,
+  &:has(.text-info),
+  &[data-type="info"] {
+    background: #eff6ff !important;
+    border-color: #bfdbfe !important;
+    
+    .modern-info-label {
+      color: #1d4ed8 !important;
+    }
+    
+    .modern-info-value {
+      color: #2563eb !important;
+      font-weight: 500 !important;
+    }
+  }
+  
+  // Muted variant (gray) - for less important info
+  &.muted,
+  &:has(.text-muted),
+  &[data-type="muted"] {
+    background: #f8fafc !important;
+    border-color: #e2e8f0 !important;
+    opacity: 0.8;
+    
+    .modern-info-label {
+      color: #64748b !important;
+    }
+    
+    .modern-info-value {
+      color: #64748b !important;
+    }
+  }
+  
+  // Total variant (purple) - for totals and important metrics
+  &.total,
+  &[data-type="total"] {
+    background: #faf5ff !important;
+    border-color: #e9d5ff !important;
+    
+    .modern-info-label {
+      color: #7c3aed !important;
+    }
+    
+    .modern-info-value {
+      color: #7c3aed !important;
+      font-weight: 700 !important;
+      font-size: 16px !important;
+    }
+  }
+}
+
+// Dev-Tools Inline Styles (movidos desde DevToolsAdminPanel.php)
+#wpfooter {
+  display: none !important;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.devtools-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.devtools-btn-outline:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #475569;
+}
+
+.devtools-checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+}
+
+.devtools-results {
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #f1f5f9;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+    
+    &:hover {
+      background: #94a3b8;
+    }
   }
 }

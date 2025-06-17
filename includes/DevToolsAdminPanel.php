@@ -555,51 +555,6 @@ class DevToolsAdminPanel {
             </div>
         </div>
         
-        <!-- Estilos CSS modernos embebidos -->
-        <style>
-            #wpfooter {
-                display: none !important;
-            }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .devtools-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-        }
-        
-        .devtools-btn-outline:hover {
-            background: #f1f5f9;
-            border-color: #cbd5e1;
-            color: #475569;
-        }
-        
-        .devtools-checkbox input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            border-radius: 4px;
-        }
-        
-        .devtools-results::-webkit-scrollbar {
-            width: 8px;
-        }
-        
-        .devtools-results::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        
-        .devtools-results::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-        
-        .devtools-results::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-        </style>
-        
         <!-- JavaScript específico para tests -->
         <script>
         document.addEventListener('DOMContentLoaded', function() {

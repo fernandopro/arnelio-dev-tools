@@ -239,48 +239,67 @@ class TestRunner {
         
         // Encabezado con información del comando
         if (results.command) {
-            html += `<div class="alert alert-info mb-3">
-                <strong>📝 Comando ejecutado:</strong><br>
-                <code class="small">${this.escapeHtml(results.command)}</code>
+            html += `<div class="modern-section">
+                <div class="modern-section-title">Comando ejecutado</div>
+                <pre class="modern-code-block modern-code-block-light"><code>${this.escapeHtml(results.command)}</code></pre>
             </div>`;
         }
         
         // Resumen de resultados
         if (results.summary) {
             const summary = results.summary;
-            const statusClass = summary.status === 'success' ? 'success' : 
-                               summary.status === 'error' ? 'danger' : 'warning';
-            const statusIcon = summary.status === 'success' ? '✅' : 
-                              summary.status === 'error' ? '❌' : '⚠️';
+            const isSuccess = summary.status === 'success';
+            const isError = summary.status === 'error';
+            const alertType = isSuccess ? 'success' : isError ? 'error' : 'info';
+            const statusIcon = isSuccess ? '✅' : isError ? '❌' : '⚠️';
             
-            html += `<div class="alert alert-${statusClass} mb-3">
-                <h6>${statusIcon} Resumen de Tests</h6>
-                <div class="row">
-                    <div class="col-md-6">
-                        <p class="mb-1"><strong>Total:</strong> ${summary.total_tests}</p>
-                        <p class="mb-1"><strong>Pasados:</strong> <span class="text-success">${summary.passed}</span></p>
-                        <p class="mb-1"><strong>Fallidos:</strong> <span class="text-danger">${summary.failed}</span></p>
-                    </div>
-                    <div class="col-md-6">
-                        <p class="mb-1"><strong>Errores:</strong> <span class="text-warning">${summary.errors}</span></p>
-                        <p class="mb-1"><strong>Omitidos:</strong> <span class="text-muted">${summary.skipped}</span></p>
-                        <p class="mb-1"><strong>Aserciones:</strong> ${summary.assertions}</p>
-                    </div>
+            html += `<div class="modern-alert modern-alert-${alertType}">
+                <div class="modern-alert-icon">${statusIcon}</div>
+                <div class="modern-alert-content">
+                    <div class="modern-alert-title">Resumen de Tests</div>
                 </div>
-                ${summary.time ? `<p class="mb-0"><strong>⏱️ Tiempo:</strong> ${summary.time}</p>` : ''}
-                ${summary.memory ? `<p class="mb-0"><strong>💾 Memoria:</strong> ${summary.memory}</p>` : ''}
+            </div>
+            <div class="modern-info-grid">
+                <div class="modern-info-item total" data-type="total">
+                    <div class="modern-info-label">Total</div>
+                    <div class="modern-info-value">${summary.total_tests}</div>
+                </div>
+                <div class="modern-info-item success" data-type="success">
+                    <div class="modern-info-label">Pasados</div>
+                    <div class="modern-info-value">${summary.passed}</div>
+                </div>
+                <div class="modern-info-item ${summary.failed > 0 ? 'error' : 'muted'}" data-type="${summary.failed > 0 ? 'error' : 'muted'}">
+                    <div class="modern-info-label">Fallidos</div>
+                    <div class="modern-info-value">${summary.failed}</div>
+                </div>
+                <div class="modern-info-item ${summary.errors > 0 ? 'warning' : 'muted'}" data-type="${summary.errors > 0 ? 'warning' : 'muted'}">
+                    <div class="modern-info-label">Errores</div>
+                    <div class="modern-info-value">${summary.errors}</div>
+                </div>
+                <div class="modern-info-item ${summary.skipped > 0 ? 'warning' : 'muted'}" data-type="${summary.skipped > 0 ? 'warning' : 'muted'}">
+                    <div class="modern-info-label">Omitidos</div>
+                    <div class="modern-info-value">${summary.skipped}</div>
+                </div>
+                <div class="modern-info-item info" data-type="info">
+                    <div class="modern-info-label">Aserciones</div>
+                    <div class="modern-info-value">${summary.assertions}</div>
+                </div>
+                ${summary.time ? `<div class="modern-info-item info" data-type="info">
+                    <div class="modern-info-label">Tiempo</div>
+                    <div class="modern-info-value">${summary.time}</div>
+                </div>` : ''}
+                ${summary.memory ? `<div class="modern-info-item info" data-type="info">
+                    <div class="modern-info-label">Memoria</div>
+                    <div class="modern-info-value">${summary.memory}</div>
+                </div>` : ''}
             </div>`;
         }
         
         // Output completo
         if (results.output) {
-            html += `<div class="card">
-                <div class="card-header">
-                    <h6 class="mb-0">🔍 Output Completo</h6>
-                </div>
-                <div class="card-body p-0">
-                    <pre class="bg-dark text-light p-3 m-0 rounded-bottom" style="font-size: 0.85rem;">${this.escapeHtml(results.output)}</pre>
-                </div>
+            html += `<div class="modern-section">
+                <div class="modern-section-title">🔍 Output Completo</div>
+                <pre class="modern-code-block modern-code-block-dark">${this.escapeHtml(results.output)}</pre>
             </div>`;
         }
         
@@ -307,14 +326,26 @@ class TestRunner {
         const testResultsDiv = document.getElementById('devtools-testResults');
         if (!testResultsDiv) return;
         
-        const alertClass = {
-            'info': 'alert-info',
-            'success': 'alert-success', 
-            'warning': 'alert-warning',
-            'error': 'alert-danger'
-        }[type] || 'alert-info';
+        const alertType = {
+            'info': 'info',
+            'success': 'success', 
+            'warning': 'info',
+            'error': 'error'
+        }[type] || 'info';
         
-        testResultsDiv.innerHTML = `<div class="alert ${alertClass} mb-0">${message}</div>`;
+        const alertIcon = {
+            'info': '🔧',
+            'success': '✅', 
+            'warning': '⚠️',
+            'error': '❌'
+        }[type] || '🔧';
+        
+        testResultsDiv.innerHTML = `<div class="modern-alert modern-alert-${alertType}">
+            <div class="modern-alert-icon">${alertIcon}</div>
+            <div class="modern-alert-content">
+                <div class="modern-alert-title">${message}</div>
+            </div>
+        </div>`;
     }
 
     /**
