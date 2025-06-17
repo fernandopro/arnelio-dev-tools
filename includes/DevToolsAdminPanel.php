@@ -457,12 +457,6 @@ class DevToolsAdminPanel {
     }
     
     /**
-    // =============================================================
-    //               FUNCIONES DE TEST RUNNER 
-    //               (Extraídas del TestRunnerModule)
-    // =============================================================
-
-    /**
      * Construir comando PHPUnit
      */
     private function build_phpunit_command($test_types, $verbose = false, $coverage = false, $testdox = false) {
