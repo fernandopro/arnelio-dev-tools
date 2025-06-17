@@ -248,18 +248,8 @@ class TestRunner {
         // Resumen de resultados
         if (results.summary) {
             const summary = results.summary;
-            const isSuccess = summary.status === 'success';
-            const isError = summary.status === 'error';
-            const alertType = isSuccess ? 'success' : isError ? 'error' : 'info';
-            const statusIcon = isSuccess ? '✅' : isError ? '❌' : '⚠️';
             
-            html += `<div class="modern-alert modern-alert-${alertType}">
-                <div class="modern-alert-icon">${statusIcon}</div>
-                <div class="modern-alert-content">
-                    <div class="modern-alert-title">Resumen de Tests</div>
-                </div>
-            </div>
-            <div class="modern-info-grid">
+            html += `<div class="modern-info-grid">
                 <div class="modern-info-item total" data-type="total">
                     <div class="modern-info-label">Total</div>
                     <div class="modern-info-value">${summary.total_tests}</div>
@@ -298,7 +288,6 @@ class TestRunner {
         // Output completo
         if (results.output) {
             html += `<div class="modern-section">
-                <div class="modern-section-title">🔍 Output Completo</div>
                 <pre class="modern-code-block modern-code-block-dark">${this.escapeHtml(results.output)}</pre>
             </div>`;
         }

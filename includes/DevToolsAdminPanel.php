@@ -543,7 +543,7 @@ class DevToolsAdminPanel {
                     
                     <!-- Contenido de resultados -->
                     <div class="devtools-card-body" style="padding: 0;">
-                        <div id="devtools-testResults" class="devtools-results" style="min-height: 400px; max-height: 600px; overflow-y: auto; padding: 2rem; background: #f8fafc;">
+                        <div id="devtools-testResults" class="devtools-results" style="min-height: auto; padding: 2rem; background: #f8fafc;">
                             <div class="devtools-empty-state" style="text-align: center; padding: 3rem 2rem; color: #64748b;">
                                 <div style="font-size: 4rem; opacity: 0.3; margin-bottom: 1rem;">🔧</div>
                                 <h6 style="font-weight: 600; color: #475569; margin-bottom: 0.5rem;">No tests executed yet</h6>

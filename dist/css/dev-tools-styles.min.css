@@ -12399,8 +12399,6 @@ textarea.form-control-lg {
   background-color: #1e293b !important;
   color: #e2e8f0 !important;
   border-color: #334155 !important;
-  max-height: 400px !important;
-  overflow-y: auto !important;
 }
 .devtools-modern-wrap .modern-code-block code,
 #devtools-testResults .modern-code-block code,
