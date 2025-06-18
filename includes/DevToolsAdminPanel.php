@@ -685,6 +685,12 @@ class DevToolsAdminPanel {
         </div>
         
         <!-- JavaScript específico para tests -->
+        <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        </style>
         <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Inicialización directa del TestRunner moderno
@@ -969,6 +975,7 @@ class DevToolsAdminPanel {
                 })
                 .then(response => response.json())
                 .then(data => {
+                    console.log('✅ Tests cargados exitosamente:', data);
                     if (data.success) {
                         renderTestsTable(data.data.tests, data.data.total_count);
                     } else {
@@ -976,7 +983,7 @@ class DevToolsAdminPanel {
                     }
                 })
                 .catch(error => {
-                    console.error('Error loading tests:', error);
+                    console.error('❌ Error loading tests:', error);
                     showTestsError('Error de conectividad al cargar tests');
                 });
             }
@@ -1111,7 +1118,29 @@ class DevToolsAdminPanel {
                 refreshTestsBtn.addEventListener('click', function(e) {
                     e.preventDefault();
                     console.log('🔄 Actualizando lista de tests...');
+                    
+                    // Agregar feedback visual al botón
+                    const originalContent = refreshTestsBtn.innerHTML;
+                    const originalStyle = refreshTestsBtn.style.cssText;
+                    
+                    // Mostrar estado de carga en el botón
+                    refreshTestsBtn.innerHTML = '<span style="font-size: 0.875rem;">🔄</span> Actualizando...';
+                    refreshTestsBtn.style.background = 'rgba(255,255,255,0.3)';
+                    refreshTestsBtn.style.opacity = '0.7';
+                    refreshTestsBtn.disabled = true;
+                    
+                    // Función para restaurar el botón
+                    const restoreButton = () => {
+                        setTimeout(() => {
+                            refreshTestsBtn.innerHTML = originalContent;
+                            refreshTestsBtn.style.cssText = originalStyle;
+                            refreshTestsBtn.disabled = false;
+                        }, 500); // Pequeño delay para que se vea el cambio
+                    };
+                    
+                    // Llamar a la función de carga y restaurar el botón cuando termine
                     loadTestsList();
+                    restoreButton();
                 });
             }
             
@@ -1119,6 +1148,28 @@ class DevToolsAdminPanel {
             setTimeout(() => {
                 loadTestsList();
             }, 1000);
+            
+            // Debug helper - función global para probar la actualización manualmente
+            window.debugRefreshTests = function() {
+                console.log('🔧 DEBUG: Forzando actualización de tests...');
+                const btn = document.getElementById('devtools-refreshTests');
+                if (btn) {
+                    console.log('✅ Botón encontrado, simulando click...');
+                    btn.click();
+                } else {
+                    console.error('❌ Botón no encontrado');
+                }
+            };
+            
+            // Verificar que el botón existe
+            setTimeout(() => {
+                const refreshBtn = document.getElementById('devtools-refreshTests');
+                if (refreshBtn) {
+                    console.log('✅ Botón de actualizar tests encontrado correctamente');
+                } else {
+                    console.warn('⚠️ Botón de actualizar tests NO encontrado');
+                }
+            }, 2000);
         });
         </script>
         <?php
