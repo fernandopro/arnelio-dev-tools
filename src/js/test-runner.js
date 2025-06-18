@@ -238,71 +238,134 @@ class TestRunner {
             </div>`;
         }
         
-        // Resumen de resultados
+        // Resumen de resultados con header unificado
         if (results.summary) {
             const summary = results.summary;
             
-            html += `<div class="modern-info-grid-container">
-                <!-- Grid 1: Métricas principales (izquierda) -->
-                <div class="modern-info-grid modern-info-grid-metrics">
-                    <div class="metric-card">
-                        <div class="metric-value">${summary.total_tests}</div>
-                        <div class="metric-label">Total</div>
+            // Determinar el color del estado basado en resultados
+            let statusColor = '#10b981'; // Verde por defecto (éxito)
+            let statusIcon = '✅';
+            let statusText = 'Éxito';
+            
+            if (summary.failed > 0 || summary.errors > 0) {
+                statusColor = '#ef4444'; // Rojo para fallos/errores
+                statusIcon = '❌';
+                statusText = 'Error';
+            } else if (summary.skipped > 0 || summary.incomplete > 0 || summary.risky > 0) {
+                statusColor = '#f59e0b'; // Amarillo para advertencias
+                statusIcon = '⚠️';
+                statusText = 'Advertencia';
+            }
+            
+            html += `<div style="background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 25px rgba(0,0,0,0.1);">
+                <!-- Header con información unificada -->
+                <div style="background: linear-gradient(135deg, ${statusColor} 0%, ${statusColor}dd 100%); color: white; padding: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <div>
+                            <h6 style="margin: 0; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+                                ${statusIcon} All Tests
+                            </h6>
+                        </div>
+                        <div style="text-align: right;">
+                            <span style="background: rgba(255,255,255,0.2); padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 500;">
+                                ${statusText}
+                            </span>
+                        </div>
                     </div>
-                    <div class="metric-card">
-                        <div class="metric-value metric-success">${summary.passed}</div>
-                        <div class="metric-label">Pasados</div>
-                    </div>
-                    <div class="metric-card">
-                        <div class="metric-value ${summary.failed > 0 ? 'metric-error' : ''}">${summary.failed}</div>
-                        <div class="metric-label">Fallidos</div>
-                    </div>
-                    <div class="metric-card">
-                        <div class="metric-value ${summary.errors > 0 ? 'metric-warning' : ''}">${summary.errors}</div>
-                        <div class="metric-label">Errores</div>
-                    </div>
-                    <div class="metric-card">
-                        <div class="metric-value metric-purple">${summary.assertions}</div>
-                        <div class="metric-label">Verificaciones</div>
-                    </div>
-                    ${summary.skipped > 0 ? `
+                    
+                    <!-- Estadísticas completas -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; font-size: 0.875rem;">
+                        <div class="metric-card">
+                            <div class="metric-value">${summary.total_tests}</div>
+                            <div class="metric-label">Tests</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value metric-success">${summary.passed}</div>
+                            <div class="metric-label">Pasados</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value metric-error">${summary.failed}</div>
+                            <div class="metric-label">Fallos</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value metric-warning">${summary.errors}</div>
+                            <div class="metric-label">Errores</div>
+                        </div>
                         <div class="metric-card">
                             <div class="metric-value metric-info">${summary.skipped}</div>
                             <div class="metric-label">Omitidos</div>
                         </div>
-                    ` : ''}
-                    ${(summary.incomplete || 0) > 0 ? `
+                        <div class="metric-card">
+                            <div class="metric-value metric-purple">${summary.assertions}</div>
+                            <div class="metric-label">Assertions</div>
+                        </div>
+                        ${summary.time ? `
+                        <div class="metric-card">
+                            <div class="metric-value">${summary.time}</div>
+                            <div class="metric-label">Tiempo</div>
+                        </div>
+                        ` : ''}
+                        ${summary.memory ? `
+                        <div class="metric-card">
+                            <div class="metric-value metric-cyan">${summary.memory}</div>
+                            <div class="metric-label">Memoria</div>
+                        </div>
+                        ` : ''}
+                        ${(summary.incomplete || 0) > 0 ? `
                         <div class="metric-card">
                             <div class="metric-value metric-warning">${summary.incomplete || 0}</div>
                             <div class="metric-label">Incompletos</div>
                         </div>
-                    ` : ''}
-                    ${summary.risky > 0 ? `
+                        ` : ''}
+                        ${summary.risky > 0 ? `
                         <div class="metric-card">
                             <div class="metric-value metric-warning">${summary.risky || 0}</div>
                             <div class="metric-label">Riesgosos</div>
                         </div>
+                        ` : ''}
+                    </div>
+                    
+                    <!-- Comando ejecutado -->
+                    ${results.command ? `
+                    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.2);">
+                        <div style="font-size: 0.75rem; opacity: 0.9; margin-bottom: 0.5rem; font-weight: 600;">💻 Comando:</div>
+                        <div style="background: rgba(255,255,255,0.1); padding: 0.5rem; border-radius: 6px; font-family: 'Courier New', monospace; font-size: 0.7rem; word-break: break-all; line-height: 1.3;">
+                            ${this.escapeHtml(results.command)}
+                        </div>
+                    </div>
                     ` : ''}
                 </div>
                 
-                <!-- Grid 2: Métricas de rendimiento (derecha) -->
-                <div class="modern-info-grid modern-info-grid-performance">
-                    ${summary.time ? `<div class="metric-card">
-                        <div class="metric-value">${summary.time}</div>
-                        <div class="metric-label">Tiempo</div>
-                    </div>` : ''}
-                    ${summary.memory ? `<div class="metric-card">
-                        <div class="metric-value metric-cyan">${summary.memory}</div>
-                        <div class="metric-label">Memoria</div>
-                    </div>` : ''}
-                </div>
-            </div>`;
+                <!-- Contenido del test -->`;
         }
         
         // Output completo
         if (results.output) {
+            html += `<div style="padding: 1.5rem;">
+                <div class="modern-section">
+                    <div class="modern-section-title">📋 Salida Detallada</div>
+                    <pre class="modern-code-block modern-code-block-dark">${this.escapeHtml(results.output)}</pre>
+                </div>
+                
+                ${results.command && results.summary ? `
+                <div class="modern-section">
+                    <div class="modern-section-title">💻 Comando Ejecutado</div>
+                    <pre class="modern-code-block modern-code-block-light"><code>${this.escapeHtml(results.command)}</code></pre>
+                </div>
+                ` : ''}
+            </div>`;
+        }
+        
+        // Cerrar el contenedor unificado si hay summary
+        if (results.summary) {
+            html += `</div>`;
+        }
+        
+        // Encabezado con información del comando (solo si no hay summary para evitar duplicación)
+        if (results.command && !results.summary) {
             html += `<div class="modern-section">
-                <pre class="modern-code-block modern-code-block-dark">${this.escapeHtml(results.output)}</pre>
+                <div class="modern-section-title">💻 Comando Ejecutado</div>
+                <pre class="modern-code-block modern-code-block-light"><code>${this.escapeHtml(results.command)}</code></pre>
             </div>`;
         }
         
