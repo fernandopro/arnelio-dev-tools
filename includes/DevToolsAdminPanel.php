@@ -507,8 +507,8 @@ class DevToolsAdminPanel {
             </div>
         </div>
         
-        <!-- Panel de Resultados - Ancho completo abajo -->
-        <div class="row">
+        <!-- Panel de Resultados - Ancho completo abajo (inicialmente oculto) -->
+        <div id="OutputContainer" class="row" style="display: none; opacity: 0; transition: opacity 0.3s ease-in-out;">
             <div class="col-12">
                 <div class="devtools-card" style="background: #ffffff; border-radius: 16px; box-shadow: 0 4px 25px rgba(0,0,0,0.08); border: none; overflow: hidden;">
                     <!-- Header del card -->
@@ -555,6 +555,15 @@ class DevToolsAdminPanel {
                     e.stopPropagation();
                     console.log('🔍 Ejecutando tests completos...');
                     
+                    // Mostrar el OutputContainer con fade-in
+                    const outputContainer = document.getElementById('OutputContainer');
+                    if (outputContainer) {
+                        outputContainer.style.display = 'block';
+                        setTimeout(() => {
+                            outputContainer.style.opacity = '1';
+                        }, 10);
+                    }
+                    
                     if (window.devTools && window.devTools.testRunner) {
                         if (!window.devTools.testRunner.isRunning) {
                             window.devTools.testRunner.runTests();
@@ -578,6 +587,17 @@ class DevToolsAdminPanel {
                     } else {
                         console.error('TestRunner no disponible');
                     }
+                    
+                    // Ocultar el OutputContainer con fade-out después de limpiar
+                    setTimeout(() => {
+                        const outputContainer = document.getElementById('OutputContainer');
+                        if (outputContainer) {
+                            outputContainer.style.opacity = '0';
+                            setTimeout(() => {
+                                outputContainer.style.display = 'none';
+                            }, 300); // Espera a que termine la transición
+                        }
+                    }, 100); // Pequeño delay para que se vea la limpieza
                 });
             }
             
@@ -586,6 +606,15 @@ class DevToolsAdminPanel {
                     e.preventDefault();
                     e.stopPropagation();
                     console.log('🌐 Probando conectividad AJAX...');
+                    
+                    // Mostrar el OutputContainer con fade-in
+                    const outputContainer = document.getElementById('OutputContainer');
+                    if (outputContainer) {
+                        outputContainer.style.display = 'block';
+                        setTimeout(() => {
+                            outputContainer.style.opacity = '1';
+                        }, 10);
+                    }
                     
                     // Mostrar estado de carga
                     const resultArea = document.getElementById('devtools-testResults');
