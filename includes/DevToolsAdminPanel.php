@@ -341,7 +341,7 @@ class DevToolsAdminPanel {
                                     🔧
                                 </div>
                                 <div>
-                                    <h1 class="h2 mb-1" style="font-weight: 600; margin: 0;"><?php echo esc_html($this->config['name']); ?></h1>
+                                    <h1 class="h2 mb-1" style="font-weight: 600; margin: 0;">Dev Tools</h1>
                                     <p class="mb-0" style="opacity: 0.9; font-size: 0.95rem;">Sistema de desarrollo y testing v<?php echo esc_html($this->config['version']); ?></p>
                                 </div>
                             </div>
@@ -369,7 +369,7 @@ class DevToolsAdminPanel {
                         <div class="row">
                             <div class="col-12 text-center">
                                 <p class="mb-0" style="color: #64748b; font-size: 0.875rem;">
-                                    <?php echo esc_html($this->config['name']); ?> · 
+                                    Dev Tools · 
                                     Sistema de desarrollo para WordPress ·
                                     <span style="color: #667eea;">Dev-Tools Arquitectura 3.0</span>
                                 </p>

@@ -12,7 +12,7 @@
   --dev-tools-info: #0dcaf0;
   --dev-tools-light: #f8f9fa;
   --dev-tools-dark: #212529;
-  
+
   // WordPress Admin colors compatibility
   --wp-admin-blue: #0073aa;
   --wp-admin-green: #00a32a;
@@ -21,63 +21,60 @@
 }
 
 // Bootstrap 5 Import (solo lo que necesitamos)
-@import '~bootstrap/scss/functions';
-@import '~bootstrap/scss/variables';
-@import '~bootstrap/scss/variables-dark';
-@import '~bootstrap/scss/maps';
-@import '~bootstrap/scss/mixins';
-@import '~bootstrap/scss/utilities';
+@import "~bootstrap/scss/functions";
+@import "~bootstrap/scss/variables";
+@import "~bootstrap/scss/variables-dark";
+@import "~bootstrap/scss/maps";
+@import "~bootstrap/scss/mixins";
+@import "~bootstrap/scss/utilities";
 
 // Layout
-@import '~bootstrap/scss/root';
-@import '~bootstrap/scss/reboot';
-@import '~bootstrap/scss/type';
-@import '~bootstrap/scss/images';
-@import '~bootstrap/scss/containers';
-@import '~bootstrap/scss/grid';
+@import "~bootstrap/scss/root";
+@import "~bootstrap/scss/reboot";
+@import "~bootstrap/scss/type";
+@import "~bootstrap/scss/images";
+@import "~bootstrap/scss/containers";
+@import "~bootstrap/scss/grid";
 
 // Components
-@import '~bootstrap/scss/tables';
-@import '~bootstrap/scss/forms';
-@import '~bootstrap/scss/buttons';
-@import '~bootstrap/scss/transitions';
-@import '~bootstrap/scss/dropdown';
-@import '~bootstrap/scss/button-group';
-@import '~bootstrap/scss/nav';
-@import '~bootstrap/scss/navbar';
-@import '~bootstrap/scss/card';
-@import '~bootstrap/scss/breadcrumb';
-@import '~bootstrap/scss/pagination';
-@import '~bootstrap/scss/badge';
-@import '~bootstrap/scss/alert';
-@import '~bootstrap/scss/progress';
-@import '~bootstrap/scss/list-group';
-@import '~bootstrap/scss/close';
-@import '~bootstrap/scss/toasts';
-@import '~bootstrap/scss/modal';
-@import '~bootstrap/scss/tooltip';
-@import '~bootstrap/scss/popover';
-@import '~bootstrap/scss/carousel';
-@import '~bootstrap/scss/spinners';
-@import '~bootstrap/scss/offcanvas';
-@import '~bootstrap/scss/placeholders';
+@import "~bootstrap/scss/tables";
+@import "~bootstrap/scss/forms";
+@import "~bootstrap/scss/buttons";
+@import "~bootstrap/scss/transitions";
+@import "~bootstrap/scss/dropdown";
+@import "~bootstrap/scss/button-group";
+@import "~bootstrap/scss/nav";
+@import "~bootstrap/scss/navbar";
+@import "~bootstrap/scss/card";
+@import "~bootstrap/scss/breadcrumb";
+@import "~bootstrap/scss/pagination";
+@import "~bootstrap/scss/badge";
+@import "~bootstrap/scss/alert";
+@import "~bootstrap/scss/progress";
+@import "~bootstrap/scss/list-group";
+@import "~bootstrap/scss/close";
+@import "~bootstrap/scss/toasts";
+@import "~bootstrap/scss/modal";
+@import "~bootstrap/scss/tooltip";
+@import "~bootstrap/scss/popover";
+@import "~bootstrap/scss/carousel";
+@import "~bootstrap/scss/spinners";
+@import "~bootstrap/scss/offcanvas";
+@import "~bootstrap/scss/placeholders";
 
 // Helpers
-@import '~bootstrap/scss/helpers';
+@import "~bootstrap/scss/helpers";
 
 // Utilities
-@import '~bootstrap/scss/utilities/api';
+@import "~bootstrap/scss/utilities/api";
 
-
-
-#wpcontent{
+#wpcontent {
   background-color: #212529;
 }
 
-.card{
+.card {
   max-width: 100% !important;
 }
-
 
 // Dev-Tools Custom Styles
 .dev-tools-container {
@@ -91,7 +88,7 @@
 .dev-tools-admin-panel {
   background: #f0f0f1;
   min-height: 100vh;
-  
+
   .container-fluid {
     max-width: none;
     padding: 20px;
@@ -103,12 +100,14 @@
   background: linear-gradient(135deg, var(--dev-tools-primary), #0056b3);
   color: white;
   border-radius: 8px;
-  
-  h1, h2, h3 {
+
+  h1,
+  h2,
+  h3 {
     color: white;
     margin: 0;
   }
-  
+
   .badge {
     font-size: 0.75em;
   }
@@ -119,25 +118,25 @@
   .nav-tabs {
     border-bottom: 2px solid #dee2e6;
     margin-bottom: 2rem;
-    
+
     .nav-link {
       border: none;
       border-radius: 8px 8px 0 0;
       padding: 12px 20px;
       font-weight: 500;
       color: #6c757d;
-      
+
       &:hover {
         background-color: #f8f9fa;
         color: var(--dev-tools-primary);
       }
-      
+
       &.active {
         background-color: var(--dev-tools-primary);
         color: white;
         border-bottom: 2px solid var(--dev-tools-primary);
       }
-      
+
       .dashicons {
         margin-right: 8px;
         vertical-align: text-top;
@@ -149,14 +148,15 @@
 // Cards
 .dev-tools-card {
   border: none;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
-  
+
   .card-header {
     border-radius: 8px 8px 0 0;
     font-weight: 600;
-    
-    h5, h6 {
+
+    h5,
+    h6 {
       margin: 0;
     }
   }
@@ -169,25 +169,25 @@
     align-items: center;
     padding: 10px 0;
     border-bottom: 1px solid #f0f0f1;
-    
+
     &:last-child {
       border-bottom: none;
     }
-    
+
     .status-icon {
       width: 40px;
       text-align: center;
       margin-right: 12px;
     }
-    
+
     .status-content {
       flex: 1;
-      
+
       .status-title {
         font-weight: 600;
         margin: 0;
       }
-      
+
       .status-description {
         color: #6c757d;
         font-size: 0.875em;
@@ -203,11 +203,11 @@
   color: #e2e8f0;
   border-radius: 6px;
   padding: 1rem;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   font-size: 0.875em;
   line-height: 1.4;
   overflow-x: auto;
-  
+
   .debug-title {
     color: #68d391;
     font-weight: bold;
@@ -219,7 +219,7 @@
   .btn {
     margin-bottom: 8px;
     font-weight: 500;
-    
+
     &:last-child {
       margin-bottom: 0;
     }
@@ -230,12 +230,12 @@
 .dev-tools-environment {
   .env-item {
     margin-bottom: 1rem;
-    
+
     h6 {
       color: var(--dev-tools-dark);
       margin-bottom: 0.5rem;
     }
-    
+
     .env-value {
       font-family: monospace;
       background: #f8f9fa;
@@ -252,7 +252,7 @@
     font-weight: 600;
     color: var(--dev-tools-dark);
   }
-  
+
   .ajax-result {
     background: #f8f9fa;
     border: 1px solid #dee2e6;
@@ -270,7 +270,7 @@
   .test-option {
     margin-bottom: 0.5rem;
   }
-  
+
   .test-results {
     background: #f8f9fa;
     border: 1px solid #dee2e6;
@@ -280,15 +280,15 @@
     font-size: 0.875em;
     max-height: 500px;
     overflow-y: auto;
-    
+
     .test-success {
       color: var(--dev-tools-success);
     }
-    
+
     .test-error {
       color: var(--dev-tools-danger);
     }
-    
+
     .test-warning {
       color: var(--dev-tools-warning);
     }
@@ -301,13 +301,13 @@
     padding: 1rem;
     border-radius: 6px;
     margin-bottom: 1rem;
-    
+
     &.success {
       background: #d1e7dd;
       border: 1px solid #badbcc;
       color: #0f5132;
     }
-    
+
     &.error {
       background: #f8d7da;
       border: 1px solid #f5c6cb;
@@ -331,23 +331,23 @@
       padding: 10px;
     }
   }
-  
+
   .dev-tools-nav .nav-tabs .nav-link {
     padding: 8px 12px;
     font-size: 0.875em;
-    
+
     .dashicons {
       display: none;
     }
   }
-  
+
   .dev-tools-header {
     text-align: center;
-    
+
     .d-flex {
       flex-direction: column;
       align-items: center;
-      
+
       .text-end {
         text-align: center !important;
         margin-top: 1rem;
@@ -362,11 +362,11 @@
     background: #1e1e1e;
     color: #e2e8f0;
   }
-  
+
   .dev-tools-card {
     background: #2d3748;
     color: #e2e8f0;
-    
+
     .card-header {
       background: #4a5568;
     }
@@ -376,7 +376,8 @@
 // WordPress admin compatibility
 .wp-admin {
   .dev-tools-container {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
   }
 }
 
@@ -393,36 +394,36 @@
   border: 1px solid transparent !important;
   font-size: 14px !important;
   background: none !important; // Override Bootstrap alerts
-  
+
   .modern-alert-icon {
     font-size: 18px;
     line-height: 1;
     flex-shrink: 0;
   }
-  
+
   .modern-alert-content {
     flex: 1;
     min-width: 0;
   }
-  
+
   .modern-alert-title {
     font-weight: 600 !important;
     margin-bottom: 4px !important;
     margin: 0 !important;
   }
-  
+
   &.modern-alert-success {
     background-color: #f0f9f4 !important;
     border-color: #bbf7d0 !important;
     color: #166534 !important;
   }
-  
+
   &.modern-alert-error {
     background-color: #fef2f2 !important;
     border-color: #fecaca !important;
     color: #dc2626 !important;
   }
-  
+
   &.modern-alert-info {
     background-color: #f0f9ff !important;
     border-color: #bae6fd !important;
@@ -470,20 +471,20 @@
   overflow: hidden;
   margin-bottom: 16px;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-  
+
   .modern-card-header {
     background-color: #f9fafb;
     border-bottom: 1px solid #e5e7eb;
     padding: 12px 16px;
   }
-  
+
   .modern-card-title {
     margin: 0;
     font-size: 14px;
     font-weight: 600;
     color: #374151;
   }
-  
+
   .modern-card-body {
     padding: 16px;
   }
@@ -497,7 +498,7 @@
   gap: 20px !important;
   margin: 12px 0 !important;
   align-items: flex-start !important;
-  
+
   @media (max-width: 768px) {
     flex-direction: column !important;
     gap: 12px !important;
@@ -510,42 +511,26 @@
 .dev-tools-container .modern-info-grid {
   display: grid !important;
   gap: 8px !important;
-  
+
   // Grid 1: Métricas principales (izquierda)
   &.modern-info-grid-metrics {
     grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)) !important;
     flex: 1 !important;
-    
+
     @media (min-width: 480px) {
       grid-template-columns: repeat(3, 1fr) !important;
     }
-    
+
     @media (min-width: 768px) {
       grid-template-columns: repeat(4, 1fr) !important;
     }
-    
+
     @media (min-width: 1024px) {
       grid-template-columns: repeat(5, 1fr) !important;
     }
   }
-  
-  // Grid 2: Métricas de rendimiento (derecha)
-  &.modern-info-grid-performance {
-    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)) !important;
-    flex: 0 0 auto !important;
-    min-width: 180px !important;
-    
-    @media (min-width: 480px) {
-      grid-template-columns: repeat(2, 1fr) !important;
-      min-width: 180px !important;
-    }
-    
-    @media (max-width: 768px) {
-      flex: 1 !important;
-      min-width: auto !important;
-    }
-  }
-  
+
+
   .modern-info-item {
     display: flex !important;
     flex-direction: column !important;
@@ -558,39 +543,81 @@
     border-radius: 6px !important;
     min-height: auto !important;
     transition: all 0.15s ease !important;
-    
+
     &:hover {
       border-color: #d1d5db !important;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
     }
-    
+
     // Color variants for different data types
     &.total {
       border-left: 3px solid #6366f1 !important;
     }
-    
+
     &.success {
       border-left: 3px solid #10b981 !important;
     }
-    
+
     &.error {
       border-left: 3px solid #ef4444 !important;
     }
-    
+
     &.warning {
       border-left: 3px solid #f59e0b !important;
     }
-    
+
     &.info {
       border-left: 3px solid #06b6d4 !important;
     }
-    
+
     &.muted {
       border-left: 3px solid #e5e7eb !important;
       opacity: 0.7 !important;
     }
   }
-  
+
+    // Grid 2: Métricas de rendimiento (derecha)
+  &.modern-info-grid-performance {
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)) !important;
+    flex: 0 0 auto !important;
+    min-width: 180px !important;
+
+    @media (min-width: 480px) {
+      grid-template-columns: repeat(2, 1fr) !important;
+      min-width: 180px !important;
+    }
+
+    @media (max-width: 768px) {
+      flex: 1 !important;
+      min-width: auto !important;
+    }
+
+    // Estilos retro terminal años 80 - Versión simple y nítida
+    .modern-info-item {
+      background: #000000 !important;
+      border-left: 0 !important;
+      border-radius: 6px !important;
+
+      &:hover {
+        border-color: #00ff00 !important;
+        background: #001100 !important;
+      }
+
+      .modern-info-value {
+        color: #9af29a !important;
+        font-family: "Courier New", monospace !important;
+      }
+
+      .modern-info-label {
+        color: #00cc00 !important;
+        font-family: "Courier New", monospace !important;
+        font-weight: 500 !important;
+        text-transform: uppercase !important;
+        font-size: 10px !important;
+      }
+    }
+  }
+
   .modern-info-label {
     font-weight: 500 !important;
     color: #6b7280 !important;
@@ -604,7 +631,7 @@
     white-space: nowrap !important;
     width: 100% !important;
   }
-  
+
   .modern-info-value {
     font-weight: 600 !important;
     color: #111827 !important;
@@ -615,13 +642,13 @@
     text-overflow: ellipsis !important;
     white-space: nowrap !important;
     width: 100% !important;
-    
+
     // Responsive font sizes for better readability
     @media (max-width: 480px) {
       font-size: 14px !important;
     }
   }
-  
+
   .modern-info-extra {
     color: #9ca3af !important;
     font-style: italic;
@@ -642,7 +669,7 @@
   color: #1f2937 !important;
   padding: 2px 6px !important;
   border-radius: 4px !important;
-  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace !important;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace !important;
   font-size: 12px !important;
   border: 1px solid #e5e7eb !important;
 }
@@ -654,25 +681,25 @@
   color: #1e293b !important;
   padding: 16px !important;
   border-radius: 6px !important;
-  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace !important;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace !important;
   font-size: 13px !important;
   line-height: 1.5 !important;
   border: 1px solid #e2e8f0 !important;
   overflow-x: auto !important;
   margin: 8px 0 !important;
-  
+
   &.modern-code-block-light {
     background-color: #f8fafc !important;
     color: #475569 !important;
     border-color: #e2e8f0 !important;
   }
-  
+
   &.modern-code-block-dark {
     background-color: #1e293b !important;
     color: #e2e8f0 !important;
     border-color: #334155 !important;
   }
-  
+
   code {
     background: none !important;
     padding: 0 !important;
@@ -687,7 +714,7 @@
 #devtools-testResults .modern-section,
 .dev-tools-container .modern-section {
   margin-bottom: 20px !important;
-  
+
   .modern-section-title {
     font-weight: 600 !important;
     color: #374151 !important;
@@ -702,7 +729,7 @@
 .modern-method-list {
   display: grid;
   gap: 8px;
-  
+
   .modern-method-item {
     display: flex;
     justify-content: space-between;
@@ -711,19 +738,19 @@
     background-color: #f9fafb;
     border: 1px solid #e5e7eb;
     border-radius: 6px;
-    
+
     &.active {
       background-color: #ecfdf5;
       border-color: #10b981;
     }
   }
-  
+
   .modern-method-name {
     font-weight: 500;
     color: #374151;
     font-size: 13px;
   }
-  
+
   .modern-method-value {
     display: flex;
     align-items: center;
@@ -731,7 +758,7 @@
     flex: 1;
     margin-left: 12px;
   }
-  
+
   .modern-method-empty {
     color: #9ca3af;
     font-size: 12px;
@@ -748,7 +775,7 @@
   border-radius: 12px;
   text-transform: uppercase;
   letter-spacing: 0.025em;
-  
+
   &.modern-badge-success {
     background-color: #dcfce7;
     color: #166534;
@@ -771,53 +798,53 @@
       border-color: #047857;
       color: #6ee7b7;
     }
-    
+
     &.modern-alert-error {
       background-color: #7f1d1d;
       border-color: #dc2626;
       color: #fca5a5;
     }
-    
+
     &.modern-alert-info {
       background-color: #1e3a8a;
       border-color: #3b82f6;
       color: #93c5fd;
     }
   }
-  
+
   .modern-card {
     background: #374151;
     border-color: #4b5563;
-    
+
     .modern-card-header {
       background-color: #4b5563;
       border-color: #6b7280;
     }
-    
+
     .modern-card-title {
       color: #f3f4f6;
     }
   }
-  
+
   .modern-code {
     background-color: #4b5563;
     color: #e5e7eb;
     border-color: #6b7280;
   }
-  
+
   .modern-info-label {
     color: #d1d5db;
   }
-  
+
   .modern-info-value {
     color: #f3f4f6;
   }
-  
+
   .modern-section-title {
     color: #f3f4f6;
     border-color: #4b5563;
   }
-  
+
   .modern-text {
     color: #e5e7eb;
   }
@@ -828,75 +855,75 @@
 #devtools-testResults .modern-info-item,
 .dev-tools-container .modern-info-item {
   // Default style (already defined above)
-  
+
   // Success variant (green) - for passed tests, successful operations
   &.success,
   &:has(.text-success),
   &[data-type="success"] {
     background: #f0fdf4 !important;
     border-color: #bbf7d0 !important;
-    
+
     .modern-info-label {
       color: #166534 !important;
     }
-    
+
     .modern-info-value {
       color: #15803d !important;
       font-weight: 600 !important;
     }
   }
-  
+
   // Error variant (red) - for failed tests, errors
   &.error,
   &:has(.text-danger),
   &[data-type="error"] {
     background: #fef2f2 !important;
     border-color: #fecaca !important;
-    
+
     .modern-info-label {
       color: #dc2626 !important;
     }
-    
+
     .modern-info-value {
       color: #dc2626 !important;
       font-weight: 600 !important;
     }
   }
-  
+
   // Warning variant (yellow) - for warnings, skipped tests
   &.warning,
   &:has(.text-warning),
   &[data-type="warning"] {
     background: #fffbeb !important;
     border-color: #fed7aa !important;
-    
+
     .modern-info-label {
       color: #d97706 !important;
     }
-    
+
     .modern-info-value {
       color: #ea580c !important;
       font-weight: 600 !important;
     }
   }
-  
+
   // Info variant (blue) - for general information
   &.info,
   &:has(.text-info),
   &[data-type="info"] {
     background: #eff6ff !important;
     border-color: #bfdbfe !important;
-    
+
     .modern-info-label {
       color: #1d4ed8 !important;
     }
-    
+
     .modern-info-value {
       color: #2563eb !important;
       font-weight: 500 !important;
     }
   }
-  
+
   // Muted variant (gray) - for less important info
   &.muted,
   &:has(.text-muted),
@@ -904,26 +931,26 @@
     background: #f8fafc !important;
     border-color: #e2e8f0 !important;
     opacity: 0.8;
-    
+
     .modern-info-label {
       color: #64748b !important;
     }
-    
+
     .modern-info-value {
       color: #64748b !important;
     }
   }
-  
+
   // Total variant (purple) - for totals and important metrics
   &.total,
   &[data-type="total"] {
     background: #faf5ff !important;
     border-color: #e9d5ff !important;
-    
+
     .modern-info-label {
       color: #7c3aed !important;
     }
-    
+
     .modern-info-value {
       color: #7c3aed !important;
       font-weight: 700 !important;
@@ -938,8 +965,12 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .devtools-btn:hover {
@@ -963,15 +994,15 @@
   &::-webkit-scrollbar {
     width: 8px;
   }
-  
+
   &::-webkit-scrollbar-track {
     background: #f1f5f9;
   }
-  
+
   &::-webkit-scrollbar-thumb {
     background: #cbd5e1;
     border-radius: 4px;
-    
+
     &:hover {
       background: #94a3b8;
     }
