@@ -277,7 +277,11 @@ class DevToolsAdminPanel {
         
         // Obtener parámetros del POST
         $test_file = $_POST['test_file'] ?? '';
-        $verbose = filter_var($_POST['verbose'] ?? true, FILTER_VALIDATE_BOOLEAN); // Verbose por defecto para tests individuales
+        $verbose = filter_var($_POST['verbose'] ?? true, FILTER_VALIDATE_BOOLEAN);
+        $coverage = filter_var($_POST['coverage'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        $testdox = filter_var($_POST['testdox'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        
+        error_log("DEBUG SPECIFIC TEST - Opciones recibidas: verbose={$verbose}, coverage={$coverage}, testdox={$testdox}");
         
         if (empty($test_file)) {
             wp_send_json_error(['message' => 'No se especificó el archivo de test']);
@@ -285,7 +289,7 @@ class DevToolsAdminPanel {
         }
         
         try {
-            $result = $this->run_specific_test_file($test_file, $verbose);
+            $result = $this->run_specific_test_file($test_file, $verbose, $coverage, $testdox);
             
             if ($result['success']) {
                 wp_send_json_success($result['data']);
@@ -1153,6 +1157,17 @@ class DevToolsAdminPanel {
                     }, 10);
                 }
                 
+                // Leer los valores de los checkboxes de opciones de salida ANTES de mostrar el loading
+                const verboseOutput = document.getElementById('devtools-verboseOutput')?.checked || false;
+                const generateCoverage = document.getElementById('devtools-generateCoverage')?.checked || false;
+                const testdoxOutput = document.getElementById('devtools-testdoxOutput')?.checked || false;
+                
+                console.log('📋 Opciones seleccionadas:', {
+                    verbose: verboseOutput,
+                    coverage: generateCoverage,
+                    testdox: testdoxOutput
+                });
+                
                 // Mostrar estado de carga en el área de resultados
                 const resultArea = document.getElementById('devtools-testResults');
                 if (resultArea) {
@@ -1160,7 +1175,18 @@ class DevToolsAdminPanel {
                         <div style="padding: 2rem; text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 8px; margin-bottom: 1rem;">
                             <div style="width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.3); border-top: 4px solid white; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div>
                             <h6 style="font-weight: 600; margin-bottom: 0.5rem;">🧪 Ejecutando Test Individual</h6>
-                            <p style="margin: 0; opacity: 0.9; font-size: 0.875rem;">Archivo: ${testPath}</p>
+                            <p style="margin: 0 0 0.75rem 0; opacity: 0.9; font-size: 0.875rem;">Archivo: ${testPath}</p>
+                            <div style="display: flex; justify-content: center; gap: 0.5rem; font-size: 0.75rem; opacity: 0.8;">
+                                <span style="background: rgba(255,255,255,0.2); padding: 0.25rem 0.5rem; border-radius: 12px;">
+                                    ${verboseOutput ? '✅' : '❌'} Verbose
+                                </span>
+                                <span style="background: rgba(255,255,255,0.2); padding: 0.25rem 0.5rem; border-radius: 12px;">
+                                    ${generateCoverage ? '✅' : '❌'} Coverage
+                                </span>
+                                <span style="background: rgba(255,255,255,0.2); padding: 0.25rem 0.5rem; border-radius: 12px;">
+                                    ${testdoxOutput ? '✅' : '❌'} TestDox
+                                </span>
+                            </div>
                         </div>
                     `;
                 }
@@ -1170,7 +1196,9 @@ class DevToolsAdminPanel {
                 formData.append('action', 'dev_tools_run_specific_test');
                 formData.append('nonce', '<?php echo wp_create_nonce('dev_tools_nonce'); ?>');
                 formData.append('test_file', testPath);
-                formData.append('verbose', 'true');
+                formData.append('verbose', verboseOutput ? 'true' : 'false');
+                formData.append('coverage', generateCoverage ? 'true' : 'false');
+                formData.append('testdox', testdoxOutput ? 'true' : 'false');
                 
                 fetch('<?php echo admin_url('admin-ajax.php'); ?>', {
                     method: 'POST',
@@ -1241,6 +1269,22 @@ class DevToolsAdminPanel {
                                             <div style="opacity: 0.9;">Tiempo</div>
                                         </div>
                                     </div>
+                                    
+                                    <!-- Opciones utilizadas -->
+                                    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.2);">
+                                        <div style="display: flex; align-items: center; gap: 1rem; font-size: 0.75rem; opacity: 0.9;">
+                                            <span style="font-weight: 600;">Opciones:</span>
+                                            <span style="background: rgba(255,255,255,0.2); padding: 0.25rem 0.5rem; border-radius: 12px;">
+                                                ${verboseOutput ? '✅' : '❌'} Verbose
+                                            </span>
+                                            <span style="background: rgba(255,255,255,0.2); padding: 0.25rem 0.5rem; border-radius: 12px;">
+                                                ${generateCoverage ? '✅' : '❌'} Coverage
+                                            </span>
+                                            <span style="background: rgba(255,255,255,0.2); padding: 0.25rem 0.5rem; border-radius: 12px;">
+                                                ${testdoxOutput ? '✅' : '❌'} TestDox
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
                                 
                                 <!-- Salida detallada del test -->
@@ -1249,7 +1293,23 @@ class DevToolsAdminPanel {
                                     <pre style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 1rem; font-size: 0.875rem; line-height: 1.5; color: #374151; overflow-x: auto; white-space: pre-wrap; margin: 0; max-height: 400px; overflow-y: auto;">${testData.output}</pre>
                                     
                                     <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e2e8f0; font-size: 0.875rem; color: #6b7280;">
-                                        <strong>Comando ejecutado:</strong> <code style="background: #f3f4f6; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8rem;">${testData.command}</code>
+                                        <div style="margin-bottom: 0.75rem;">
+                                            <strong>Opciones aplicadas:</strong>
+                                            <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap;">
+                                                <span style="background: ${verboseOutput ? '#dcfce7' : '#f3f4f6'}; color: ${verboseOutput ? '#166534' : '#6b7280'}; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.75rem; border: 1px solid ${verboseOutput ? '#bbf7d0' : '#e5e7eb'};">
+                                                    ${verboseOutput ? '✅' : '❌'} Verbose Output
+                                                </span>
+                                                <span style="background: ${generateCoverage ? '#dcfce7' : '#f3f4f6'}; color: ${generateCoverage ? '#166534' : '#6b7280'}; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.75rem; border: 1px solid ${generateCoverage ? '#bbf7d0' : '#e5e7eb'};">
+                                                    ${generateCoverage ? '✅' : '❌'} Code Coverage
+                                                </span>
+                                                <span style="background: ${testdoxOutput ? '#dcfce7' : '#f3f4f6'}; color: ${testdoxOutput ? '#166534' : '#6b7280'}; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.75rem; border: 1px solid ${testdoxOutput ? '#bbf7d0' : '#e5e7eb'};">
+                                                    ${testdoxOutput ? '✅' : '❌'} TestDox Format
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <strong>Comando ejecutado:</strong> <code style="background: #f3f4f6; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8rem;">${testData.command}</code>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1655,7 +1715,7 @@ class DevToolsAdminPanel {
     /**
      * Ejecutar un archivo de test específico
      */
-    private function run_specific_test_file($test_file, $verbose = true) {
+    private function run_specific_test_file($test_file, $verbose = true, $coverage = false, $testdox = false) {
         try {
             // Validar que el archivo de test existe
             $tests_dir = dirname(dirname(__DIR__)) . '/plugin-dev-tools/tests';
@@ -1668,11 +1728,31 @@ class DevToolsAdminPanel {
             // Construir comando PHPUnit para el archivo específico
             $php_binary = $this->get_php_binary_path();
             $phpunit_path = '"' . $php_binary . '" ../dev-tools/vendor/phpunit/phpunit/phpunit';
-            $options = ['--verbose']; // Siempre verbose para tests individuales
+            $options = [];
             
+            // Agregar opciones basadas en los parámetros recibidos
             if ($verbose) {
-                $options[] = '--testdox'; // Agregar testdox para mejor visualización
+                $options[] = '--verbose';
+                error_log("DEBUG SPECIFIC TEST - Added --verbose option");
             }
+            
+            if ($coverage) {
+                $options[] = '--coverage-text';
+                error_log("DEBUG SPECIFIC TEST - Added --coverage-text option");
+            }
+            
+            if ($testdox) {
+                $options[] = '--testdox';
+                error_log("DEBUG SPECIFIC TEST - Added --testdox option");
+            }
+            
+            // Si no se especificó testdox pero sí verbose, agregar testdox por defecto para mejor visualización
+            if ($verbose && !$testdox) {
+                $options[] = '--testdox';
+                error_log("DEBUG SPECIFIC TEST - Added --testdox by default with verbose");
+            }
+            
+            error_log("DEBUG SPECIFIC TEST - Final options: " . implode(' ', $options));
             
             // El comando se ejecutará desde plugin-dev-tools, así que usar ruta relativa con prefijo tests/
             $test_path_for_command = 'tests/' . $test_file;
