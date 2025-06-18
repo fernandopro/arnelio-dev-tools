@@ -242,47 +242,56 @@ class TestRunner {
         if (results.summary) {
             const summary = results.summary;
             
-            html += `<div class="modern-info-grid">
-                <div class="modern-info-item total" data-type="total">
-                    <div class="modern-info-label">Total</div>
-                    <div class="modern-info-value">${summary.total_tests}</div>
+            html += `<div class="modern-info-grid-container">
+                <!-- Grid 1: Métricas principales (izquierda) -->
+                <div class="modern-info-grid modern-info-grid-metrics">
+                    <div class="modern-info-item total" data-type="total">
+                        <div class="modern-info-value">${summary.total_tests}</div>
+                        <div class="modern-info-label">Total</div>
+                    </div>
+                    <div class="modern-info-item success" data-type="success">
+                        <div class="modern-info-value">${summary.passed}</div>
+                        <div class="modern-info-label">Pasados</div>
+                    </div>
+                    <div class="modern-info-item ${summary.failed > 0 ? 'error' : 'muted'}" data-type="${summary.failed > 0 ? 'error' : 'muted'}">
+                        <div class="modern-info-value">${summary.failed}</div>
+                        <div class="modern-info-label">Fallidos</div>
+                    </div>
+                    <div class="modern-info-item ${summary.errors > 0 ? 'warning' : 'muted'}" data-type="${summary.errors > 0 ? 'warning' : 'muted'}">
+                        <div class="modern-info-value">${summary.errors}</div>
+                        <div class="modern-info-label">Errores</div>
+                    </div>
+                    <div class="modern-info-item info" data-type="info">
+                        <div class="modern-info-value">${summary.assertions}</div>
+                        <div class="modern-info-label">Verificaciones</div>
+                    </div>
+                    ${summary.skipped > 0 || summary.incomplete > 0 || summary.risky > 0 ? `
+                        <div class="modern-info-item ${summary.skipped > 0 ? 'warning' : 'muted'}" data-type="${summary.skipped > 0 ? 'warning' : 'muted'}">
+                            <div class="modern-info-value">${summary.skipped}</div>
+                            <div class="modern-info-label">Omitidos</div>
+                        </div>
+                        <div class="modern-info-item ${(summary.incomplete || 0) > 0 ? 'warning' : 'muted'}" data-type="${(summary.incomplete || 0) > 0 ? 'warning' : 'muted'}">
+                            <div class="modern-info-value">${summary.incomplete || 0}</div>
+                            <div class="modern-info-label">Incompletos</div>
+                        </div>
+                        <div class="modern-info-item ${summary.risky > 0 ? 'warning' : 'muted'}" data-type="${summary.risky > 0 ? 'warning' : 'muted'}">
+                            <div class="modern-info-value">${summary.risky || 0}</div>
+                            <div class="modern-info-label">Riesgosos</div>
+                        </div>
+                    ` : ''}
                 </div>
-                <div class="modern-info-item success" data-type="success">
-                    <div class="modern-info-label">Pasados</div>
-                    <div class="modern-info-value">${summary.passed}</div>
+                
+                <!-- Grid 2: Métricas de rendimiento (derecha) -->
+                <div class="modern-info-grid modern-info-grid-performance">
+                    ${summary.time ? `<div class="modern-info-item info" data-type="info">
+                        <div class="modern-info-value">${summary.time}</div>
+                        <div class="modern-info-label">Tiempo</div>
+                    </div>` : ''}
+                    ${summary.memory ? `<div class="modern-info-item info" data-type="info">
+                        <div class="modern-info-value">${summary.memory}</div>
+                        <div class="modern-info-label">Memoria</div>
+                    </div>` : ''}
                 </div>
-                <div class="modern-info-item ${summary.failed > 0 ? 'error' : 'muted'}" data-type="${summary.failed > 0 ? 'error' : 'muted'}">
-                    <div class="modern-info-label">Fallidos</div>
-                    <div class="modern-info-value">${summary.failed}</div>
-                </div>
-                <div class="modern-info-item ${summary.errors > 0 ? 'warning' : 'muted'}" data-type="${summary.errors > 0 ? 'warning' : 'muted'}">
-                    <div class="modern-info-label">Errores</div>
-                    <div class="modern-info-value">${summary.errors}</div>
-                </div>
-                <div class="modern-info-item ${summary.skipped > 0 ? 'warning' : 'muted'}" data-type="${summary.skipped > 0 ? 'warning' : 'muted'}">
-                    <div class="modern-info-label">Omitidos</div>
-                    <div class="modern-info-value">${summary.skipped}</div>
-                </div>
-                <div class="modern-info-item ${(summary.incomplete || 0) > 0 ? 'warning' : 'muted'}" data-type="${(summary.incomplete || 0) > 0 ? 'warning' : 'muted'}">
-                    <div class="modern-info-label">Incompletos</div>
-                    <div class="modern-info-value">${summary.incomplete || 0}</div>
-                </div>
-                <div class="modern-info-item ${summary.risky > 0 ? 'warning' : 'muted'}" data-type="${summary.risky > 0 ? 'warning' : 'muted'}">
-                    <div class="modern-info-label">Riesgosos</div>
-                    <div class="modern-info-value">${summary.risky || 0}</div>
-                </div>
-                <div class="modern-info-item info" data-type="info">
-                    <div class="modern-info-label">Aserciones</div>
-                    <div class="modern-info-value">${summary.assertions}</div>
-                </div>
-                ${summary.time ? `<div class="modern-info-item info" data-type="info">
-                    <div class="modern-info-label">Tiempo</div>
-                    <div class="modern-info-value">${summary.time}</div>
-                </div>` : ''}
-                ${summary.memory ? `<div class="modern-info-item info" data-type="info">
-                    <div class="modern-info-label">Memoria</div>
-                    <div class="modern-info-value">${summary.memory}</div>
-                </div>` : ''}
             </div>`;
         }
         

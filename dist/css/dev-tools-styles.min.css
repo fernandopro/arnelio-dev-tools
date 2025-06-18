@@ -12294,29 +12294,82 @@ textarea.form-control-lg {
   padding: 16px;
 }
 
+.devtools-modern-wrap .modern-info-grid-container,
+#devtools-testResults .modern-info-grid-container,
+.dev-tools-container .modern-info-grid-container {
+  display: flex !important;
+  gap: 20px !important;
+  margin: 12px 0 !important;
+  align-items: flex-start !important;
+}
+@media (max-width: 768px) {
+  .devtools-modern-wrap .modern-info-grid-container,
+  #devtools-testResults .modern-info-grid-container,
+  .dev-tools-container .modern-info-grid-container {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+}
+
 .devtools-modern-wrap .modern-info-grid,
 #devtools-testResults .modern-info-grid,
 .dev-tools-container .modern-info-grid {
   display: -ms-grid !important;
   display: grid !important;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
-  gap: 16px 24px !important;
-  margin: 16px 0 !important;
+  gap: 8px !important;
 }
-@media (min-width: 768px) {
-  .devtools-modern-wrap .modern-info-grid,
-  #devtools-testResults .modern-info-grid,
-  .dev-tools-container .modern-info-grid {
-    -ms-grid-columns: (1fr)[2] !important;
-    grid-template-columns: repeat(2, 1fr) !important;
-  }
+.devtools-modern-wrap .modern-info-grid.modern-info-grid-metrics,
+#devtools-testResults .modern-info-grid.modern-info-grid-metrics,
+.dev-tools-container .modern-info-grid.modern-info-grid-metrics {
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)) !important;
+  flex: 1 !important;
 }
-@media (min-width: 1200px) {
-  .devtools-modern-wrap .modern-info-grid,
-  #devtools-testResults .modern-info-grid,
-  .dev-tools-container .modern-info-grid {
+@media (min-width: 480px) {
+  .devtools-modern-wrap .modern-info-grid.modern-info-grid-metrics,
+  #devtools-testResults .modern-info-grid.modern-info-grid-metrics,
+  .dev-tools-container .modern-info-grid.modern-info-grid-metrics {
     -ms-grid-columns: (1fr)[3] !important;
     grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+@media (min-width: 768px) {
+  .devtools-modern-wrap .modern-info-grid.modern-info-grid-metrics,
+  #devtools-testResults .modern-info-grid.modern-info-grid-metrics,
+  .dev-tools-container .modern-info-grid.modern-info-grid-metrics {
+    -ms-grid-columns: (1fr)[4] !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+}
+@media (min-width: 1024px) {
+  .devtools-modern-wrap .modern-info-grid.modern-info-grid-metrics,
+  #devtools-testResults .modern-info-grid.modern-info-grid-metrics,
+  .dev-tools-container .modern-info-grid.modern-info-grid-metrics {
+    -ms-grid-columns: (1fr)[5] !important;
+    grid-template-columns: repeat(5, 1fr) !important;
+  }
+}
+.devtools-modern-wrap .modern-info-grid.modern-info-grid-performance,
+#devtools-testResults .modern-info-grid.modern-info-grid-performance,
+.dev-tools-container .modern-info-grid.modern-info-grid-performance {
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)) !important;
+  flex: 0 0 auto !important;
+  min-width: 180px !important;
+}
+@media (min-width: 480px) {
+  .devtools-modern-wrap .modern-info-grid.modern-info-grid-performance,
+  #devtools-testResults .modern-info-grid.modern-info-grid-performance,
+  .dev-tools-container .modern-info-grid.modern-info-grid-performance {
+    -ms-grid-columns: (1fr)[2] !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    min-width: 180px !important;
+  }
+}
+@media (max-width: 768px) {
+  .devtools-modern-wrap .modern-info-grid.modern-info-grid-performance,
+  #devtools-testResults .modern-info-grid.modern-info-grid-performance,
+  .dev-tools-container .modern-info-grid.modern-info-grid-performance {
+    flex: 1 !important;
+    min-width: auto !important;
   }
 }
 .devtools-modern-wrap .modern-info-grid .modern-info-item,
@@ -12324,40 +12377,99 @@ textarea.form-control-lg {
 .dev-tools-container .modern-info-grid .modern-info-item {
   display: flex !important;
   flex-direction: column !important;
-  gap: 4px !important;
-  padding: 12px !important;
-  background: #f8fafc !important;
-  border: 1px solid #e2e8f0 !important;
-  border-radius: 8px !important;
+  align-items: center !important;
+  text-align: center !important;
+  gap: 2px !important;
+  padding: 6px 4px !important;
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 6px !important;
   min-height: auto !important;
+  transition: all 0.15s ease !important;
+}
+.devtools-modern-wrap .modern-info-grid .modern-info-item:hover,
+#devtools-testResults .modern-info-grid .modern-info-item:hover,
+.dev-tools-container .modern-info-grid .modern-info-item:hover {
+  border-color: #d1d5db !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+.devtools-modern-wrap .modern-info-grid .modern-info-item.total,
+#devtools-testResults .modern-info-grid .modern-info-item.total,
+.dev-tools-container .modern-info-grid .modern-info-item.total {
+  border-left: 3px solid #6366f1 !important;
+}
+.devtools-modern-wrap .modern-info-grid .modern-info-item.success,
+#devtools-testResults .modern-info-grid .modern-info-item.success,
+.dev-tools-container .modern-info-grid .modern-info-item.success {
+  border-left: 3px solid #10b981 !important;
+}
+.devtools-modern-wrap .modern-info-grid .modern-info-item.error,
+#devtools-testResults .modern-info-grid .modern-info-item.error,
+.dev-tools-container .modern-info-grid .modern-info-item.error {
+  border-left: 3px solid #ef4444 !important;
+}
+.devtools-modern-wrap .modern-info-grid .modern-info-item.warning,
+#devtools-testResults .modern-info-grid .modern-info-item.warning,
+.dev-tools-container .modern-info-grid .modern-info-item.warning {
+  border-left: 3px solid #f59e0b !important;
+}
+.devtools-modern-wrap .modern-info-grid .modern-info-item.info,
+#devtools-testResults .modern-info-grid .modern-info-item.info,
+.dev-tools-container .modern-info-grid .modern-info-item.info {
+  border-left: 3px solid #06b6d4 !important;
+}
+.devtools-modern-wrap .modern-info-grid .modern-info-item.muted,
+#devtools-testResults .modern-info-grid .modern-info-item.muted,
+.dev-tools-container .modern-info-grid .modern-info-item.muted {
+  border-left: 3px solid #e5e7eb !important;
+  opacity: 0.7 !important;
 }
 .devtools-modern-wrap .modern-info-grid .modern-info-label,
 #devtools-testResults .modern-info-grid .modern-info-label,
 .dev-tools-container .modern-info-grid .modern-info-label {
-  font-weight: 600 !important;
-  color: #64748b !important;
-  font-size: 12px !important;
+  font-weight: 500 !important;
+  color: #6b7280 !important;
+  font-size: 10px !important;
   text-transform: uppercase !important;
-  letter-spacing: 0.05em !important;
-  margin-bottom: 2px !important;
-  min-width: auto !important;
-  flex-shrink: 1 !important;
+  letter-spacing: 0.025em !important;
+  margin: 0 !important;
+  line-height: 1.2 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  width: 100% !important;
 }
 .devtools-modern-wrap .modern-info-grid .modern-info-value,
 #devtools-testResults .modern-info-grid .modern-info-value,
 .dev-tools-container .modern-info-grid .modern-info-value {
-  font-weight: 500 !important;
-  color: #1e293b !important;
-  font-size: 14px !important;
-  word-break: break-word;
-  flex: none !important;
+  font-weight: 600 !important;
+  color: #111827 !important;
+  font-size: 16px !important;
+  line-height: 1.1 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  width: 100% !important;
+}
+@media (max-width: 480px) {
+  .devtools-modern-wrap .modern-info-grid .modern-info-value,
+  #devtools-testResults .modern-info-grid .modern-info-value,
+  .dev-tools-container .modern-info-grid .modern-info-value {
+    font-size: 14px !important;
+  }
 }
 .devtools-modern-wrap .modern-info-grid .modern-info-extra,
 #devtools-testResults .modern-info-grid .modern-info-extra,
 .dev-tools-container .modern-info-grid .modern-info-extra {
   color: #9ca3af !important;
   font-style: italic;
-  font-size: 11px !important;
+  font-size: 9px !important;
+  line-height: 1.1 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
 }
 
 .devtools-modern-wrap .modern-code,

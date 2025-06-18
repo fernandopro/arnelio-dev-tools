@@ -489,57 +489,148 @@
   }
 }
 
-// Modern Info Grid - High Specificity
+// Modern Info Grid Container - Dual Layout
+.devtools-modern-wrap .modern-info-grid-container,
+#devtools-testResults .modern-info-grid-container,
+.dev-tools-container .modern-info-grid-container {
+  display: flex !important;
+  gap: 20px !important;
+  margin: 12px 0 !important;
+  align-items: flex-start !important;
+  
+  @media (max-width: 768px) {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+}
+
+// Modern Info Grid - High Specificity - Compact Design
 .devtools-modern-wrap .modern-info-grid,
 #devtools-testResults .modern-info-grid,
 .dev-tools-container .modern-info-grid {
   display: grid !important;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
-  gap: 16px 24px !important;
-  margin: 16px 0 !important;
+  gap: 8px !important;
   
-  @media (min-width: 768px) {
-    grid-template-columns: repeat(2, 1fr) !important;
+  // Grid 1: Métricas principales (izquierda)
+  &.modern-info-grid-metrics {
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)) !important;
+    flex: 1 !important;
+    
+    @media (min-width: 480px) {
+      grid-template-columns: repeat(3, 1fr) !important;
+    }
+    
+    @media (min-width: 768px) {
+      grid-template-columns: repeat(4, 1fr) !important;
+    }
+    
+    @media (min-width: 1024px) {
+      grid-template-columns: repeat(5, 1fr) !important;
+    }
   }
   
-  @media (min-width: 1200px) {
-    grid-template-columns: repeat(3, 1fr) !important;
+  // Grid 2: Métricas de rendimiento (derecha)
+  &.modern-info-grid-performance {
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)) !important;
+    flex: 0 0 auto !important;
+    min-width: 180px !important;
+    
+    @media (min-width: 480px) {
+      grid-template-columns: repeat(2, 1fr) !important;
+      min-width: 180px !important;
+    }
+    
+    @media (max-width: 768px) {
+      flex: 1 !important;
+      min-width: auto !important;
+    }
   }
   
   .modern-info-item {
     display: flex !important;
     flex-direction: column !important;
-    gap: 4px !important;
-    padding: 12px !important;
-    background: #f8fafc !important;
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 8px !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 2px !important;
+    padding: 6px 4px !important;
+    background: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 6px !important;
     min-height: auto !important;
+    transition: all 0.15s ease !important;
+    
+    &:hover {
+      border-color: #d1d5db !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+    }
+    
+    // Color variants for different data types
+    &.total {
+      border-left: 3px solid #6366f1 !important;
+    }
+    
+    &.success {
+      border-left: 3px solid #10b981 !important;
+    }
+    
+    &.error {
+      border-left: 3px solid #ef4444 !important;
+    }
+    
+    &.warning {
+      border-left: 3px solid #f59e0b !important;
+    }
+    
+    &.info {
+      border-left: 3px solid #06b6d4 !important;
+    }
+    
+    &.muted {
+      border-left: 3px solid #e5e7eb !important;
+      opacity: 0.7 !important;
+    }
   }
   
   .modern-info-label {
-    font-weight: 600 !important;
-    color: #64748b !important;
-    font-size: 12px !important;
+    font-weight: 500 !important;
+    color: #6b7280 !important;
+    font-size: 10px !important;
     text-transform: uppercase !important;
-    letter-spacing: 0.05em !important;
-    margin-bottom: 2px !important;
-    min-width: auto !important;
-    flex-shrink: 1 !important;
+    letter-spacing: 0.025em !important;
+    margin: 0 !important;
+    line-height: 1.2 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    width: 100% !important;
   }
   
   .modern-info-value {
-    font-weight: 500 !important;
-    color: #1e293b !important;
-    font-size: 14px !important;
-    word-break: break-word;
-    flex: none !important;
+    font-weight: 600 !important;
+    color: #111827 !important;
+    font-size: 16px !important;
+    line-height: 1.1 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    width: 100% !important;
+    
+    // Responsive font sizes for better readability
+    @media (max-width: 480px) {
+      font-size: 14px !important;
+    }
   }
   
   .modern-info-extra {
     color: #9ca3af !important;
     font-style: italic;
-    font-size: 11px !important;
+    font-size: 9px !important;
+    line-height: 1.1 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
   }
 }
 
