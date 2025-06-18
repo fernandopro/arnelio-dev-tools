@@ -217,7 +217,6 @@ class DevToolsAdminPanel {
                 }
                 
                 // Obtener información del archivo
-                $class_name = $this->extract_class_name_from_file($file->getPathname());
                 $method_count = $this->count_test_methods($file->getPathname());
                 
                 $tests[] = [
@@ -225,7 +224,6 @@ class DevToolsAdminPanel {
                     'relative_path' => $relative_path,
                     'full_path' => $file->getPathname(),
                     'type' => $type,
-                    'class_name' => $class_name,
                     'method_count' => $method_count,
                     'file_size' => $file->getSize(),
                     'modified' => date('Y-m-d H:i:s', $file->getMTime())
@@ -242,17 +240,6 @@ class DevToolsAdminPanel {
         });
         
         return $tests;
-    }
-    
-    /**
-     * Extrae el nombre de la clase de un archivo de test
-     */
-    private function extract_class_name_from_file($file_path) {
-        $content = file_get_contents($file_path);
-        if (preg_match('/class\s+(\w+)/', $content, $matches)) {
-            return $matches[1];
-        }
-        return basename($file_path, '.php');
     }
     
     /**
@@ -552,7 +539,7 @@ class DevToolsAdminPanel {
                     <div class="devtools-card-body" style="padding: 2rem;">
                         <div class="row g-4">
                             <!-- Columna 1: Tipos de Test -->
-                            <div class="col-md-3">
+                            <div class="col-md-4">
                                 <div class="devtools-section">
                                     <label class="devtools-label" style="display: block; font-weight: 600; color: #1e293b; margin-bottom: 1rem; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">Tipos de Test</label>
                                     <div class="devtools-radio-group" style="display: flex; flex-direction: column; gap: 0.75rem;">
@@ -569,7 +556,7 @@ class DevToolsAdminPanel {
                             </div>
                             
                             <!-- Columna 2: Opciones de Salida -->
-                            <div class="col-md-3">
+                            <div class="col-md-4">
                                 <div class="devtools-section">
                                     <label class="devtools-label" style="display: block; font-weight: 600; color: #1e293b; margin-bottom: 1rem; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">Opciones de Salida</label>
                                     <div class="devtools-checkbox-group" style="display: flex; flex-direction: column; gap: 0.75rem;">
@@ -1008,12 +995,11 @@ class DevToolsAdminPanel {
                         <table style="width: 100%; border-collapse: collapse; background: white;">
                             <thead>
                                 <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">
-                                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151; font-size: 0.875rem;">Archivo</th>
-                                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151; font-size: 0.875rem;">Tipo</th>
-                                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151; font-size: 0.875rem;">Clase</th>
-                                    <th style="padding: 1rem; text-align: center; font-weight: 600; color: #374151; font-size: 0.875rem;">Tests</th>
-                                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151; font-size: 0.875rem;">Ruta</th>
-                                    <th style="padding: 1rem; text-align: center; font-weight: 600; color: #374151; font-size: 0.875rem;">Acciones</th>
+                                    <th style="width:10%; padding: 1rem; text-align: center; font-weight: 600; color: #374151; font-size: 0.875rem;">Tests</th>
+                                    <th style="width:10%; padding: 1rem; text-align: left; font-weight: 600; color: #374151; font-size: 0.875rem;">Tipo</th>
+                                    <th style="width:30%; padding: 1rem; text-align: left; font-weight: 600; color: #374151; font-size: 0.875rem;">Archivo</th>
+                                    <th style="width:30%; padding: 1rem; text-align: left; font-weight: 600; color: #374151; font-size: 0.875rem;">Ruta</th>
+                                    <th style="width:20%; padding: 1rem; text-align: center; font-weight: 600; color: #374151; font-size: 0.875rem;">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1027,24 +1013,21 @@ class DevToolsAdminPanel {
                         <tr style="background: ${rowBg}; border-bottom: 1px solid #f3f4f6; transition: background-color 0.2s ease;" 
                             onmouseover="this.style.background='#f0f9ff'" 
                             onmouseout="this.style.background='${rowBg}'">
-                            <td style="padding: 1rem; font-weight: 500; color: #1f2937;">
-                                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                    <span style="font-size: 1.2em;">🧪</span>
-                                    <span>${test.filename}</span>
-                                </div>
+                            <td style="padding: 1rem; text-align: center;">
+                                <span style="background: #dbeafe; color: #1e40af; padding: 0.25rem 0.5rem; border-radius: 6px; font-weight: 600; font-size: 0.875rem;">
+                                    ${test.method_count}
+                                </span>
                             </td>
                             <td style="padding: 1rem;">
                                 <span style="background: ${typeColor.bg}; color: ${typeColor.text}; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
                                     ${test.type}
                                 </span>
                             </td>
-                            <td style="padding: 1rem; color: #6b7280; font-family: 'Monaco', 'Menlo', monospace; font-size: 0.875rem;">
-                                ${test.class_name}
-                            </td>
-                            <td style="padding: 1rem; text-align: center;">
-                                <span style="background: #dbeafe; color: #1e40af; padding: 0.25rem 0.5rem; border-radius: 6px; font-weight: 600; font-size: 0.875rem;">
-                                    ${test.method_count}
-                                </span>
+                            <td style="padding: 1rem; font-weight: 500; color: #1f2937;">
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <span style="font-size: 1.2em;">🧪</span>
+                                    <span>${test.filename}</span>
+                                </div>
                             </td>
                             <td style="padding: 1rem; color: #6b7280; font-size: 0.875rem; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                                 ${test.relative_path}
