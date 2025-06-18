@@ -189,10 +189,10 @@ class DevToolsAdminPanel {
     }
     
     /**
-     * Escanea el directorio dev-tools/tests y retorna información de todos los tests
+     * Escanea el directorio plugin-dev-tools/tests y retorna información de todos los tests
      */
     private function scan_tests_directory() {
-        $tests_dir = dirname(__DIR__) . '/tests';
+        $tests_dir = dirname(dirname(__DIR__)) . '/plugin-dev-tools/tests';
         $tests = [];
         
         if (!is_dir($tests_dir)) {
@@ -657,9 +657,9 @@ class DevToolsAdminPanel {
                             <div>
                                 <h5 class="mb-0" style="font-weight: 600; display: flex; align-items: center; gap: 0.75rem;">
                                     <span style="font-size: 1.2em;">🧪</span>
-                                    Tests Disponibles
+                                    Tests del Plugin
                                 </h5>
-                                <p class="mb-0" style="opacity: 0.9; font-size: 0.875rem; margin-top: 0.25rem;">Listado de todos los archivos de test en dev-tools/tests</p>
+                                <p class="mb-0" style="opacity: 0.9; font-size: 0.875rem; margin-top: 0.25rem;">Listado de todos los archivos de test en plugin-dev-tools/tests</p>
                             </div>
                             <div>
                                 <button id="devtools-refreshTests" class="btn btn-sm" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 8px; padding: 0.5rem 1rem; font-weight: 500; transition: all 0.3s ease;">
@@ -676,7 +676,7 @@ class DevToolsAdminPanel {
                             <div style="padding: 3rem 2rem; text-align: center; color: #64748b;">
                                 <div style="font-size: 3rem; opacity: 0.3; margin-bottom: 1rem;">📋</div>
                                 <h6 style="font-weight: 600; color: #475569; margin-bottom: 0.5rem;">Cargando tests...</h6>
-                                <p style="margin: 0; font-size: 0.875rem;">Escaneando directorio dev-tools/tests</p>
+                                <p style="margin: 0; font-size: 0.875rem;">Escaneando directorio plugin-dev-tools/tests</p>
                             </div>
                         </div>
                     </div>
@@ -954,7 +954,7 @@ class DevToolsAdminPanel {
                     <div style="padding: 3rem 2rem; text-align: center; color: #64748b;">
                         <div style="width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top: 4px solid #667eea; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div>
                         <h6 style="font-weight: 600; color: #475569; margin-bottom: 0.5rem;">Escaneando tests...</h6>
-                        <p style="margin: 0; font-size: 0.875rem;">Analizando directorio dev-tools/tests</p>
+                        <p style="margin: 0; font-size: 0.875rem;">Analizando directorio plugin-dev-tools/tests</p>
                     </div>
                 `;
                 
@@ -990,7 +990,7 @@ class DevToolsAdminPanel {
                         <div style="padding: 3rem 2rem; text-align: center; color: #64748b;">
                             <div style="font-size: 3rem; opacity: 0.3; margin-bottom: 1rem;">📭</div>
                             <h6 style="font-weight: 600; color: #475569; margin-bottom: 0.5rem;">No se encontraron tests</h6>
-                            <p style="margin: 0; font-size: 0.875rem;">El directorio dev-tools/tests está vacío</p>
+                            <p style="margin: 0; font-size: 0.875rem;">El directorio plugin-dev-tools/tests está vacío</p>
                         </div>
                     `;
                     return;
@@ -1071,11 +1071,17 @@ class DevToolsAdminPanel {
             // Función para obtener colores según el tipo
             function getTypeColor(type) {
                 const colors = {
-                    'Unit': { bg: '#dcfce7', text: '#166534' },
-                    'Integration': { bg: '#dbeafe', text: '#1e40af' },
-                    'Feature': { bg: '#fef3c7', text: '#d97706' },
-                    'Database': { bg: '#e0e7ff', text: '#5b21b6' },
-                    'Other': { bg: '#f3f4f6', text: '#6b7280' }
+                    'Unit': { bg: '#dcfce7', text: '#166534' },           // Verde
+                    'Integration': { bg: '#dbeafe', text: '#1e40af' },    // Azul
+                    'Feature': { bg: '#fef3c7', text: '#d97706' },        // Amarillo
+                    'Database': { bg: '#e0e7ff', text: '#5b21b6' },       // Púrpura
+                    'Performance': { bg: '#fef2f2', text: '#dc2626' },    // Rojo
+                    'Security': { bg: '#f0fdf4', text: '#166534' },       // Verde oscuro
+                    'Api': { bg: '#ecfdf5', text: '#059669' },            // Verde esmeralda
+                    'Modules': { bg: '#eff6ff', text: '#2563eb' },        // Azul medio
+                    'Functional': { bg: '#fdf4ff', text: '#a21caf' },     // Magenta
+                    'Acceptance': { bg: '#f0f9ff', text: '#0284c7' },     // Azul cielo
+                    'Other': { bg: '#f3f4f6', text: '#6b7280' }           // Gris
                 };
                 return colors[type] || colors['Other'];
             }
