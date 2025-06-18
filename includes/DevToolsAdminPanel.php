@@ -824,9 +824,9 @@ class DevToolsAdminPanel {
                                                 </small>
                                             </div>
                                             
-                                            <div style="background: #fef3f2; padding: 1rem; border-radius: 8px; border-left: 4px solid #dc2626;">
-                                                <h6 style="color: #dc2626; font-weight: 600; margin-bottom: 0.5rem;">Directorios</h6>
-                                                <small style="color: #dc2626;">
+                                            <div style="background: #fef3f2; padding: 1rem; border-radius: 8px; border-left: 4px solid #f5576c;">
+                                                <h6 style="color: #f5576c; font-weight: 600; margin-bottom: 0.5rem;">Directorios</h6>
+                                                <small style="color: #f5576c;">
                                                     ${results.plugin_dev_tools_exists ? '✅' : '❌'} Plugin Dev Tools<br>
                                                     ✅ AJAX URL: Configurada<br>
                                                     ✅ Plugin URL: Configurada
