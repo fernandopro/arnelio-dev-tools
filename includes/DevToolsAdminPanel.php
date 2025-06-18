@@ -1250,24 +1250,42 @@ class DevToolsAdminPanel {
                                         </div>
                                     </div>
                                     
-                                    <!-- Estadísticas rápidas -->
-                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; font-size: 0.875rem;">
-                                        <div style="text-align: center;">
+                                    <!-- Estadísticas completas -->
+                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 1rem; font-size: 0.875rem;">
+                                        <div style="text-align: center; background: rgba(255, 255, 255, 0.2); padding: 0.75rem; border-radius: 8px;">
                                             <div style="font-weight: 600; font-size: 1.5rem;">${summary.total_tests}</div>
                                             <div style="opacity: 0.9;">Tests</div>
                                         </div>
-                                        <div style="text-align: center;">
+                                        <div style="text-align: center; background: rgba(255, 255, 255, 0.2); padding: 0.75rem; border-radius: 8px;">
                                             <div style="font-weight: 600; font-size: 1.5rem; color: #10b981;">${summary.passed}</div>
                                             <div style="opacity: 0.9;">Pasados</div>
                                         </div>
-                                        <div style="text-align: center;">
+                                        <div style="text-align: center; background: rgba(255, 255, 255, 0.2); padding: 0.75rem; border-radius: 8px;">
                                             <div style="font-weight: 600; font-size: 1.5rem; color: #ef4444;">${summary.failed}</div>
                                             <div style="opacity: 0.9;">Fallos</div>
                                         </div>
-                                        <div style="text-align: center;">
+                                        <div style="text-align: center; background: rgba(255, 255, 255, 0.2); padding: 0.75rem; border-radius: 8px;">
+                                            <div style="font-weight: 600; font-size: 1.5rem; color: #f59e0b;">${summary.errors}</div>
+                                            <div style="opacity: 0.9;">Errores</div>
+                                        </div>
+                                        <div style="text-align: center; background: rgba(255, 255, 255, 0.2); padding: 0.75rem; border-radius: 8px;">
+                                            <div style="font-weight: 600; font-size: 1.5rem; color: #6366f1;">${summary.skipped}</div>
+                                            <div style="opacity: 0.9;">Omitidos</div>
+                                        </div>
+                                        <div style="text-align: center; background: rgba(255, 255, 255, 0.2); padding: 0.75rem; border-radius: 8px;">
+                                            <div style="font-weight: 600; font-size: 1.5rem; color: #8b5cf6;">${summary.assertions}</div>
+                                            <div style="opacity: 0.9;">Assertions</div>
+                                        </div>
+                                        <div style="text-align: center; background: rgba(255, 255, 255, 0.2); padding: 0.75rem; border-radius: 8px;">
                                             <div style="font-weight: 600; font-size: 1.5rem;">${testData.execution_time}ms</div>
                                             <div style="opacity: 0.9;">Tiempo</div>
                                         </div>
+                                        ${summary.memory ? `
+                                        <div style="text-align: center; background: rgba(255, 255, 255, 0.2); padding: 0.75rem; border-radius: 8px;">
+                                            <div style="font-weight: 600; font-size: 1.5rem; color: #06b6d4;">${summary.memory}</div>
+                                            <div style="opacity: 0.9;">Memoria</div>
+                                        </div>
+                                        ` : ''}
                                     </div>
                                     
                                     <!-- Opciones utilizadas -->
@@ -1289,27 +1307,14 @@ class DevToolsAdminPanel {
                                 
                                 <!-- Salida detallada del test -->
                                 <div style="padding: 1.5rem;">
-                                    <h6 style="margin: 0 0 1rem 0; color: #374151; font-weight: 600;">📋 Salida Detallada</h6>
-                                    <pre style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 1rem; font-size: 0.875rem; line-height: 1.5; color: #374151; overflow-x: auto; white-space: pre-wrap; margin: 0; max-height: 400px; overflow-y: auto;">${testData.output}</pre>
+                                    <div class="modern-section">
+                                        <div class="modern-section-title">📋 Salida Detallada</div>
+                                        <pre class="modern-code-block modern-code-block-dark">${testData.output}</pre>
+                                    </div>
                                     
-                                    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e2e8f0; font-size: 0.875rem; color: #6b7280;">
-                                        <div style="margin-bottom: 0.75rem;">
-                                            <strong>Opciones aplicadas:</strong>
-                                            <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap;">
-                                                <span style="background: ${verboseOutput ? '#dcfce7' : '#f3f4f6'}; color: ${verboseOutput ? '#166534' : '#6b7280'}; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.75rem; border: 1px solid ${verboseOutput ? '#bbf7d0' : '#e5e7eb'};">
-                                                    ${verboseOutput ? '✅' : '❌'} Verbose Output
-                                                </span>
-                                                <span style="background: ${generateCoverage ? '#dcfce7' : '#f3f4f6'}; color: ${generateCoverage ? '#166534' : '#6b7280'}; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.75rem; border: 1px solid ${generateCoverage ? '#bbf7d0' : '#e5e7eb'};">
-                                                    ${generateCoverage ? '✅' : '❌'} Code Coverage
-                                                </span>
-                                                <span style="background: ${testdoxOutput ? '#dcfce7' : '#f3f4f6'}; color: ${testdoxOutput ? '#166534' : '#6b7280'}; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.75rem; border: 1px solid ${testdoxOutput ? '#bbf7d0' : '#e5e7eb'};">
-                                                    ${testdoxOutput ? '✅' : '❌'} TestDox Format
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <strong>Comando ejecutado:</strong> <code style="background: #f3f4f6; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8rem;">${testData.command}</code>
-                                        </div>
+                                    <div class="modern-section">
+                                        <div class="modern-section-title">💻 Comando Ejecutado</div>
+                                        <pre class="modern-code-block modern-code-block-light"><code>${testData.command}</code></pre>
                                     </div>
                                 </div>
                             </div>
