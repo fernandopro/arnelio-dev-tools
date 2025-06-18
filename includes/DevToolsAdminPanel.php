@@ -32,7 +32,7 @@ class DevToolsAdminPanel {
         add_action('wp_ajax_dev_tools_run_tests', [$this, 'ajax_run_tests']);
         add_action('wp_ajax_dev_tools_test_connectivity', [$this, 'ajax_test_connectivity']);
         add_action('wp_ajax_dev_tools_get_tests_list', [$this, 'ajax_get_tests_list']);
-        add_action('wp_ajax_dev_tools_get_tests_list', [$this, 'ajax_get_tests_list']);
+        add_action('wp_ajax_dev_tools_run_specific_test', [$this, 'ajax_run_specific_test']);
     }
     
     /**
@@ -249,6 +249,57 @@ class DevToolsAdminPanel {
         $content = file_get_contents($file_path);
         preg_match_all('/function\s+test\w+/', $content, $matches);
         return count($matches[0]);
+    }
+
+    /**
+     * Handler AJAX para ejecutar un test específico individual
+     */
+    public function ajax_run_specific_test() {
+        // Debug del nonce recibido
+        $received_nonce = $_POST['nonce'] ?? '';
+        $expected_action = 'dev_tools_nonce';
+        
+        // Log de debugging
+        error_log("DEBUG SPECIFIC TEST - Received: {$received_nonce}");
+        error_log("DEBUG SPECIFIC TEST - Expected action: {$expected_action}");
+        
+        // Verificar nonce de seguridad
+        if (!wp_verify_nonce($received_nonce, $expected_action)) {
+            wp_send_json_error(['message' => 'Security check failed - Invalid nonce']);
+            return;
+        }
+        
+        // Verificar permisos
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(['message' => 'Insufficient permissions']);
+            return;
+        }
+        
+        // Obtener parámetros del POST
+        $test_file = $_POST['test_file'] ?? '';
+        $verbose = filter_var($_POST['verbose'] ?? true, FILTER_VALIDATE_BOOLEAN); // Verbose por defecto para tests individuales
+        
+        if (empty($test_file)) {
+            wp_send_json_error(['message' => 'No se especificó el archivo de test']);
+            return;
+        }
+        
+        try {
+            $result = $this->run_specific_test_file($test_file, $verbose);
+            
+            if ($result['success']) {
+                wp_send_json_success($result['data']);
+            } else {
+                wp_send_json_error([
+                    'message' => $result['error'] ?? 'Error desconocido ejecutando test específico'
+                ]);
+            }
+            
+        } catch (Exception $e) {
+            wp_send_json_error([
+                'message' => 'Error ejecutando test específico: ' . $e->getMessage()
+            ]);
+        }
     }
 
     /**
@@ -1092,8 +1143,155 @@ class DevToolsAdminPanel {
             // Función para ejecutar test específico
             window.runSpecificTest = function(testPath) {
                 console.log('🔍 Ejecutando test específico:', testPath);
-                // Aquí puedes implementar la lógica para ejecutar un test específico
-                alert('Funcionalidad en desarrollo: Ejecutar ' + testPath);
+                
+                // Mostrar el OutputContainer con fade-in
+                const outputContainer = document.getElementById('OutputContainer');
+                if (outputContainer) {
+                    outputContainer.style.display = 'block';
+                    setTimeout(() => {
+                        outputContainer.style.opacity = '1';
+                    }, 10);
+                }
+                
+                // Mostrar estado de carga en el área de resultados
+                const resultArea = document.getElementById('devtools-testResults');
+                if (resultArea) {
+                    resultArea.innerHTML = `
+                        <div style="padding: 2rem; text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 8px; margin-bottom: 1rem;">
+                            <div style="width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.3); border-top: 4px solid white; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div>
+                            <h6 style="font-weight: 600; margin-bottom: 0.5rem;">🧪 Ejecutando Test Individual</h6>
+                            <p style="margin: 0; opacity: 0.9; font-size: 0.875rem;">Archivo: ${testPath}</p>
+                        </div>
+                    `;
+                }
+                
+                // Realizar llamada AJAX para ejecutar el test específico
+                const formData = new FormData();
+                formData.append('action', 'dev_tools_run_specific_test');
+                formData.append('nonce', '<?php echo wp_create_nonce('dev_tools_nonce'); ?>');
+                formData.append('test_file', testPath);
+                formData.append('verbose', 'true');
+                
+                fetch('<?php echo admin_url('admin-ajax.php'); ?>', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('✅ Test específico completado:', data);
+                    
+                    if (data.success && resultArea) {
+                        const testData = data.data;
+                        const summary = testData.summary;
+                        
+                        // Determinar el color del estado
+                        let statusColor = '#10b981'; // Verde por defecto
+                        let statusIcon = '✅';
+                        let statusText = 'Éxito';
+                        
+                        if (summary.status === 'error') {
+                            statusColor = '#ef4444';
+                            statusIcon = '❌';
+                            statusText = 'Error';
+                        } else if (summary.status === 'warning') {
+                            statusColor = '#f59e0b';
+                            statusIcon = '⚠️';
+                            statusText = 'Advertencia';
+                        }
+                        
+                        // Renderizar resultados del test específico
+                        resultArea.innerHTML = `
+                            <div style="background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 25px rgba(0,0,0,0.1);">
+                                <!-- Header con información del test -->
+                                <div style="background: linear-gradient(135deg, ${statusColor} 0%, ${statusColor}dd 100%); color: white; padding: 1.5rem;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                        <div>
+                                            <h6 style="margin: 0; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+                                                ${statusIcon} Test Individual: ${testData.test_file}
+                                            </h6>
+                                        </div>
+                                        <div style="text-align: right;">
+                                            <span style="background: rgba(255,255,255,0.2); padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 500;">
+                                                ${statusText}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Estadísticas rápidas -->
+                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; font-size: 0.875rem;">
+                                        <div style="text-align: center;">
+                                            <div style="font-weight: 600; font-size: 1.5rem;">${summary.total_tests}</div>
+                                            <div style="opacity: 0.9;">Tests</div>
+                                        </div>
+                                        <div style="text-align: center;">
+                                            <div style="font-weight: 600; font-size: 1.5rem; color: #10b981;">${summary.passed}</div>
+                                            <div style="opacity: 0.9;">Pasados</div>
+                                        </div>
+                                        <div style="text-align: center;">
+                                            <div style="font-weight: 600; font-size: 1.5rem; color: #ef4444;">${summary.failed}</div>
+                                            <div style="opacity: 0.9;">Fallos</div>
+                                        </div>
+                                        <div style="text-align: center;">
+                                            <div style="font-weight: 600; font-size: 1.5rem;">${testData.execution_time}ms</div>
+                                            <div style="opacity: 0.9;">Tiempo</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Salida detallada del test -->
+                                <div style="padding: 1.5rem;">
+                                    <h6 style="margin: 0 0 1rem 0; color: #374151; font-weight: 600;">📋 Salida Detallada</h6>
+                                    <pre style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 1rem; font-size: 0.875rem; line-height: 1.5; color: #374151; overflow-x: auto; white-space: pre-wrap; margin: 0; max-height: 400px; overflow-y: auto;">${testData.output}</pre>
+                                    
+                                    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e2e8f0; font-size: 0.875rem; color: #6b7280;">
+                                        <strong>Comando ejecutado:</strong> <code style="background: #f3f4f6; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8rem;">${testData.command}</code>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        // Mostrar error
+                        if (resultArea) {
+                            resultArea.innerHTML = `
+                                <div style="background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 25px rgba(0,0,0,0.1);">
+                                    <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; padding: 1.5rem;">
+                                        <h6 style="margin: 0; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+                                            ❌ Error ejecutando test: ${testPath}
+                                        </h6>
+                                    </div>
+                                    <div style="padding: 1.5rem;">
+                                        <p style="margin: 0; color: #374151;">${data.data?.message || 'Error desconocido'}</p>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ Error ejecutando test específico:', error);
+                    
+                    // Mostrar error en el área de resultados
+                    if (resultArea) {
+                        resultArea.innerHTML = `
+                            <div style="background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 25px rgba(0,0,0,0.1);">
+                                <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; padding: 1.5rem;">
+                                    <h6 style="margin: 0; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+                                        ❌ Error de conectividad
+                                    </h6>
+                                </div>
+                                <div style="padding: 1.5rem;">
+                                    <p style="margin: 0; color: #374151;">Error al ejecutar el test: ${error.message}</p>
+                                    <p style="margin: 0.5rem 0 0 0; font-size: 0.875rem; color: #6b7280;">Archivo: ${testPath}</p>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
             };
             
             // Event listener para el botón de actualizar
@@ -1454,6 +1652,56 @@ class DevToolsAdminPanel {
         }
     }
     
+    /**
+     * Ejecutar un archivo de test específico
+     */
+    private function run_specific_test_file($test_file, $verbose = true) {
+        try {
+            // Validar que el archivo de test existe
+            $tests_dir = dirname(dirname(__DIR__)) . '/plugin-dev-tools/tests';
+            $full_test_path = $tests_dir . '/' . $test_file;
+            
+            if (!file_exists($full_test_path)) {
+                throw new \Exception("Archivo de test no encontrado: {$test_file}");
+            }
+            
+            // Construir comando PHPUnit para el archivo específico
+            $php_binary = $this->get_php_binary_path();
+            $phpunit_path = '"' . $php_binary . '" ../dev-tools/vendor/phpunit/phpunit/phpunit';
+            $options = ['--verbose']; // Siempre verbose para tests individuales
+            
+            if ($verbose) {
+                $options[] = '--testdox'; // Agregar testdox para mejor visualización
+            }
+            
+            // El comando se ejecutará desde plugin-dev-tools, así que usar ruta relativa con prefijo tests/
+            $test_path_for_command = 'tests/' . $test_file;
+            $command = $phpunit_path . ' ' . implode(' ', $options) . ' ' . escapeshellarg($test_path_for_command);
+            
+            // Ejecutar el test específico
+            $result = $this->execute_phpunit($command, ['plugin']);
+            
+            return [
+                'success' => true,
+                'data' => [
+                    'command' => $command,
+                    'output' => $result['output'],
+                    'return_code' => $result['exit_code'],
+                    'execution_time' => $result['execution_time'],
+                    'test_file' => $test_file,
+                    'summary' => $this->parse_test_output($result['output']),
+                    'is_specific_test' => true
+                ]
+            ];
+            
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => 'Error ejecutando test específico: ' . $e->getMessage()
+            ];
+        }
+    }
+
     /**
      * Obtener la ruta al ejecutable PHP
      */
