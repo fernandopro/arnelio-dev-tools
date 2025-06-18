@@ -245,55 +245,55 @@ class TestRunner {
             html += `<div class="modern-info-grid-container">
                 <!-- Grid 1: Métricas principales (izquierda) -->
                 <div class="modern-info-grid modern-info-grid-metrics">
-                    <div class="modern-info-item total" data-type="total">
-                        <div class="modern-info-value">${summary.total_tests}</div>
-                        <div class="modern-info-label">Total</div>
+                    <div class="metric-card">
+                        <div class="metric-value">${summary.total_tests}</div>
+                        <div class="metric-label">Total</div>
                     </div>
-                    <div class="modern-info-item success" data-type="success">
-                        <div class="modern-info-value">${summary.passed}</div>
-                        <div class="modern-info-label">Pasados</div>
+                    <div class="metric-card">
+                        <div class="metric-value metric-success">${summary.passed}</div>
+                        <div class="metric-label">Pasados</div>
                     </div>
-                    <div class="modern-info-item ${summary.failed > 0 ? 'error' : 'muted'}" data-type="${summary.failed > 0 ? 'error' : 'muted'}">
-                        <div class="modern-info-value">${summary.failed}</div>
-                        <div class="modern-info-label">Fallidos</div>
+                    <div class="metric-card">
+                        <div class="metric-value ${summary.failed > 0 ? 'metric-error' : ''}">${summary.failed}</div>
+                        <div class="metric-label">Fallidos</div>
                     </div>
-                    <div class="modern-info-item ${summary.errors > 0 ? 'warning' : 'muted'}" data-type="${summary.errors > 0 ? 'warning' : 'muted'}">
-                        <div class="modern-info-value">${summary.errors}</div>
-                        <div class="modern-info-label">Errores</div>
+                    <div class="metric-card">
+                        <div class="metric-value ${summary.errors > 0 ? 'metric-warning' : ''}">${summary.errors}</div>
+                        <div class="metric-label">Errores</div>
                     </div>
-                    <div class="modern-info-item info" data-type="info">
-                        <div class="modern-info-value">${summary.assertions}</div>
-                        <div class="modern-info-label">Verificaciones</div>
+                    <div class="metric-card">
+                        <div class="metric-value metric-purple">${summary.assertions}</div>
+                        <div class="metric-label">Verificaciones</div>
                     </div>
                     ${summary.skipped > 0 ? `
-                        <div class="modern-info-item warning" data-type="warning">
-                            <div class="modern-info-value">${summary.skipped}</div>
-                            <div class="modern-info-label">Omitidos</div>
+                        <div class="metric-card">
+                            <div class="metric-value metric-info">${summary.skipped}</div>
+                            <div class="metric-label">Omitidos</div>
                         </div>
                     ` : ''}
                     ${(summary.incomplete || 0) > 0 ? `
-                        <div class="modern-info-item warning" data-type="warning">
-                            <div class="modern-info-value">${summary.incomplete || 0}</div>
-                            <div class="modern-info-label">Incompletos</div>
+                        <div class="metric-card">
+                            <div class="metric-value metric-warning">${summary.incomplete || 0}</div>
+                            <div class="metric-label">Incompletos</div>
                         </div>
                     ` : ''}
                     ${summary.risky > 0 ? `
-                        <div class="modern-info-item warning" data-type="warning">
-                            <div class="modern-info-value">${summary.risky || 0}</div>
-                            <div class="modern-info-label">Riesgosos</div>
+                        <div class="metric-card">
+                            <div class="metric-value metric-warning">${summary.risky || 0}</div>
+                            <div class="metric-label">Riesgosos</div>
                         </div>
                     ` : ''}
                 </div>
                 
                 <!-- Grid 2: Métricas de rendimiento (derecha) -->
                 <div class="modern-info-grid modern-info-grid-performance">
-                    ${summary.time ? `<div class="modern-info-item info" data-type="info">
-                        <div class="modern-info-value">${summary.time}</div>
-                        <div class="modern-info-label">Tiempo</div>
+                    ${summary.time ? `<div class="metric-card">
+                        <div class="metric-value">${summary.time}</div>
+                        <div class="metric-label">Tiempo</div>
                     </div>` : ''}
-                    ${summary.memory ? `<div class="modern-info-item info" data-type="info">
-                        <div class="modern-info-value">${summary.memory}</div>
-                        <div class="modern-info-label">Memoria</div>
+                    ${summary.memory ? `<div class="metric-card">
+                        <div class="metric-value metric-cyan">${summary.memory}</div>
+                        <div class="metric-label">Memoria</div>
                     </div>` : ''}
                 </div>
             </div>`;

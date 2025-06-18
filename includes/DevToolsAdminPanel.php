@@ -732,6 +732,88 @@ class DevToolsAdminPanel {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
+        /* Estilos para métricas mejoradas */
+        .metric-card {
+            text-align: center;
+            background: rgba(0, 0, 0, 0.4) !important;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.875rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .metric-value {
+            font-weight: 700;
+            font-size: 1.625rem;
+            line-height: 1.2;
+            color: #ffffff;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+            margin-bottom: 0.25rem;
+        }
+        
+        .metric-label {
+            opacity: 0.95;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #ffffff;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Colores específicos para métricas */
+        .metric-success {
+            color: #34d399 !important;
+            text-shadow: 0 0 10px rgba(52, 211, 153, 0.3), 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+        
+        .metric-error {
+            color: #f87171 !important;
+            text-shadow: 0 0 10px rgba(248, 113, 113, 0.3), 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+        
+        .metric-warning {
+            color: #fbbf24 !important;
+            text-shadow: 0 0 10px rgba(251, 191, 36, 0.3), 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+        
+        .metric-info {
+            color: #60a5fa !important;
+            text-shadow: 0 0 10px rgba(96, 165, 250, 0.3), 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+        
+        .metric-purple {
+            color: #a78bfa !important;
+            text-shadow: 0 0 10px rgba(167, 139, 250, 0.3), 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+        
+        .metric-cyan {
+            color: #22d3ee !important;
+            text-shadow: 0 0 10px rgba(34, 211, 238, 0.3), 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Responsive design para métricas */
+        @media (max-width: 768px) {
+            .metric-value {
+                font-size: 1.25rem;
+            }
+            .metric-label {
+                font-size: 0.7rem;
+            }
+            .metric-card {
+                padding: 0.75rem;
+            }
+        }
         </style>
         <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -1251,39 +1333,39 @@ class DevToolsAdminPanel {
                                     </div>
                                     
                                     <!-- Estadísticas completas -->
-                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 1rem; font-size: 0.875rem;">
-                                        <div style="text-align: center; background: rgba(255, 255, 255, 0.2); padding: 0.75rem; border-radius: 8px;">
-                                            <div style="font-weight: 600; font-size: 1.5rem;">${summary.total_tests}</div>
-                                            <div style="opacity: 0.9;">Tests</div>
+                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; font-size: 0.875rem;">
+                                        <div class="metric-card">
+                                            <div class="metric-value">${summary.total_tests}</div>
+                                            <div class="metric-label">Tests</div>
                                         </div>
-                                        <div style="text-align: center; background: rgba(255, 255, 255, 0.2); padding: 0.75rem; border-radius: 8px;">
-                                            <div style="font-weight: 600; font-size: 1.5rem; color: #10b981;">${summary.passed}</div>
-                                            <div style="opacity: 0.9;">Pasados</div>
+                                        <div class="metric-card">
+                                            <div class="metric-value metric-success">${summary.passed}</div>
+                                            <div class="metric-label">Pasados</div>
                                         </div>
-                                        <div style="text-align: center; background: rgba(255, 255, 255, 0.2); padding: 0.75rem; border-radius: 8px;">
-                                            <div style="font-weight: 600; font-size: 1.5rem; color: #ef4444;">${summary.failed}</div>
-                                            <div style="opacity: 0.9;">Fallos</div>
+                                        <div class="metric-card">
+                                            <div class="metric-value metric-error">${summary.failed}</div>
+                                            <div class="metric-label">Fallos</div>
                                         </div>
-                                        <div style="text-align: center; background: rgba(255, 255, 255, 0.2); padding: 0.75rem; border-radius: 8px;">
-                                            <div style="font-weight: 600; font-size: 1.5rem; color: #f59e0b;">${summary.errors}</div>
-                                            <div style="opacity: 0.9;">Errores</div>
+                                        <div class="metric-card">
+                                            <div class="metric-value metric-warning">${summary.errors}</div>
+                                            <div class="metric-label">Errores</div>
                                         </div>
-                                        <div style="text-align: center; background: rgba(255, 255, 255, 0.2); padding: 0.75rem; border-radius: 8px;">
-                                            <div style="font-weight: 600; font-size: 1.5rem; color: #6366f1;">${summary.skipped}</div>
-                                            <div style="opacity: 0.9;">Omitidos</div>
+                                        <div class="metric-card">
+                                            <div class="metric-value metric-info">${summary.skipped}</div>
+                                            <div class="metric-label">Omitidos</div>
                                         </div>
-                                        <div style="text-align: center; background: rgba(255, 255, 255, 0.2); padding: 0.75rem; border-radius: 8px;">
-                                            <div style="font-weight: 600; font-size: 1.5rem; color: #8b5cf6;">${summary.assertions}</div>
-                                            <div style="opacity: 0.9;">Assertions</div>
+                                        <div class="metric-card">
+                                            <div class="metric-value metric-purple">${summary.assertions}</div>
+                                            <div class="metric-label">Assertions</div>
                                         </div>
-                                        <div style="text-align: center; background: rgba(255, 255, 255, 0.2); padding: 0.75rem; border-radius: 8px;">
-                                            <div style="font-weight: 600; font-size: 1.5rem;">${testData.execution_time}ms</div>
-                                            <div style="opacity: 0.9;">Tiempo</div>
+                                        <div class="metric-card">
+                                            <div class="metric-value">${testData.execution_time}ms</div>
+                                            <div class="metric-label">Tiempo</div>
                                         </div>
                                         ${summary.memory ? `
-                                        <div style="text-align: center; background: rgba(255, 255, 255, 0.2); padding: 0.75rem; border-radius: 8px;">
-                                            <div style="font-weight: 600; font-size: 1.5rem; color: #06b6d4;">${summary.memory}</div>
-                                            <div style="opacity: 0.9;">Memoria</div>
+                                        <div class="metric-card">
+                                            <div class="metric-value metric-cyan">${summary.memory}</div>
+                                            <div class="metric-label">Memoria</div>
                                         </div>
                                         ` : ''}
                                     </div>
@@ -1736,7 +1818,7 @@ class DevToolsAdminPanel {
             $options = [];
             
             // Agregar opciones basadas en los parámetros recibidos
-            if ($verbose) {
+            if ($verbose && !$testdox) {
                 $options[] = '--verbose';
                 error_log("DEBUG SPECIFIC TEST - Added --verbose option");
             }
@@ -1749,12 +1831,6 @@ class DevToolsAdminPanel {
             if ($testdox) {
                 $options[] = '--testdox';
                 error_log("DEBUG SPECIFIC TEST - Added --testdox option");
-            }
-            
-            // Si no se especificó testdox pero sí verbose, agregar testdox por defecto para mejor visualización
-            if ($verbose && !$testdox) {
-                $options[] = '--testdox';
-                error_log("DEBUG SPECIFIC TEST - Added --testdox by default with verbose");
             }
             
             error_log("DEBUG SPECIFIC TEST - Final options: " . implode(' ', $options));
