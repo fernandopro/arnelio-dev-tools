@@ -530,7 +530,7 @@ class DevToolsAdminPanel {
                     <div class="devtools-card-header" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 1.5rem; margin: 0;">
                         <h5 class="mb-0" style="font-weight: 600; display: flex; align-items: center; gap: 0.75rem;">
                             <span style="font-size: 1.2em;">🧪</span>
-                            Test Runner
+                            Runner
                         </h5>
                         <p class="mb-0" style="opacity: 0.9; font-size: 0.875rem; margin-top: 0.25rem;">Ejecutar tests PHPUnit con opciones avanzadas</p>
                     </div>
@@ -541,7 +541,7 @@ class DevToolsAdminPanel {
                             <!-- Columna 1: Tipos de Test -->
                             <div class="col-md-4">
                                 <div class="devtools-section">
-                                    <label class="devtools-label" style="display: block; font-weight: 600; color: #1e293b; margin-bottom: 1rem; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">Tipos de Test</label>
+                                    <label class="devtools-label" style="display: block; font-weight: 600; color: #1e293b; margin-bottom: 1rem; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">All Test</label>
                                     <div class="devtools-radio-group" style="display: flex; flex-direction: column; gap: 0.75rem;">
                                         <label class="devtools-radio" style="display: flex; align-items: center; cursor: pointer;">
                                             <input type="radio" name="testType" id="devtools-devtoolsTests" value="devtools" style="margin-right: 0.75rem; accent-color: #667eea;">
@@ -581,8 +581,8 @@ class DevToolsAdminPanel {
                                 <div class="devtools-section">
                                     <label class="devtools-label" style="display: block; font-weight: 600; color: #1e293b; margin-bottom: 1rem; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">Acciones</label>
                                     <div class="devtools-actions" style="display: flex; flex-direction: column; gap: 0.75rem;">
-                                        <button id="devtools-runTests" class="devtools-btn devtools-btn-primary" type="button" data-test-action="run-full" data-original-content='🚀 Run Selected Tests' style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 1rem 1.5rem; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                                            🚀 Run Selected Tests
+                                        <button id="devtools-runTests" class="devtools-btn devtools-btn-primary" type="button" data-test-action="run-full" data-original-content='🚀 Run All Tests' style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 1rem 1.5rem; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                                            🚀 Run All Tests
                                         </button>
                                         
                                         <!-- Botones secundarios -->
@@ -613,7 +613,7 @@ class DevToolsAdminPanel {
                             <div>
                                 <h5 class="mb-0" style="font-weight: 600; display: flex; align-items: center; gap: 0.75rem;">
                                     <span style="font-size: 1.2em;">📊</span>
-                                    Test Results
+                                    Results
                                 </h5>
                                 <p class="mb-0" style="opacity: 0.9; font-size: 0.875rem; margin-top: 0.25rem;">Output y análisis en tiempo real</p>
                             </div>
@@ -644,7 +644,7 @@ class DevToolsAdminPanel {
                             <div>
                                 <h5 class="mb-0" style="font-weight: 600; display: flex; align-items: center; gap: 0.75rem;">
                                     <span style="font-size: 1.2em;">🧪</span>
-                                    Tests del Plugin
+                                    Individual Tests
                                 </h5>
                                 <p class="mb-0" style="opacity: 0.9; font-size: 0.875rem; margin-top: 0.25rem;">Listado de todos los archivos de test en plugin-dev-tools/tests</p>
                             </div>
