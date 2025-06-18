@@ -31,6 +31,8 @@ class DevToolsAdminPanel {
         // Registrar handlers AJAX para tests
         add_action('wp_ajax_dev_tools_run_tests', [$this, 'ajax_run_tests']);
         add_action('wp_ajax_dev_tools_test_connectivity', [$this, 'ajax_test_connectivity']);
+        add_action('wp_ajax_dev_tools_get_tests_list', [$this, 'ajax_get_tests_list']);
+        add_action('wp_ajax_dev_tools_get_tests_list', [$this, 'ajax_get_tests_list']);
     }
     
     /**
@@ -155,6 +157,113 @@ class DevToolsAdminPanel {
         }
     }
     
+    /**
+     * Handler AJAX para obtener lista de tests disponibles
+     */
+    public function ajax_get_tests_list() {
+        // Verificar nonce de seguridad
+        $received_nonce = $_POST['nonce'] ?? '';
+        if (!wp_verify_nonce($received_nonce, 'dev_tools_nonce')) {
+            wp_send_json_error(['message' => 'Security check failed - Invalid nonce']);
+            return;
+        }
+        
+        // Verificar permisos
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(['message' => 'Insufficient permissions']);
+            return;
+        }
+        
+        try {
+            $tests_list = $this->scan_tests_directory();
+            wp_send_json_success([
+                'tests' => $tests_list,
+                'total_count' => count($tests_list),
+                'scan_time' => current_time('mysql')
+            ]);
+        } catch (Exception $e) {
+            wp_send_json_error([
+                'message' => 'Error escaneando tests: ' . $e->getMessage()
+            ]);
+        }
+    }
+    
+    /**
+     * Escanea el directorio dev-tools/tests y retorna información de todos los tests
+     */
+    private function scan_tests_directory() {
+        $tests_dir = dirname(__DIR__) . '/tests';
+        $tests = [];
+        
+        if (!is_dir($tests_dir)) {
+            throw new Exception('Directorio de tests no encontrado: ' . $tests_dir);
+        }
+        
+        // Escanear recursivamente el directorio de tests
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($tests_dir, \RecursiveDirectoryIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::LEAVES_ONLY
+        );
+        
+        foreach ($iterator as $file) {
+            if ($file->isFile() && preg_match('/Test\.php$/', $file->getFilename())) {
+                $relative_path = str_replace($tests_dir . '/', '', $file->getPathname());
+                $path_parts = explode('/', $relative_path);
+                
+                // Determinar el tipo basado en la subcarpeta
+                $type = 'Other';
+                if (count($path_parts) > 1) {
+                    $type = ucfirst($path_parts[0]);
+                }
+                
+                // Obtener información del archivo
+                $class_name = $this->extract_class_name_from_file($file->getPathname());
+                $method_count = $this->count_test_methods($file->getPathname());
+                
+                $tests[] = [
+                    'filename' => $file->getFilename(),
+                    'relative_path' => $relative_path,
+                    'full_path' => $file->getPathname(),
+                    'type' => $type,
+                    'class_name' => $class_name,
+                    'method_count' => $method_count,
+                    'file_size' => $file->getSize(),
+                    'modified' => date('Y-m-d H:i:s', $file->getMTime())
+                ];
+            }
+        }
+        
+        // Ordenar por tipo y luego por nombre
+        usort($tests, function($a, $b) {
+            if ($a['type'] === $b['type']) {
+                return strcmp($a['filename'], $b['filename']);
+            }
+            return strcmp($a['type'], $b['type']);
+        });
+        
+        return $tests;
+    }
+    
+    /**
+     * Extrae el nombre de la clase de un archivo de test
+     */
+    private function extract_class_name_from_file($file_path) {
+        $content = file_get_contents($file_path);
+        if (preg_match('/class\s+(\w+)/', $content, $matches)) {
+            return $matches[1];
+        }
+        return basename($file_path, '.php');
+    }
+    
+    /**
+     * Cuenta los métodos de test en un archivo
+     */
+    private function count_test_methods($file_path) {
+        $content = file_get_contents($file_path);
+        preg_match_all('/function\s+test\w+/', $content, $matches);
+        return count($matches[0]);
+    }
+
     /**
      * Realizar pruebas de conectividad del sistema
      */
@@ -538,6 +647,43 @@ class DevToolsAdminPanel {
             </div>
         </div>
         
+        <!-- Panel de Tests Disponibles - Tabla moderna -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="devtools-card" style="background: #ffffff; border-radius: 16px; box-shadow: 0 4px 25px rgba(0,0,0,0.08); border: none; overflow: hidden;">
+                    <!-- Header del card -->
+                    <div class="devtools-card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1.5rem; margin: 0;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h5 class="mb-0" style="font-weight: 600; display: flex; align-items: center; gap: 0.75rem;">
+                                    <span style="font-size: 1.2em;">🧪</span>
+                                    Tests Disponibles
+                                </h5>
+                                <p class="mb-0" style="opacity: 0.9; font-size: 0.875rem; margin-top: 0.25rem;">Listado de todos los archivos de test en dev-tools/tests</p>
+                            </div>
+                            <div>
+                                <button id="devtools-refreshTests" class="btn btn-sm" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 8px; padding: 0.5rem 1rem; font-weight: 500; transition: all 0.3s ease;">
+                                    <span style="font-size: 0.875rem;">🔄</span> Actualizar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Contenido de la tabla -->
+                    <div class="devtools-card-body" style="padding: 0;">
+                        <div id="devtools-testsTable" style="min-height: 200px;">
+                            <!-- La tabla se cargará aquí dinámicamente -->
+                            <div style="padding: 3rem 2rem; text-align: center; color: #64748b;">
+                                <div style="font-size: 3rem; opacity: 0.3; margin-bottom: 1rem;">📋</div>
+                                <h6 style="font-weight: 600; color: #475569; margin-bottom: 0.5rem;">Cargando tests...</h6>
+                                <p style="margin: 0; font-size: 0.875rem;">Escaneando directorio dev-tools/tests</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <!-- JavaScript específico para tests -->
         <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -794,6 +940,179 @@ class DevToolsAdminPanel {
                     console.warn('⚠️ TestRunner no disponible');
                 }
             }, 500);
+            
+            // Funcionalidad de la tabla de tests
+            const refreshTestsBtn = document.getElementById('devtools-refreshTests');
+            const testsTableContainer = document.getElementById('devtools-testsTable');
+            
+            // Función para cargar la lista de tests
+            function loadTestsList() {
+                if (!testsTableContainer) return;
+                
+                // Mostrar loading
+                testsTableContainer.innerHTML = `
+                    <div style="padding: 3rem 2rem; text-align: center; color: #64748b;">
+                        <div style="width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top: 4px solid #667eea; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div>
+                        <h6 style="font-weight: 600; color: #475569; margin-bottom: 0.5rem;">Escaneando tests...</h6>
+                        <p style="margin: 0; font-size: 0.875rem;">Analizando directorio dev-tools/tests</p>
+                    </div>
+                `;
+                
+                // Realizar llamada AJAX
+                const formData = new FormData();
+                formData.append('action', 'dev_tools_get_tests_list');
+                formData.append('nonce', '<?php echo wp_create_nonce('dev_tools_nonce'); ?>');
+                
+                fetch('<?php echo admin_url('admin-ajax.php'); ?>', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        renderTestsTable(data.data.tests, data.data.total_count);
+                    } else {
+                        showTestsError(data.data?.message || 'Error cargando tests');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading tests:', error);
+                    showTestsError('Error de conectividad al cargar tests');
+                });
+            }
+            
+            // Función para renderizar la tabla de tests
+            function renderTestsTable(tests, totalCount) {
+                if (!testsTableContainer) return;
+                
+                if (tests.length === 0) {
+                    testsTableContainer.innerHTML = `
+                        <div style="padding: 3rem 2rem; text-align: center; color: #64748b;">
+                            <div style="font-size: 3rem; opacity: 0.3; margin-bottom: 1rem;">📭</div>
+                            <h6 style="font-weight: 600; color: #475569; margin-bottom: 0.5rem;">No se encontraron tests</h6>
+                            <p style="margin: 0; font-size: 0.875rem;">El directorio dev-tools/tests está vacío</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let tableHTML = `
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; background: white;">
+                            <thead>
+                                <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">
+                                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151; font-size: 0.875rem;">Archivo</th>
+                                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151; font-size: 0.875rem;">Tipo</th>
+                                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151; font-size: 0.875rem;">Clase</th>
+                                    <th style="padding: 1rem; text-align: center; font-weight: 600; color: #374151; font-size: 0.875rem;">Tests</th>
+                                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151; font-size: 0.875rem;">Ruta</th>
+                                    <th style="padding: 1rem; text-align: center; font-weight: 600; color: #374151; font-size: 0.875rem;">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                
+                tests.forEach((test, index) => {
+                    const typeColor = getTypeColor(test.type);
+                    const rowBg = index % 2 === 0 ? '#ffffff' : '#f9fafb';
+                    
+                    tableHTML += `
+                        <tr style="background: ${rowBg}; border-bottom: 1px solid #f3f4f6; transition: background-color 0.2s ease;" 
+                            onmouseover="this.style.background='#f0f9ff'" 
+                            onmouseout="this.style.background='${rowBg}'">
+                            <td style="padding: 1rem; font-weight: 500; color: #1f2937;">
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <span style="font-size: 1.2em;">🧪</span>
+                                    <span>${test.filename}</span>
+                                </div>
+                            </td>
+                            <td style="padding: 1rem;">
+                                <span style="background: ${typeColor.bg}; color: ${typeColor.text}; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                                    ${test.type}
+                                </span>
+                            </td>
+                            <td style="padding: 1rem; color: #6b7280; font-family: 'Monaco', 'Menlo', monospace; font-size: 0.875rem;">
+                                ${test.class_name}
+                            </td>
+                            <td style="padding: 1rem; text-align: center;">
+                                <span style="background: #dbeafe; color: #1e40af; padding: 0.25rem 0.5rem; border-radius: 6px; font-weight: 600; font-size: 0.875rem;">
+                                    ${test.method_count}
+                                </span>
+                            </td>
+                            <td style="padding: 1rem; color: #6b7280; font-size: 0.875rem; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                ${test.relative_path}
+                            </td>
+                            <td style="padding: 1rem; text-align: center;">
+                                <button onclick="runSpecificTest('${test.relative_path}')" 
+                                        style="background: #667eea; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.75rem; font-weight: 500; cursor: pointer; transition: all 0.2s ease;"
+                                        onmouseover="this.style.background='#5a67d8'"
+                                        onmouseout="this.style.background='#667eea'">
+                                    ▶ Ejecutar
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                tableHTML += `
+                            </tbody>
+                        </table>
+                    </div>
+                    <div style="padding: 1rem; background: #f8fafc; border-top: 1px solid #e2e8f0; text-align: center;">
+                        <small style="color: #6b7280; font-weight: 500;">
+                            Total: ${totalCount} archivos de test encontrados
+                        </small>
+                    </div>
+                `;
+                
+                testsTableContainer.innerHTML = tableHTML;
+            }
+            
+            // Función para obtener colores según el tipo
+            function getTypeColor(type) {
+                const colors = {
+                    'Unit': { bg: '#dcfce7', text: '#166534' },
+                    'Integration': { bg: '#dbeafe', text: '#1e40af' },
+                    'Feature': { bg: '#fef3c7', text: '#d97706' },
+                    'Database': { bg: '#e0e7ff', text: '#5b21b6' },
+                    'Other': { bg: '#f3f4f6', text: '#6b7280' }
+                };
+                return colors[type] || colors['Other'];
+            }
+            
+            // Función para mostrar errores
+            function showTestsError(message) {
+                if (!testsTableContainer) return;
+                
+                testsTableContainer.innerHTML = `
+                    <div style="padding: 3rem 2rem; text-align: center; color: #64748b;">
+                        <div style="color: #dc2626; font-size: 3rem; margin-bottom: 1rem;">❌</div>
+                        <h6 style="color: #dc2626; font-weight: 600; margin-bottom: 0.5rem;">Error cargando tests</h6>
+                        <p style="margin: 0; font-size: 0.875rem;">${message}</p>
+                    </div>
+                `;
+            }
+            
+            // Función para ejecutar test específico
+            window.runSpecificTest = function(testPath) {
+                console.log('🔍 Ejecutando test específico:', testPath);
+                // Aquí puedes implementar la lógica para ejecutar un test específico
+                alert('Funcionalidad en desarrollo: Ejecutar ' + testPath);
+            };
+            
+            // Event listener para el botón de actualizar
+            if (refreshTestsBtn) {
+                refreshTestsBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log('🔄 Actualizando lista de tests...');
+                    loadTestsList();
+                });
+            }
+            
+            // Cargar la lista de tests al inicializar
+            setTimeout(() => {
+                loadTestsList();
+            }, 1000);
         });
         </script>
         <?php
