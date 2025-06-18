@@ -753,8 +753,7 @@ class DevToolsAdminPanel {
         }
         
         .metric-value {
-            font-weight: 700;
-            font-size: 1.625rem;
+            font-size: 1.225rem;
             line-height: 1.2;
             color: #ffffff;
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);

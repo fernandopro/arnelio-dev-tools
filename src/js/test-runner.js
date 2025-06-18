@@ -230,14 +230,6 @@ class TestRunner {
         
         let html = '<div class="test-results-container">';
         
-        // Encabezado con información del comando
-        if (results.command) {
-            html += `<div class="modern-section">
-                <div class="modern-section-title">Comando ejecutado</div>
-                <pre class="modern-code-block modern-code-block-light"><code>${this.escapeHtml(results.command)}</code></pre>
-            </div>`;
-        }
-        
         // Resumen de resultados con header unificado
         if (results.summary) {
             const summary = results.summary;
@@ -324,16 +316,6 @@ class TestRunner {
                         </div>
                         ` : ''}
                     </div>
-                    
-                    <!-- Comando ejecutado -->
-                    ${results.command ? `
-                    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.2);">
-                        <div style="font-size: 0.75rem; opacity: 0.9; margin-bottom: 0.5rem; font-weight: 600;">💻 Comando:</div>
-                        <div style="background: rgba(255,255,255,0.1); padding: 0.5rem; border-radius: 6px; font-family: 'Courier New', monospace; font-size: 0.7rem; word-break: break-all; line-height: 1.3;">
-                            ${this.escapeHtml(results.command)}
-                        </div>
-                    </div>
-                    ` : ''}
                 </div>
                 
                 <!-- Contenido del test -->`;
@@ -359,14 +341,6 @@ class TestRunner {
         // Cerrar el contenedor unificado si hay summary
         if (results.summary) {
             html += `</div>`;
-        }
-        
-        // Encabezado con información del comando (solo si no hay summary para evitar duplicación)
-        if (results.command && !results.summary) {
-            html += `<div class="modern-section">
-                <div class="modern-section-title">💻 Comando Ejecutado</div>
-                <pre class="modern-code-block modern-code-block-light"><code>${this.escapeHtml(results.command)}</code></pre>
-            </div>`;
         }
         
         // Información de ejecución
