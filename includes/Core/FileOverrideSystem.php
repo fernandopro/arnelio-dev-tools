@@ -368,6 +368,88 @@ class FileOverrideSystem {
                 file_put_contents($destination, $content);
             }
         }
+        
+        // Generar archivo phpunit-plugin-only.xml con configuración moderna
+        $this->create_modern_phpunit_config();
+    }
+
+    /**
+     * Crea o actualiza phpunit-plugin-only.xml con configuración moderna de PHPUnit
+     * 
+     * @param bool $force Forzar sobrescritura si ya existe
+     * @return bool Success
+     */
+    public function create_modern_phpunit_config($force = false) {
+        $phpunit_file = $this->child_dir . '/phpunit-plugin-only.xml';
+        
+        // Verificar si ya existe y no forzar
+        if (file_exists($phpunit_file) && !$force) {
+            // Solo actualizar si la versión existente usa configuración antigua
+            $existing_content = file_get_contents($phpunit_file);
+            if (strpos($existing_content, '<filter>') === false && strpos($existing_content, '<coverage>') !== false) {
+                // Ya tiene configuración moderna, no hacer nada
+                return true;
+            }
+        }
+        
+        // Contenido moderno de phpunit-plugin-only.xml
+        $phpunit_content = '<?xml version="1.0"?>
+<phpunit
+    bootstrap="tests/bootstrap.php"
+    backupGlobals="false"
+    colors="true"
+    convertErrorsToExceptions="true"
+    convertNoticesToExceptions="true"
+    convertWarningsToExceptions="true"
+    stopOnFailure="false"
+    beStrictAboutTestsThatDoNotTestAnything="true"
+    beStrictAboutOutputDuringTests="true"
+>
+    <testsuites>
+        <testsuite name="Plugin Specific Tests Only">
+            <directory>./tests/unit/</directory>
+            <directory>./tests/integration/</directory>
+        </testsuite>
+    </testsuites>
+
+    <php>
+        <const name="WP_TESTS_DOMAIN" value="example.org" />
+        <const name="WP_TESTS_EMAIL" value="admin@example.org" />
+        <const name="WP_TESTS_TITLE" value="Test Blog" />
+        <const name="WP_PHP_BINARY" value="php" />
+        <const name="WP_TESTS_FORCE_KNOWN_BUGS" value="true" />
+        <env name="WP_PHPUNIT__TESTS_CONFIG" value="tests/wp-tests-config.php" />
+        <env name="PLUGIN_TEST_MODE" value="true"/>
+        <env name="WP_TESTS_MULTISITE" value="0"/>
+    </php>
+
+    <groups>
+        <exclude>
+            <group>ajax</group>
+            <group>ms-files</group>
+            <group>external-http</group>
+        </exclude>
+    </groups>
+
+    <logging>
+        <junit outputFile="./reports/junit.xml"/>
+        <testdoxText outputFile="./reports/testdox.txt"/>
+    </logging>
+
+    <coverage processUncoveredFiles="true">
+        <include>
+            <directory suffix=".php">./</directory>
+        </include>
+        <exclude>
+            <directory>./tests/</directory>
+            <directory>./vendor/</directory>
+            <directory>../dev-tools/</directory>
+        </exclude>
+    </coverage>
+</phpunit>
+';
+        
+        return file_put_contents($phpunit_file, $phpunit_content) !== false;
     }
 
     /**

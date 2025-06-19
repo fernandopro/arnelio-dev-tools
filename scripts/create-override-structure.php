@@ -151,11 +151,11 @@ return [
     file_put_contents($info['child_dir'] . '/phpunit.xml', $phpunit_content);
     echo "✅ Configuración PHPUnit creada\n";
     
-    // 3.1. Crear phpunit-plugin-only.xml (sin conflictos)
+    // 3.1. Crear phpunit-plugin-only.xml (sin conflictos con configuración moderna)
     echo "🧪 Creando configuración PHPUnit específica (sin conflictos)...\n";
     $phpunit_only_content = '<?xml version="1.0"?>
 <phpunit
-    bootstrap="../dev-tools/tests/bootstrap.php"
+    bootstrap="tests/bootstrap.php"
     backupGlobals="false"
     colors="true"
     convertErrorsToExceptions="true"
@@ -178,7 +178,7 @@ return [
         <const name="WP_TESTS_TITLE" value="Test Blog" />
         <const name="WP_PHP_BINARY" value="php" />
         <const name="WP_TESTS_FORCE_KNOWN_BUGS" value="true" />
-        <env name="WP_PHPUNIT__TESTS_CONFIG" value="../dev-tools/tests/wp-tests-config.php" />
+        <env name="WP_PHPUNIT__TESTS_CONFIG" value="tests/wp-tests-config.php" />
         <env name="PLUGIN_TEST_MODE" value="true"/>
         <env name="WP_TESTS_MULTISITE" value="0"/>
     </php>
@@ -192,20 +192,20 @@ return [
     </groups>
 
     <logging>
-        <log type="junit" target="./reports/junit.xml"/>
-        <log type="coverage-text" target="php://stdout" showUncoveredFiles="false"/>
+        <junit outputFile="./reports/junit.xml"/>
+        <testdoxText outputFile="./reports/testdox.txt"/>
     </logging>
 
-    <filter>
-        <whitelist processUncoveredFilesFromWhitelist="true">
+    <coverage processUncoveredFiles="true">
+        <include>
             <directory suffix=".php">./</directory>
-            <exclude>
-                <directory>./tests/</directory>
-                <directory>./vendor/</directory>
-                <directory>../dev-tools/</directory>
-            </exclude>
-        </whitelist>
-    </filter>
+        </include>
+        <exclude>
+            <directory>./tests/</directory>
+            <directory>./vendor/</directory>
+            <directory>../dev-tools/</directory>
+        </exclude>
+    </coverage>
 </phpunit>';
     
     file_put_contents($info['child_dir'] . '/phpunit-plugin-only.xml', $phpunit_only_content);
