@@ -326,6 +326,16 @@ class DevToolsAjaxHandler {
             $command .= ' --coverage-text';
         }
         
+        // Para tests individuales específicos, agregar opciones adicionales
+        if (isset($options['test_file'])) {
+            // Si es un test individual, forzar verbose para capturar toda la salida
+            if (!($options['verbose'] ?? false)) {
+                $command .= ' --verbose';
+            }
+            // Agregar debug mode para capturar echo/print statements
+            $command .= ' --debug';
+        }
+        
         // Tipo de test
         switch ($test_type) {
             case 'unit':
@@ -340,18 +350,39 @@ class DevToolsAjaxHandler {
             case 'quick':
                 $command .= ' --filter="Quick" ' . escapeshellarg($tests_dir);
                 break;
+            case 'specific_file':
+                // Para archivo específico
+                if (isset($options['test_file'])) {
+                    $command .= ' ' . escapeshellarg($options['test_file']);
+                }
+                break;
             default:
                 $command .= ' ' . escapeshellarg($tests_dir);
         }
         
-        // Ejecutar comando
+        // Ejecutar comando y capturar toda la salida
         $output = [];
         $return_code = 0;
-        exec($command . ' 2>&1', $output, $return_code);
+        
+        // Usar output buffering para capturar también los echo statements
+        $full_command = $command . ' 2>&1';
+        
+        exec($full_command, $output, $return_code);
+        
+        $output_string = implode("\n", $output);
+        
+        // Log de debugging para tests individuales
+        if (isset($options['test_file'])) {
+            error_log("DEBUG INDIVIDUAL TEST - Command: " . $full_command);
+            error_log("DEBUG INDIVIDUAL TEST - Return code: " . $return_code);
+            error_log("DEBUG INDIVIDUAL TEST - Output length: " . strlen($output_string));
+            error_log("DEBUG INDIVIDUAL TEST - First 500 chars: " . substr($output_string, 0, 500));
+            error_log("DEBUG INDIVIDUAL TEST - Last 500 chars: " . substr($output_string, -500));
+        }
         
         return [
             'command' => $command,
-            'output' => implode("\n", $output),
+            'output' => $output_string,
             'return_code' => $return_code,
             'success' => $return_code === 0
         ];
