@@ -1367,6 +1367,12 @@ class DevToolsAdminPanel {
                                             <div class="metric-label">Memoria</div>
                                         </div>
                                         ` : ''}
+                                        ${summary.risky > 0 ? `
+                                        <div class="metric-card">
+                                            <div class="metric-value metric-warning">${summary.risky || 0}</div>
+                                            <div class="metric-label">Riesgosos</div>
+                                        </div>
+                                        ` : ''}
                                     </div>
                                     
                                     <!-- Opciones utilizadas -->
