@@ -1342,24 +1342,19 @@ class DevToolsAdminPanel {
                         const testData = data.data;
                         const summary = testData.summary;
                         
-                        // Determinar el color del estado
-                        let statusColor = '#10b981'; // Verde por defecto
+                        // Determinar el color del estado basado en resultados (igual que tests completos)
+                        let statusColor = '#10b981'; // Verde por defecto (éxito)
                         let statusIcon = '✅';
                         let statusText = 'Éxito';
                         
-                        if (summary.status === 'error') {
-                            statusColor = '#ef4444';
+                        if (summary.failed > 0 || summary.errors > 0) {
+                            statusColor = '#ef4444'; // Rojo para fallos/errores
                             statusIcon = '❌';
                             statusText = 'Error';
-                        } else if (summary.status === 'warning') {
-                            statusColor = '#f59e0b';
+                        } else if (summary.skipped > 0 || summary.incomplete > 0 || summary.risky > 0) {
+                            statusColor = '#f59e0b'; // Amarillo para advertencias
                             statusIcon = '⚠️';
                             statusText = 'Advertencia';
-                        } else if (summary.risky > 0 && summary.status === 'success') {
-                            // Test informativo con contenido valioso
-                            statusColor = '#06b6d4';
-                            statusIcon = '📊';
-                            statusText = 'Informativo';
                         }
                         
                         // Renderizar resultados del test específico
@@ -1443,21 +1438,13 @@ class DevToolsAdminPanel {
                                 
                                 <!-- Salida detallada del test -->
                                 <div style="padding: 1.5rem;">
-                                    <!-- Detectar tipo de output y renderizar apropiadamente -->
-                                    ${testData.output.includes('TABLA DE TRANSIENTS') || testData.output.includes('INSPECCIÓN') || testData.output.includes('===') ? 
-                                        `<div class="modern-section">
-                                            <div class="modern-section-title">📊 Reporte Informativo</div>
-                                            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.5rem; font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace; white-space: pre-wrap; line-height: 1.4; color: #1f2937; font-size: 0.875rem;">
-                                                ${testData.output}
-                                            </div>
-                                        </div>` : 
-                                        `<div class="modern-section">
-                                            <div class="modern-section-title">📋 Salida Detallada del Test</div>
-                                            <div style="background: #1a1a1a; border: 1px solid #374151; border-radius: 8px; padding: 1.5rem; font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace; white-space: pre-wrap; line-height: 1.6; color: #e5e7eb; font-size: 0.875rem; max-height: 400px; overflow-y: auto;">
-                                                ${testData.output.replace(/\\n/g, '\\n').replace(/===.*===/g, '<span style="color: #10b981; font-weight: bold;">$&</span>').replace(/✅|☢|⚠️|❌/g, '<span style="font-size: 1.1em;">$&</span>').replace(/Test.*started|Test.*ended/g, '<span style="color: #6b7280; font-style: italic;">$&</span>').replace(/It should .*/g, '<span style="color: #60a5fa; font-weight: 500;">$&</span>')}
-                                            </div>
-                                        </div>`
-                                    }
+                                    <!-- Todos los tests individuales usan el tema oscuro para consistencia -->
+                                    <div class="modern-section">
+                                        <div class="modern-section-title">📋 Salida Detallada del Test</div>
+                                        <div style="background: #1a1a1a; border: 1px solid #374151; border-radius: 8px; padding: 1.5rem; font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace; white-space: pre-wrap; line-height: 1.6; color: #e5e7eb; font-size: 0.875rem;">
+                                            ${testData.output.replace(/\\n/g, '\\n').replace(/===.*===/g, '<span style="color: #10b981; font-weight: bold;">$&</span>').replace(/✅|☢|⚠️|❌/g, '<span style="font-size: 1.1em;">$&</span>').replace(/Test.*started|Test.*ended/g, '<span style="color: #6b7280; font-style: italic;">$&</span>').replace(/It should .*/g, '<span style="color: #60a5fa; font-weight: 500;">$&</span>').replace(/Runtime:/g, '<span style="color: #fbbf24; font-weight: 500;">Runtime:</span>').replace(/Configuration:/g, '<span style="color: #fbbf24; font-weight: 500;">Configuration:</span>').replace(/Warning:/g, '<span style="color: #f59e0b; font-weight: 500;">Warning:</span>').replace(/Time:/g, '<span style="color: #34d399; font-weight: 500;">Time:</span>').replace(/Memory:/g, '<span style="color: #60a5fa; font-weight: 500;">Memory:</span>')}
+                                        </div>
+                                    </div>
                                     
                                     <!-- Análisis de opciones aplicadas -->
                                     <div class="modern-section">
@@ -1522,7 +1509,7 @@ class DevToolsAdminPanel {
                                     
                                     <div class="modern-section">
                                         <div class="modern-section-title">💻 Comando Ejecutado</div>
-                                        <pre class="modern-code-block modern-code-block-light"><code>${testData.command}</code></pre>
+                                        <pre class="modern-code-block modern-code-block-dark"><code>${testData.command}</code></pre>
                                     </div>
                                     
                                     <!-- Información adicional para tests informativos -->
