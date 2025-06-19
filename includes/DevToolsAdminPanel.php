@@ -247,8 +247,49 @@ class DevToolsAdminPanel {
      */
     private function count_test_methods($file_path) {
         $content = file_get_contents($file_path);
-        preg_match_all('/function\s+test\w+/', $content, $matches);
-        return count($matches[0]);
+        $test_count = 0;
+        
+        // Dividir el contenido en líneas para un análisis más preciso
+        $lines = explode("\n", $content);
+        $in_comment_block = false;
+        $has_test_annotation = false;
+        
+        for ($i = 0; $i < count($lines); $i++) {
+            $line = trim($lines[$i]);
+            
+            // Detectar inicio/fin de comentarios de bloque
+            if (strpos($line, '/**') !== false) {
+                $in_comment_block = true;
+                $has_test_annotation = false;
+            }
+            
+            // Buscar anotación @test en comentarios
+            if ($in_comment_block && strpos($line, '@test') !== false) {
+                $has_test_annotation = true;
+            }
+            
+            // Detectar fin de comentario de bloque
+            if (strpos($line, '*/') !== false) {
+                $in_comment_block = false;
+            }
+            
+            // Buscar métodos públicos
+            if (preg_match('/public\s+function\s+(\w+)/', $line, $matches)) {
+                $method_name = $matches[1];
+                
+                // Contar como test si:
+                // 1. El nombre empieza con "test"
+                // 2. O tiene la anotación @test
+                if (strpos($method_name, 'test') === 0 || $has_test_annotation) {
+                    $test_count++;
+                }
+                
+                // Resetear flag de anotación después de procesar el método
+                $has_test_annotation = false;
+            }
+        }
+        
+        return $test_count;
     }
 
     /**
