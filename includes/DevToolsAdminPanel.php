@@ -277,11 +277,15 @@ class DevToolsAdminPanel {
         
         // Obtener parámetros del POST
         $test_file = $_POST['test_file'] ?? '';
-        $verbose = filter_var($_POST['verbose'] ?? true, FILTER_VALIDATE_BOOLEAN);
+        $verbose = filter_var($_POST['verbose'] ?? false, FILTER_VALIDATE_BOOLEAN);
         $coverage = filter_var($_POST['coverage'] ?? false, FILTER_VALIDATE_BOOLEAN);
         $testdox = filter_var($_POST['testdox'] ?? false, FILTER_VALIDATE_BOOLEAN);
         
-        error_log("DEBUG SPECIFIC TEST - Opciones recibidas: verbose={$verbose}, coverage={$coverage}, testdox={$testdox}");
+        error_log("DEBUG SPECIFIC TEST - Archivo: {$test_file}");
+        error_log("DEBUG SPECIFIC TEST - POST datos completos: " . print_r($_POST, true));
+        error_log("DEBUG SPECIFIC TEST - Opciones procesadas: verbose=" . ($verbose ? 'true' : 'false') . 
+                 ", coverage=" . ($coverage ? 'true' : 'false') . 
+                 ", testdox=" . ($testdox ? 'true' : 'false'));
         
         if (empty($test_file)) {
             wp_send_json_error(['message' => 'No se especificó el archivo de test']);
@@ -1243,11 +1247,22 @@ class DevToolsAdminPanel {
                 const generateCoverage = document.getElementById('devtools-generateCoverage')?.checked || false;
                 const testdoxOutput = document.getElementById('devtools-testdoxOutput')?.checked || false;
                 
-                console.log('📋 Opciones seleccionadas:', {
+                // Debug detallado de los elementos DOM
+                console.log('� DEBUG - Elementos DOM encontrados:');
+                console.log('  - verboseOutput elemento:', document.getElementById('devtools-verboseOutput'));
+                console.log('  - generateCoverage elemento:', document.getElementById('devtools-generateCoverage'));
+                console.log('  - testdoxOutput elemento:', document.getElementById('devtools-testdoxOutput'));
+                
+                console.log('�📋 Opciones seleccionadas:', {
                     verbose: verboseOutput,
                     coverage: generateCoverage,
                     testdox: testdoxOutput
                 });
+                
+                // Verificar que las opciones no están siempre en false
+                if (!verboseOutput && !generateCoverage && !testdoxOutput) {
+                    console.warn('⚠️ ADVERTENCIA: Todas las opciones están desactivadas. Esto podría indicar un problema.');
+                }
                 
                 // Mostrar estado de carga en el área de resultados
                 const resultArea = document.getElementById('devtools-testResults');
@@ -1281,6 +1296,24 @@ class DevToolsAdminPanel {
                 formData.append('coverage', generateCoverage ? 'true' : 'false');
                 formData.append('testdox', testdoxOutput ? 'true' : 'false');
                 
+                // Debug de los datos que se envían
+                console.log('📤 AJAX - Datos enviados:');
+                for (let [key, value] of formData.entries()) {
+                    console.log(`  ${key}: ${value}`);
+                }
+                
+                // Debug adicional para verificar los valores de opciones
+                console.log('🔍 DEBUGGING - Verificación de opciones:');
+                console.log('  - Checkbox verboseOutput DOM:', document.getElementById('devtools-verboseOutput'));
+                console.log('  - Checkbox verboseOutput checked:', document.getElementById('devtools-verboseOutput')?.checked);
+                console.log('  - Checkbox generateCoverage DOM:', document.getElementById('devtools-generateCoverage'));
+                console.log('  - Checkbox generateCoverage checked:', document.getElementById('devtools-generateCoverage')?.checked);
+                console.log('  - Checkbox testdoxOutput DOM:', document.getElementById('devtools-testdoxOutput'));
+                console.log('  - Checkbox testdoxOutput checked:', document.getElementById('devtools-testdoxOutput')?.checked);
+                console.log('  - Variable verboseOutput:', verboseOutput);
+                console.log('  - Variable generateCoverage:', generateCoverage);
+                console.log('  - Variable testdoxOutput:', testdoxOutput);
+                
                 fetch('<?php echo admin_url('admin-ajax.php'); ?>', {
                     method: 'POST',
                     body: formData
@@ -1293,6 +1326,17 @@ class DevToolsAdminPanel {
                 })
                 .then(data => {
                     console.log('✅ Test específico completado:', data);
+                    
+                    // Debug adicional del output recibido
+                    if (data.success && data.data) {
+                        console.log('🔍 DEBUGGING OUTPUT - Contenido del test:');
+                        console.log('  - Output length:', data.data.output?.length || 0);
+                        console.log('  - Output preview (primeros 200 chars):', data.data.output?.substring(0, 200) || 'NO OUTPUT');
+                        console.log('  - Output completo:', data.data.output);
+                        console.log('  - Comando ejecutado:', data.data.command);
+                        console.log('  - Return code:', data.data.return_code);
+                        console.log('  - Execution time:', data.data.execution_time);
+                    }
                     
                     if (data.success && resultArea) {
                         const testData = data.data;
@@ -1399,7 +1443,7 @@ class DevToolsAdminPanel {
                                 
                                 <!-- Salida detallada del test -->
                                 <div style="padding: 1.5rem;">
-                                    <!-- Detectar si es un test informativo y renderizar apropiadamente -->
+                                    <!-- Detectar tipo de output y renderizar apropiadamente -->
                                     ${testData.output.includes('TABLA DE TRANSIENTS') || testData.output.includes('INSPECCIÓN') || testData.output.includes('===') ? 
                                         `<div class="modern-section">
                                             <div class="modern-section-title">📊 Reporte Informativo</div>
@@ -1408,10 +1452,73 @@ class DevToolsAdminPanel {
                                             </div>
                                         </div>` : 
                                         `<div class="modern-section">
-                                            <div class="modern-section-title">📋 Salida Detallada</div>
-                                            <pre class="modern-code-block modern-code-block-dark">${testData.output}</pre>
+                                            <div class="modern-section-title">📋 Salida Detallada del Test</div>
+                                            <div style="background: #1a1a1a; border: 1px solid #374151; border-radius: 8px; padding: 1.5rem; font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace; white-space: pre-wrap; line-height: 1.6; color: #e5e7eb; font-size: 0.875rem; max-height: 400px; overflow-y: auto;">
+                                                ${testData.output.replace(/\\n/g, '\\n').replace(/===.*===/g, '<span style="color: #10b981; font-weight: bold;">$&</span>').replace(/✅|☢|⚠️|❌/g, '<span style="font-size: 1.1em;">$&</span>').replace(/Test.*started|Test.*ended/g, '<span style="color: #6b7280; font-style: italic;">$&</span>').replace(/It should .*/g, '<span style="color: #60a5fa; font-weight: 500;">$&</span>')}
+                                            </div>
                                         </div>`
                                     }
+                                    
+                                    <!-- Análisis de opciones aplicadas -->
+                                    <div class="modern-section">
+                                        <div class="modern-section-title">⚙️ Análisis de Opciones de Salida</div>
+                                        <div style="background: ${verboseOutput || generateCoverage || testdoxOutput ? '#f0f9ff' : '#f9fafb'}; border: 1px solid ${verboseOutput || generateCoverage || testdoxOutput ? '#bae6fd' : '#e5e7eb'}; border-radius: 8px; padding: 1rem;">
+                                            ${verboseOutput ? 
+                                                `<div style="margin-bottom: 0.75rem; padding: 0.75rem; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 6px;">
+                                                    <p style="margin: 0; color: #065f46; font-size: 0.875rem; font-weight: 500;">
+                                                        <strong>✅ Verbose Output Activado:</strong> El output debería incluir información adicional de runtime, configuración de PHPUnit y detalles extendidos.
+                                                    </p>
+                                                    ${testData.output.includes('Runtime:') ? 
+                                                        '<p style="margin: 0.25rem 0 0 0; color: #059669; font-size: 0.8rem;">✓ Se detectó información de runtime en el output.</p>' : 
+                                                        '<p style="margin: 0.25rem 0 0 0; color: #d97706; font-size: 0.8rem;">⚠ No se detectó información de runtime específica.</p>'
+                                                    }
+                                                </div>` : 
+                                                `<div style="margin-bottom: 0.75rem; padding: 0.75rem; background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 6px;">
+                                                    <p style="margin: 0; color: #6b7280; font-size: 0.875rem;">
+                                                        <strong>❌ Verbose Output:</strong> Desactivado. El output será más conciso.
+                                                    </p>
+                                                </div>`
+                                            }
+                                            
+                                            ${generateCoverage ? 
+                                                `<div style="margin-bottom: 0.75rem; padding: 0.75rem; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px;">
+                                                    <p style="margin: 0; color: #1e40af; font-size: 0.875rem; font-weight: 500;">
+                                                        <strong>✅ Coverage Report Activado:</strong> Se debería generar análisis de cobertura de código.
+                                                    </p>
+                                                    ${testData.output.includes('coverage') || testData.output.includes('Coverage') ? 
+                                                        '<p style="margin: 0.25rem 0 0 0; color: #2563eb; font-size: 0.8rem;">✓ Se detectaron referencias a coverage en el output.</p>' : 
+                                                        '<p style="margin: 0.25rem 0 0 0; color: #d97706; font-size: 0.8rem;">⚠ El coverage puede estar configurado incorrectamente o no aplicarse a este test.</p>'
+                                                    }
+                                                </div>` : 
+                                                `<div style="margin-bottom: 0.75rem; padding: 0.75rem; background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 6px;">
+                                                    <p style="margin: 0; color: #6b7280; font-size: 0.875rem;">
+                                                        <strong>❌ Coverage Report:</strong> Desactivado. No se analizará cobertura de código.
+                                                    </p>
+                                                </div>`
+                                            }
+                                            
+                                            ${testdoxOutput ? 
+                                                `<div style="margin-bottom: 0.75rem; padding: 0.75rem; background: #fdf4ff; border: 1px solid #e9d5ff; border-radius: 6px;">
+                                                    <p style="margin: 0; color: #7c3aed; font-size: 0.875rem; font-weight: 500;">
+                                                        <strong>✅ TestDox Summary Activado:</strong> Los nombres de test deberían estar formateados legiblemente.
+                                                    </p>
+                                                    ${testData.output.includes('It should') || testData.output.includes('☢') ? 
+                                                        '<p style="margin: 0.25rem 0 0 0; color: #8b5cf6; font-size: 0.8rem;">✓ Se detectó formato TestDox en el output.</p>' : 
+                                                        '<p style="margin: 0.25rem 0 0 0; color: #d97706; font-size: 0.8rem;">⚠ No se detectó formato TestDox específico.</p>'
+                                                    }
+                                                </div>` : 
+                                                `<div style="margin-bottom: 0.75rem; padding: 0.75rem; background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 6px;">
+                                                    <p style="margin: 0; color: #6b7280; font-size: 0.875rem;">
+                                                        <strong>❌ TestDox Summary:</strong> Desactivado. Nombres de test en formato técnico.
+                                                    </p>
+                                                </div>`
+                                            }
+                                            
+                                            ${!verboseOutput && !generateCoverage && !testdoxOutput ? 
+                                                '<p style="margin: 0; color: #6b7280; font-size: 0.875rem; text-align: center; font-style: italic;">Todas las opciones están desactivadas - output estándar.</p>' : ''
+                                            }
+                                        </div>
+                                    </div>
                                     
                                     <div class="modern-section">
                                         <div class="modern-section-title">💻 Comando Ejecutado</div>
@@ -1916,7 +2023,7 @@ class DevToolsAdminPanel {
     /**
      * Ejecutar un archivo de test específico
      */
-    private function run_specific_test_file($test_file, $verbose = true, $coverage = false, $testdox = false) {
+    private function run_specific_test_file($test_file, $verbose = false, $coverage = false, $testdox = false) {
         try {
             // Validar que el archivo de test existe
             $tests_dir = dirname(dirname(__DIR__)) . '/plugin-dev-tools/tests';
@@ -1934,14 +2041,20 @@ class DevToolsAdminPanel {
             // Usar la configuración específica para plugin-dev-tools que incluye el bootstrap de WordPress
             $options[] = '--configuration=phpunit-plugin-only.xml';
             
-            // Para tests individuales, forzar verbose para capturar toda la salida (incluye echo statements)
-            $options[] = '--verbose';
+            // Aplicar opciones basadas en los parámetros del usuario
+            if ($verbose) {
+                $options[] = '--verbose';
+                error_log("DEBUG SPECIFIC TEST - Added --verbose option (user requested)");
+            }
+            
+            // Siempre agregar debug para capturar echo statements en tests informativos
             $options[] = '--debug';
             
             // Agregar opciones adicionales basadas en los parámetros recibidos
             if ($coverage) {
                 $options[] = '--coverage-text';
-                error_log("DEBUG SPECIFIC TEST - Added --coverage-text option");
+                $options[] = '--coverage-html=reports/coverage';
+                error_log("DEBUG SPECIFIC TEST - Added coverage options");
             }
             
             if ($testdox) {
@@ -1949,7 +2062,10 @@ class DevToolsAdminPanel {
                 error_log("DEBUG SPECIFIC TEST - Added --testdox option");
             }
             
-            error_log("DEBUG SPECIFIC TEST - Final options: " . implode(' ', $options));
+            error_log("DEBUG SPECIFIC TEST - User options: verbose=" . ($verbose ? 'true' : 'false') . 
+                     ", coverage=" . ($coverage ? 'true' : 'false') . 
+                     ", testdox=" . ($testdox ? 'true' : 'false'));
+            error_log("DEBUG SPECIFIC TEST - Final PHPUnit options: " . implode(' ', $options));
             
             // El comando se ejecutará desde plugin-dev-tools, usar ruta relativa con prefijo tests/
             $test_path_for_command = 'tests/' . $test_file;
