@@ -440,8 +440,8 @@ require_once $wp_phpunit_dir . \'/includes/functions.php\';
  * Función para cargar el plugin antes de que WordPress se inicialice
  */
 function _manually_load_plugin() {
-    // Cargar el loader de Dev-Tools desde el directorio correcto
-    require dirname( dirname( __DIR__ ) ) . \'/dev-tools/loader.php\';
+    // Cargar el plugin principal que ya incluye dev-tools
+    require dirname( dirname( __DIR__ ) ) . \'/tarokina-pro.php\';
 }
 
 // Registrar la función para cargar el plugin
@@ -458,15 +458,15 @@ require_once dirname(dirname(__DIR__)) . \'/dev-tools/tests/includes/Helpers.php
 // Detectar dinámicamente el path del plugin principal
 $plugin_base_dir = dirname($plugin_dir);
 $plugin_name = basename($plugin_base_dir);
-$dev_tools_plugin_path = $plugin_name . \'/dev-tools/loader.php\';
+$main_plugin_path = $plugin_name . \'/tarokina-pro.php\';
 
-// Intentar activar el plugin de dev-tools
+// Intentar activar el plugin principal (que ya incluye dev-tools)
 if (function_exists(\'activate_plugin\')) {
     try {
-        activate_plugin($dev_tools_plugin_path);
+        activate_plugin($main_plugin_path);
     } catch (Exception $e) {
-        // Si falla, intentar activar solo el loader directamente
-        // No es crítico para todos los tests
+        // Si falla, no es crítico para todos los tests
+        // El plugin se cargará mediante _manually_load_plugin()
     }
 }
 
