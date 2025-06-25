@@ -358,6 +358,16 @@ class FileOverrideSystem {
                 $header .= " * Fecha: " . date('Y-m-d H:i:s') . "\n";
                 $header .= " */\n\n";
                 
+                // Aplicar correcciones específicas según el archivo
+                if ($file === 'tests/wp-tests-config.php') {
+                    // Corregir definición de WP_PHP_BINARY para evitar warnings
+                    $content = str_replace(
+                        "define( 'WP_PHP_BINARY', 'php' );",
+                        "if ( ! defined( 'WP_PHP_BINARY' ) ) {\n    define( 'WP_PHP_BINARY', 'php' );\n}",
+                        $content
+                    );
+                }
+                
                 // Si es un archivo PHP, agregar header después de la etiqueta de apertura
                 if (pathinfo($file, PATHINFO_EXTENSION) === 'php') {
                     $content = preg_replace('/^<\?php\s*/', $header, $content, 1);

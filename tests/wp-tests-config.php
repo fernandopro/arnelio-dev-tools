@@ -97,7 +97,9 @@ if ( ! defined( 'WP_TESTS_TITLE' ) ) {
 /**
  * Configuración de WordPress para testing
  */
-define( 'WP_PHP_BINARY', 'php' );
+if ( ! defined( 'WP_PHP_BINARY' ) ) {
+    define( 'WP_PHP_BINARY', 'php' );
+}
 
 /**
  * Configuración de debug para testing
